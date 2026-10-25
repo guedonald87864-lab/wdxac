@@ -1,0 +1,176 @@
+{
+ "_doc": "Body targets for R9 at the 2002 World Cup final. Values are the centre of the ranges in research/notes/02_body_2002.md section 4.3 (all T4 estimates except height 183 cm [multi-source] and mass 82 +/-2 kg [Capello recollections]). tol = acceptable deviation (cm or kg). Measures are defined in tools/model/body_fit.py (MakeHuman ruler loops + joints).",
+ "targets": {
+  "height": {
+   "value": 183.0,
+   "tol": 0.5,
+   "source": "02_body \u00a72"
+  },
+  "mass_kg": {
+   "value": 82.0,
+   "tol": 1.5,
+   "source": "02_body \u00a73 (80-84 acceptable)"
+  },
+  "neck_circ": {
+   "value": 40.0,
+   "tol": 1.0,
+   "source": "02_body \u00a74.3"
+  },
+  "chest_circ": {
+   "value": 102.0,
+   "tol": 2.0,
+   "source": "02_body \u00a74.3 (100-104)"
+  },
+  "waist_circ": {
+   "value": 82.5,
+   "tol": 1.5,
+   "source": "02_body \u00a74.3 (81-84)"
+  },
+  "hips_circ": {
+   "value": 99.5,
+   "tol": 1.5,
+   "source": "02_body \u00a74.3 (98-101)"
+  },
+  "thigh_circ": {
+   "value": 60.0,
+   "tol": 1.5,
+   "source": "02_body \u00a74.3 (mid-thigh 58-61)"
+  },
+  "calf_circ": {
+   "value": 38.75,
+   "tol": 1.0,
+   "source": "02_body \u00a74.3 (38-39.5)"
+  },
+  "upperarm_circ": {
+   "value": 31.0,
+   "tol": 1.0,
+   "source": "02_body \u00a74.3 (30-32 relaxed)"
+  },
+  "biacromial": {
+   "value": 42.0,
+   "tol": 1.0,
+   "source": "02_body \u00a74.3 (41-43)"
+  },
+  "hip_joint_height": {
+   "value": 96.5,
+   "tol": 1.5,
+   "source": "02_body \u00a74.3 trochanter 0.52-0.53H"
+  },
+  "knee_height": {
+   "value": 51.5,
+   "tol": 1.0,
+   "source": "02_body \u00a74.3 (50.5-52)"
+  }
+ },
+ "free": [
+  [
+   "macro",
+   "weight",
+   0.3,
+   0.9
+  ],
+  [
+   "macro",
+   "height",
+   0.4,
+   0.7
+  ],
+  [
+   "macro",
+   "proportions",
+   0.3,
+   1.0
+  ],
+  [
+   "mod",
+   "measure/measure-neck-circ-decr|incr",
+   -1,
+   1
+  ],
+  [
+   "mod",
+   "measure/measure-bust-circ-decr|incr",
+   -1,
+   1
+  ],
+  [
+   "mod",
+   "measure/measure-waist-circ-decr|incr",
+   -1,
+   1
+  ],
+  [
+   "mod",
+   "measure/measure-hips-circ-decr|incr",
+   -1,
+   1
+  ],
+  [
+   "mod",
+   "measure/measure-thigh-circ-decr|incr",
+   -1,
+   1
+  ],
+  [
+   "mod",
+   "measure/measure-calf-circ-decr|incr",
+   -1,
+   1
+  ],
+  [
+   "mod",
+   "measure/measure-upperarm-circ-decr|incr",
+   -1,
+   1
+  ],
+  [
+   "mod",
+   "measure/measure-shoulder-dist-decr|incr",
+   -1,
+   1
+  ],
+  [
+   "mod",
+   "measure/measure-upperleg-height-decr|incr",
+   -1,
+   1
+  ],
+  [
+   "mod",
+   "measure/measure-lowerleg-height-decr|incr",
+   -1,
+   1
+  ],
+  [
+   "mod",
+   "measure/measure-napetowaist-dist-decr|incr",
+   -1,
+   1
+  ],
+  [
+   "mod",
+   "armslegs/r-upperleg-muscle-decr|incr",
+   0,
+   1
+  ],
+  [
+   "mod",
+   "torso/torso-muscle-pectoral-decr|incr",
+   0,
+   0.6
+  ],
+  [
+   "mod",
+   "torso/torso-muscle-dorsi-decr|incr",
+   0,
+   0.6
+  ],
+  [
+   "mod",
+   "buttocks/buttocks-volume-decr|incr",
+   0,
+   0.6
+  ]
+ ],
+ "_doc_free": "muscle macro is fixed at 0.85 in model/source/r9_params_start.json (athlete; leaving it free let the solver reach the mass target with fat instead of muscle). Left/right limb muscle modifiers are mirrored by tools (r- given, l- copied)."
+}

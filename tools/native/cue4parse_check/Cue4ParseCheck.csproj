@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Independent cross-check harness: opens an IoStore container (.utoc + .ucas[, _sN.ucas])
+    with CUE4Parse's IoStoreReader and dumps what it sees as JSON, so that containers written
+    by tools/native/iostore.py can be validated by a third-party reader.
+
+    CUE4Parse location: defaults to /opt/tools/ref/CUE4Parse, override with
+      dotnet build -p:Cue4ParseDir=/path/to/CUE4Parse
+    The native helper library (CUE4Parse-Natives: Oodle/zlib-ng/ACL via CMake) is NOT needed for
+    None/Zlib/LZ4/Gzip containers; build with CUE4PARSE_SKIP_NATIVE=1.
+  -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>Cue4ParseCheck</AssemblyName>
+    <RootNamespace>Cue4ParseCheck</RootNamespace>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <Cue4ParseDir Condition="'$(Cue4ParseDir)' == ''">/opt/tools/ref/CUE4Parse</Cue4ParseDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(Cue4ParseDir)/CUE4Parse/CUE4Parse.csproj" />
+  </ItemGroup>
+
+</Project>

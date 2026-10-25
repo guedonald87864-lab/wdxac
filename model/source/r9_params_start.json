@@ -1,0 +1,14 @@
+{
+ "macro": {
+  "gender": 1.0,
+  "age_years": 25,
+  "african": 0.5,
+  "caucasian": 0.4,
+  "asian": 0.1,
+  "muscle": 0.85,
+  "weight": 0.55,
+  "height": 0.5,
+  "proportions": 0.6
+ },
+ "modifiers": {}
+}

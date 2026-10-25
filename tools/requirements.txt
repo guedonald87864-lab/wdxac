@@ -1,0 +1,11 @@
+# --- tools/native/iostore.py (IoStore .utoc/.ucas reader + patch writer) ---
+pycryptodome>=3.20   # AES-256 ECB/CTR (fallback: `cryptography` if already installed)
+lz4>=4.0             # LZ4 block decompression (only needed for LZ4 containers)
+blake3>=0.4          # FIoHash / BLAKE3-160 meta hashes (pure-Python fallback built in, slow)
+pytest>=8            # tools/tests/test_iostore.py
+# optional: zstandard  (only for Zstd containers); Oodle needs a native decoder, see tools/native/README_iostore.md
+# --- tools/native/zen_package.py + inplace_patch.py (Zen package headers, size-preserving in-place patch) ---
+numpy>=1.24          # vertex/texture stream scanning in inplace_patch.py (zen_package.py itself is stdlib only)
+Pillow>=10           # PNG previews via astc_tool.py (texture-extract --decode); tests
+# external: ARM astcenc on PATH (used through astc_tool.py for ASTC encode/decode checks)
+# optional, review only: pyflakes>=3  (static check used in the independent review of iostore.py; not needed to run tools/tests)

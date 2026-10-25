@@ -1,0 +1,13 @@
+{
+ "_doc": "2002 World Cup final 'Cascao' patch. All values cm, T4 estimates from research/notes/01_appearance_2002.md \u00a71.4 (error >= +/-20%). Iterate by overlaying renders on F1/F2/L34-1/RP-1/B-2/T-1 references. back_edge_front_of_tragus is the primary back-edge constraint (dossier: 4-6 cm in front of the tragus vertical); the dossier's 9-11 cm from the hairline is checked as the reported midline arc length.",
+ "hairline_above_brow": 4.5,
+ "corner_recession": 1.2,
+ "front_width": 11.0,
+ "back_width": 7.5,
+ "back_arc_sag": 2.0,
+ "thickness": 0.9,
+ "embed": 0.05,
+ "stubble_mm": 1.5,
+ "back_edge_front_of_tragus": 1.0,
+ "_revision": "r2 2026-10-25: adjusted against private reference crops (78971169 L3/4, 923205 R profile, 891940 front, 651884454 R3/4, 1193437993 top): back edge reaches roughly above the tragus, front is a dome with receded corners, narrower at the back."
+}
