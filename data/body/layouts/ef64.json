@@ -3379,7 +3379,9 @@
      58,
      0
     ]
-   }
+   },
+   "conflict": "width (wiki vs 4cc-studio)",
+   "note": "wiki 2 bit 'Hair Style Front' + 1 bit 'Unknown S' at 0x42:2; 4cc-studio 3 bit (06 核查记录 K26)"
   },
   {
    "name": "HairParted",

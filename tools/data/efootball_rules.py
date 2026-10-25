@@ -62,7 +62,8 @@ _RULE_LIST = [
     Rule("BOOST_SAME_STAT_ADD", "两个增能槽作用在同一项能力上时直接相加", "T3", "04 §6.6 [S22]", True),
     Rule("POINTS", "可用能力点 = 2 × (最高等级 − 1)", "T3", "04 §5.2 [S22][S26][S23]", True),
     Rule("STEP_COST", "同一类别第 n 次加点花费 ⌈n/4⌉；前 n 次累计 (g+1)(2g+r)，g=⌊n/4⌋，r=n mod 4；"
-         "第 13 次以后的单价为公式外推", "T3", "04 §5.4 [S22][S26][S27]", True),
+         "第 13–16 次每次 4 点由 ef-labo 明确给出，第 17–20 次每次 5 点由 pesdb 代码直接给出（不是外推，04 核查记录 C13）",
+         "T3", "04 §5.4 [S22][S26]、核查记录 C13", True),
     Rule("CATEGORY_MAP", "10 个培养类别与能力的对应（Jumping 同属 Aerial Strength 与 GK 1）", "T3", "04 §5.3 [S22][S26]", True),
     Rule("TRAIN_CAP_99", "培养加点在卡面阶段完成，每项最高 99", "T3", "04 §6.6 第 7 条 [S22]", True),
     Rule("CATEGORY_STEP_LIMIT", "单一类别的加点次数上限：未找到（pesdb 不设上限）", "T3", "04 §5.4、§10 U9", True),
@@ -71,32 +72,53 @@ _RULE_LIST = [
     Rule("AUTO_DEV_GREEDY", "pesdb 的最大化算法为贪心：每步选'总评增量 ÷ 花费'最高的类别（并列取类别顺序靠前者，"
          "零增量也会被选）。游戏内是否同一算法：未找到", "T3", "04 §5.5 [S22]、§10 U10", True),
     Rule("RATING_FORMULA", "总评 = floor([Σ(能力−25)×权重 + (身高−136)×身高权重 + (WFR−25)×4 + 500] / 1000)，"
-         "WFR = floor(59×WFA/3+40)；能力为培养后+增能后值；不含技能/风格/状态", "T3+T4", "04 §7.1 [S22]，§7.3 本组复算", True),
+         "WFR = floor(59×WFA/3+40)；能力为培养后+增能后值；不含技能/风格/状态。"
+         "04 §7.3 原称 97 张卡 1 级、51 张卡满级全部复算一致；核查记录 C16 只独立重算了 5 张卡（全部一致），"
+         "97/97、51/51 全量【未核实】", "T3+T4", "04 §7.1 [S22]、§7.2（C15 逐格核对）、§7.3 与核查记录 C16", True),
     Rule("RATING_WEIGHTS", "13 个位置 × 26 项能力 + 身高的总评权重表（原样摘自 pesdb，含 LMF/RMF 不对称）", "T3", "04 §7.2 [S22]", True),
     Rule("MANAGER_FORMULA", "主教练球队风格熟练度倍率：p<90 时 (104−38(p−99)²/99²)/100，p≥90 时 (99.253+0.0485p)/100；"
          "增量 = (倍率−1)×卡面值，向零取整；作用于 26 项（逆足精度不在其内），结果封顶 99", "T3", "04 §6.5 [S25]", True),
     Rule("MANAGER_THRESHOLDS", "pesdb/ef-labo 的主教练熟练度门槛表（p=70–90）：能力值达到门槛即 +1/+2/+3。"
          "与 MANAGER_FORMULA 在 p=73、81、82、84、85、86、90 处有一个门槛差 1–2 点（本组实现时发现，"
-         "见 manager_threshold_mismatches()）；其余 14 个值一致", "T3+T4", "04 §6.5 [S22][S26]", True),
+         "见 manager_threshold_mismatches()）；其余 14 个值一致。04 §6.5 称两者'同一回事'，与此不完全相符", "T3+T4", "04 §6.5 [S22][S26]", True),
     Rule("MANAGER_BOOSTER", "主教练自带增能（如 Physical Contact +1）对全队生效，在 99 之后相加，不缩放", "T3", "04 §6.5 [S26][S25]", True),
     Rule("MANAGER_IN_RATING", "比赛计划画面显示的总评是否包含主教练影响：未核实（pesdb 选了主教练时会计入）", "T3", "04 §7.1 [S22][S03]", True),
     Rule("MATCH_ORDER", "比赛中叠加顺序：卡面+状态→[40,99]→+技能加成/Link-up→+(位置×疲劳×主教练−1)×卡面值(向零取整)"
          "→[40,99]→+增能（≤120）", "T3", "04 §6.6 [S25]", True),
-    Rule("OUT_OF_POSITION", "非高适性位置的能力倍率（浅绿/无色三组），只按卡面值计算，增能不打折", "T3", "04 §3.6 [S25]", True),
-    Rule("POSITION_LEVELS", "位置适性 3 级：高（深绿）/中（浅绿）/低（无色）；注册位置永远是高", "T1", "04 §3.6 [S08]", False),
+    Rule("OUT_OF_POSITION", "非高适性位置的能力倍率（淡绿/无色三组），只按卡面值计算，增能不打折", "T3", "04 §3.6 [S25]", True),
+    Rule("POSITION_LEVELS", "位置适性 3 级。官方（T1）只给出两种颜色：Bright green 亮绿 = 高、Faded green 淡绿 = 中；"
+         "'无色 = 低'与'注册位置永远是高'出自 efootballexplained（T3）。客户端里的位置序号与 3 档编码未知",
+         "T1+T3", "04 §3.6 [S08]、核查记录 C18", True),
     Rule("SKILL_LIST", "67 种球员技能（pesdb eFootball 2027 筛选器）；客户端技能位序/编码与 11.1.1 中是否全部存在未核对", "T3", "04 §4.1–4.2 [S20][S25]、§10 U4", True),
     Rule("SKILL_CARD_MAX", "卡面技能实测最多 10 个（硬性上限未找到；本工具按 10 个作硬限制）", "T3", "04 §4.1、§10 U3", True),
     Rule("SKILL_ADDITIONAL_MAX", "附加技能最多 5 个（v2.5.0 官方）", "T1", "04 §4.1 [S15]", False),
-    Rule("SKILL_SPECIAL", "特殊技能不能训练，只能写在卡面；19 个 Show Time 技能（[S34]）+ 4 个 2026 新技能（本组推断）", "T2+T3+T4", "04 §4.1 [S34][S37][S41]、§10 U4/U5", True),
+    Rule("SKILL_SPECIAL", "特殊技能不能训练，只能写在卡面；19 个 Show Time 技能（[S34]）+ 4 个 2026 新技能（本组推断）。"
+         "[S34] 正文写'over 20 Showtime picks'，实列 19 个，自相矛盾（C22）；网易 [S37] 是 PC 端游《实况足球Online》，"
+         "不是手游国服，不再作旁证（C27）。客户端的'特殊'标志位未找到（U4）", "T2+T3+T4", "04 §4.1 [S34][S41]、核查记录 C22/C27、§10 U4/U5", True),
     Rule("SKILL_DUMMY", "11.1.1 代码中 7 个未发布占位技能（Dummy），不得使用", "T3", "04 §4.1 [S25]", True),
     Rule("SKILL_NO_DUPLICATE", "不能学已有的技能", "T3", "04 §4.1（指南）", True),
-    Rule("SKILL_BONUS_BEFORE_CAP", "技能的能力加成在 99 封顶之前相加，已到 99 的能力不再受益", "T3", "04 §4.2 [S25]", True),
+    Rule("SKILL_BONUS_BEFORE_CAP", "直接加能力值的技能（active stat-boost skills，如 Momentum Dribbling、Magnetic Feet、"
+         "Attacking Surge、Willpower）在 99 封顶之前相加，已到 99 的能力不再受益。只限这一类（核查记录 C21）",
+         "T3", "04 §4.2 [S25]、核查记录 C21", True),
+    Rule("SKILL_AIM_UNCAPPED", "'按某能力 +N 瞄准/计算'一类技能（Through Passing、Phenomenal Finishing、Acrobatic Finishing、"
+         "Long-range Shooting 等）不受 99 封顶限制，在增能之后仍然生效。Through Passing 有原文 'even at 99 and with extra "
+         "points from boosters'（T3）；其余同类技能按同一机制推断（T4）。是否另有上限（如 120）未找到",
+         "T3+T4", "04 §4.2 核查更正、核查记录 C21", True),
+    Rule("SKILL_CARD_COUNT_TYPICAL", "抽样所见 Epic、Big Time、Show Time 卡（约 60 张）的卡面技能都正好 10 个。"
+         "少于 10 个的卡在客户端里如何编码（定长 10 槽还是逐技能标志位，空槽怎么表示）、是否被接受：未找到",
+         "T3", "04 §4.1、核查记录 C09、§10 U3/U4", True),
+    Rule("AUTO_DEV_MANAGER", "v6.0.0 起培养界面显示'当前比赛计划下'的能力（含主教练影响，T1）；pesdb 的最大化在选了主教练时"
+         "也把主教练算进去（T3）。游戏内'自动提升'最大化的是不含主教练的卡面总评还是比赛计划下的总评：未找到",
+         "T1+T3", "04 §5.5 [S03]、§7.1 [S22]、§10 U10", True),
     Rule("STYLE_SPLIT", "v6.0.0 起比赛风格分进攻型 + 防守型，每人有其一或两者，没有特色的一侧为 Basic", "T1+T3", "04 §3.7 [S03][S21]", False),
     Rule("STYLE_COMPAT", "比赛风格的兼容位置（11.1.1 代码），不兼容位置上大部分失效；LWF/RWF 等左右同组", "T3", "04 §3.7 [S25]（Classic No. 10 另有 T1 [S08]）", True),
     Rule("AI_STYLE_MAX", "一张卡的 AI 风格实测最多 3 个；AI 风格无位置检查", "T3", "04 §3.7 [S21][S25]", True),
     Rule("WEAK_FOOT", "逆足频率 4 档、逆足精度 4 档；pesdb 页面数据的精度编码 0–3（客户端编码未知）", "T3", "04 §3.1–3.2 [S20][S22][S25]", True),
     Rule("FORM", "状态波动 3 档：Inconsistent / Standard / Unwavering；影响状态抽取，比赛逻辑不直接读取（逆向）", "T1+T3", "04 §3.3 [S06][S25]", True),
     Rule("INJURY", "抗伤 3 档：Low / Medium / High", "T3", "04 §3.4 [S20][S25]", True),
+    Rule("LIVE_UPDATE_RATING", "Live Update Rating（实时更新评价）A–E 五档；第三方指南称 Epic、Big Time、Legendary 卡固定为 B"
+         "（T3 [S29]，核查记录 C30）。官方在 Form 与条件型增能的说明中提到 'B or higher'（T1）", "T1+T3",
+         "04 §3.3 [S06][S07][S29]、核查记录 C30", True),
     Rule("BOOSTER_LIST", "常规增能 29 种（pesdb 列表）与官方'全部 28 种'冲突；各项 4 能力组合取自 pesdb", "T1+T3", "04 §6.2 [S14][S21][S28]、§10 U6", True),
     Rule("BOOSTER_SLOTS", "一张卡最多 2 个增能槽（Epic/Big Time/Show Time 抽样观察）", "T3", "04 §6.4 [S21]", True),
     Rule("BOOSTER_CRAFTED", "空增能槽可用随机/选择增能代币制作常规增能，每项 +1", "T1+T3", "04 §6.1 [S10][S14]、§6.2 [S21][S28]", True),
@@ -198,9 +220,14 @@ POSITION_PAIRS = {"LB": "RB", "RB": "LB", "LMF": "RMF", "RMF": "LMF", "LWF": "RW
 ADJACENT_POSITIONS = {"CF": ("SS", "RWF", "LWF")}
 
 PROFICIENCY_LEVELS: Tuple[str, ...] = ("high", "mid", "low")
-PROFICIENCY_ZH = {"high": "高（深绿）", "mid": "中（浅绿）", "low": "低（无色）"}
+# 官方颜色名 Bright green / Faded green（T1）；"无色 = 低"出自 efootballexplained（T3），见 RULES["POSITION_LEVELS"]
+PROFICIENCY_ZH = {"high": "高（亮绿）", "mid": "中（淡绿）", "low": "低（无色，T3）"}
+# 输入时接受的写法（旧稿用过"深绿/浅绿"，继续兼容）
+PROFICIENCY_ALIASES = {"high": "high", "mid": "mid", "low": "low", "高": "high", "中": "mid", "低": "low",
+                       "亮绿": "high", "淡绿": "mid", "无色": "low", "深绿": "high", "浅绿": "mid",
+                       "bright green": "high", "faded green": "mid"}
 
-# 非高适性位置的能力倍率（04 §3.6，T3 [S25]）：(浅绿, 无色)
+# 非高适性位置的能力倍率（04 §3.6，T3 [S25]）：(淡绿, 无色)
 _OOP_GROUPS = [
     (("dribbling", "ball_control", "finishing", "low_pass", "lofted_pass", "heading", "tackling",
       "set_piece_taking", "curl", "speed", "jumping"), 0.92, 0.80),
@@ -246,6 +273,15 @@ FORM = {
     "Standard": EnumLevel("Standard", "标准", 2, "官网简中作'普通'"),
     "Unwavering": EnumLevel("Unwavering", "稳定", 3),
 }
+# 04 §3.3：A–E 五档（pesdb 筛选项，T3）；Epic/Big Time/Legendary 固定 B（T3 [S29]，C30）。客户端编码未知
+LIVE_UPDATE_RATING = {
+    "A": EnumLevel("A", "A", 1, "条件型增能效果最大（T1 [S07]）"),
+    "B": EnumLevel("B", "B", 2, "Epic/Big Time/Legendary 固定值（T3 [S29]）；Inconsistent 球员在 B 及以上时状态至少 Normal（T1 [S06]）"),
+    "C": EnumLevel("C", "C", 3, "条件型增能 C 及以下不生效（T1 [S07]）"),
+    "D": EnumLevel("D", "D", 4),
+    "E": EnumLevel("E", "E", 5),
+}
+FIXED_LIVE_UPDATE_CARD_TYPES = ("Epic", "Big Time", "Legendary")
 INJURY_RESISTANCE = {  # 04 §3.4：非接触伤病概率倍率 / 负荷累积倍率
     "Low": EnumLevel("Low", "低", 1, "非接触伤病 ×1.5，负荷累积 ×1，严重度减半 30%，升级 5%"),
     "Medium": EnumLevel("Medium", "中", 2, "×1.0，×0.8，50%，2%"),
@@ -378,21 +414,23 @@ class Skill:
     no: int                  # 04 §4.2 表中序号
     name: str                # 英式
     en_us: str
-    zh: str                  # 简中（国际服）；国服写法放 note
+    zh: str                  # 简中（国际服）；网易《实况足球Online》PC 端游的写法放 note（不是手游国服，04 C27）
     group: str               # dribbling/shooting/passing/defending/goalkeeping/general/special
     special: bool            # True = 不可训练（只能写在卡面）
     effect: str
-    stat_bonus: Tuple[Tuple[str, int], ...] = ()   # 情境加成（比赛中、99 封顶前）
+    stat_bonus: Tuple[Tuple[str, int], ...] = ()   # 直接加能力值的情境加成（比赛中、99 封顶前，RULES SKILL_BONUS_BEFORE_CAP）
     bonus_max: int = 0                              # 叠加型的最大值（0 = 固定值）
     condition: str = ""
     note: str = ""
+    aim_bonus: Tuple[Tuple[str, int], ...] = ()    # "按能力 +N 瞄准/计算"：不改能力值，不受 99 限（RULES SKILL_AIM_UNCAPPED）
+    aim_condition: str = ""
 
 
 _SKILL_ROWS = [
     # no, UK, US, 简中, group, special, effect, bonus, bonus_max, condition, note
     (1, "Scissors Feint", "", "剪刀脚假动作", "dribbling", False, "专属快速剪刀脚，同等 Dribbling 下快约 6–7%"),
     (2, "Double Touch", "", "两次触球", "dribbling", False, "专属快速两次触球"),
-    (3, "Flip Flap", "", "牛摆尾", "dribbling", False, "摇杆方向稳定触发牛尾巴", (), 0, "", "国服：牛尾巴"),
+    (3, "Flip Flap", "", "牛摆尾", "dribbling", False, "摇杆方向稳定触发牛尾巴", (), 0, "", "网易 PC 端游写作：牛尾巴"),
     (4, "Marseille Turn", "", "马赛回旋", "dribbling", False, "专属马赛回旋，快约 20%"),
     (5, "Sombrero", "", "挑球过顶", "dribbling", False, "挑球过人成功率提高"),
     (6, "Chop Turn", "", "脚后跟磕球变向", "dribbling", False, "快约 16–18%"),
@@ -416,17 +454,17 @@ _SKILL_ROWS = [
     (22, "Long-range Shooting", "Long-Range Shooting", "远射", "shooting", False, "禁区外脚背射门按 Finishing +5 瞄准"),
     (23, "Low Screamer", "", "掠地瞬击", "special", True, "力量 <50% 的强势脚 Stunning Shot 约快 3–15 km/h"),
     (24, "Snap Strike", "", "瞬发射门", "special", True, "Stunning Shot 出脚提前 0.07–0.11 s", (), 0, "", "2026 新技能，'特殊'为 T3 新闻片段"),
-    (25, "Acrobatic Finishing", "", "杂技般进球", "shooting", False, "杂技射门 Finishing +5"),
+    (25, "Acrobatic Finishing", "", "杂技般进球", "shooting", False, "杂技射门按 Finishing +5 计算；不改能力值，不受 99 封顶（C21）"),
     (26, "Heel Trick", "", "脚跟绝技", "passing", False, "解锁脚跟传球/近距离脚跟射门"),
     (27, "First-time Shot", "One-time Shot", "一脚射门", "shooting", False, "一脚射门来球速度按 90% 计"),
-    (28, "Phenomenal Finishing", "", "无定型射门", "special", True, "别扭姿势射门按 Finishing +7 瞄准（瞄准用，不是能力加成）"),
+    (28, "Phenomenal Finishing", "", "无定型射门", "special", True, "别扭姿势射门按 Finishing +7 瞄准，头球也适用；不改能力值，不受 99 封顶（C21）"),
     (29, "Willpower", "", "百折不撓", "special", True, "每射门一次本场 Finishing、Kicking Power +1，最多 +8",
-     (("finishing", 1), ("kicking_power", 1)), 8, "每射门一次 +1（最多 8 次）", "国服：百折不挠"),
+     (("finishing", 1), ("kicking_power", 1)), 8, "每射门一次 +1（最多 8 次）", "网易 PC 端游写作：百折不挠"),
     (30, "One-touch Pass", "", "一脚传球", "passing", False, "来球按慢 10% 计"),
     (31, "Through Passing", "", "直传球", "passing", False, "直塞按 Low/Lofted Pass +5 瞄准"),
     (32, "Weighted Pass", "", "精准长传", "passing", False, "45 m 以上前向长传专属动作"),
     (33, "Pinpoint Crossing", "", "精确横传球", "passing", False, "传中 Lofted Pass +5、Curl +5（仅传中时）"),
-    (34, "Edged Crossing", "", "急坠传中", "special", True, "前旋下坠传中", (), 0, "", "国服：落叶式横传"),
+    (34, "Edged Crossing", "", "急坠传中", "special", True, "前旋下坠传中", (), 0, "", "网易 PC 端游写作：落叶式横传"),
     (35, "Outside Curler", "", "外脚背弧线球", "passing", False, "外脚背弧线传球与射门"),
     (36, "Rabona", "", "插花脚", "passing", False, "解锁插花脚"),
     (37, "No Look Pass", "", "不看球员传球", "passing", False, "解锁不看人传球"),
@@ -448,9 +486,10 @@ _SKILL_ROWS = [
     (52, "Track Back", "", "压迫", "defending", False, "丢球后 5 s 内持续逼抢"),
     (53, "Interception", "", "截球", "defending", False, "反应延迟降到 60%"),
     (54, "Blocker", "", "封堵", "defending", False, "封堵按 Defensive Awareness +5"),
-    (55, "Aerial Superiority", "", "空中优势", "general", False, "争顶身体对抗比较值 +5", (), 0, "", "[S34] 归入防守组；04 计数时归通用"),
+    (55, "Aerial Superiority", "", "空中优势", "defending", False, "争顶身体对抗比较值 +5", (), 0, "",
+     "按 [S34] 归入防守组（04 核查记录 C22：防守 7、通用 6）"),
     (56, "Sliding Tackle", "", "飞身铲球", "defending", False, "铲球按 Tackling +5"),
-    (57, "Long-reach Tackle", "", "伸脚抢截", "special", True, "额外站立抢断动作", (), 0, "", "国服：伸腿抢截"),
+    (57, "Long-reach Tackle", "", "伸脚抢截", "special", True, "额外站立抢断动作", (), 0, "", "网易 PC 端游写作：伸腿抢截"),
     (58, "Power Tackle", "", "强力抢断", "special", True, "两种身体对抗式抢断", (), 0, "", "2026 新技能，'特殊'为 T3 新闻片段"),
     (59, "Fortress", "", "后防领袖", "special", True, "防守四项 +6",
      (("defensive_awareness", 6), ("tackling", 6), ("aggression", 6), ("defensive_engagement", 6)), 0, "下半场起己方领先"),
@@ -468,11 +507,34 @@ _SKILL_ROWS = [
 ]
 
 
+# "按某能力 +N 瞄准/计算"的技能（04 §4.2 效果列；RULES["SKILL_AIM_UNCAPPED"]）：不改能力值，不受 99 封顶。
+# Through Passing 的"可超过 99"有原文（T3）；其余为同一机制的推断（T4），待客户端核实。
+_SKILL_AIM = {
+    'Heading': ((('heading', 5),), '头球射门'),
+    'Long-range Curler': ((('finishing', 5),), '弧线射门'),
+    'Chip Shot Control': ((('finishing', 5),), '吊射'),
+    'Knuckle Shot': ((('finishing', 5),), '力量 50–65% 的 Stunning Shot 电梯球'),
+    'Dipping Shot': ((('finishing', 5),), '力量 20–50% 的强势脚 Stunning Shot'),
+    'Rising Shot': ((('finishing', 5),), '力量 65–95% 的强势脚 Stunning Shot'),
+    'Long-range Shooting': ((('finishing', 5),), '禁区外脚背射门'),
+    'Acrobatic Finishing': ((('finishing', 5),), '杂技射门'),
+    'Phenomenal Finishing': ((('finishing', 7), ('heading', 7)), '别扭姿势射门（含头球）'),
+    'Through Passing': ((('low_pass', 5), ('lofted_pass', 5)), '直塞'),
+    'Pinpoint Crossing': ((('lofted_pass', 5), ('curl', 5)), '传中'),
+    'Man Marking': ((('defensive_awareness', 5),), '电脑盯人时的站位更新'),
+    'Blocker': ((('defensive_awareness', 5),), '封堵'),
+    'Sliding Tackle': ((('tackling', 5),), '铲球'),
+    'Interception': ((('defensive_engagement', 5),), '三项电脑防守决策'),
+    'Aerial Superiority': ((('physical_contact', 5),), '争顶时的身体对抗比较'),
+}
+
+
 def _mk_skill(row) -> Skill:
     row = list(row) + [None] * (11 - len(row))
     no, name, us, zh, group, special, effect, bonus, bmax, cond, note = row
+    aim, aim_cond = _SKILL_AIM.get(name, ((), ""))
     return Skill(no, name, us or name, zh, group, bool(special), effect, tuple(bonus or ()), int(bmax or 0),
-                 cond or "", note or "")
+                 cond or "", note or "", tuple(aim), aim_cond)
 
 
 SKILLS: Dict[str, Skill] = {r[1]: _mk_skill(r) for r in _SKILL_ROWS}
@@ -480,6 +542,7 @@ DUMMY_SKILLS: Tuple[str, ...] = ("Spring Cut", "Thames", "Nile", "Amazon", "Meko
 MAX_CARD_SKILLS = 10        # RULES["SKILL_CARD_MAX"]（实测，硬限制按 10）
 MAX_ADDITIONAL_SKILLS = 5   # RULES["SKILL_ADDITIONAL_MAX"]（T1）
 TRAINABLE_GROUPS = ("dribbling", "shooting", "passing", "defending", "goalkeeping", "general")
+# 只用于名称解析。这些写法来自网易《实况足球Online》PC 端游官网（04 核查记录 C27），不是手游国服或客户端名称
 _SKILL_ZH_ALIASES = {"Willpower": ("百折不挠",), "Flip Flap": ("牛尾巴",), "Edged Crossing": ("落叶式横传",),
                      "Long-reach Tackle": ("伸腿抢截",), "Momentum Dribbling": ("旋风盘球",)}
 
@@ -812,6 +875,15 @@ def overall_all_positions(stats: Mapping[str, int], height_cm: int, wfa_idx: int
 # 10. 比赛中的实际能力（04 §6.6）
 # ---------------------------------------------------------------------------------------------
 
+def aim_effective(match: Mapping[str, int], skill: str) -> Dict[str, Tuple[int, int]]:
+    """'按能力 +N 瞄准/计算'型技能在比赛中的有效值：{能力: (比赛中能力值, 有效值)}。
+
+    RULES["SKILL_AIM_UNCAPPED"]：在增能之后再加，不受 99 封顶（T3 原文只覆盖 Through Passing，其余 T4 推断）。
+    是否另有 120 之类的上限未找到，这里不截断。
+    """
+    return {k: (int(match[k]), int(match[k]) + n) for k, n in SKILLS[skill].aim_bonus}
+
+
 def match_stats(card: Mapping[str, int], *, proficiency: str = "high", manager_p: Optional[int] = None,
                 booster_bonus: Optional[Mapping[str, int]] = None, skill_bonus: Optional[Mapping[str, int]] = None,
                 condition_bonus: Optional[Mapping[str, int]] = None) -> Dict[str, int]:
@@ -833,3 +905,14 @@ def match_stats(card: Mapping[str, int], *, proficiency: str = "high", manager_p
         s2 = max(STAT_MIN, min(STAT_MAX, s1 + int((skill_bonus or {}).get(k, 0)) + delta))
         out[k] = min(BOOSTED_MAX, s2 + int((booster_bonus or {}).get(k, 0)))
     return out
+
+
+def overall_in_position(card: Mapping[str, int], height_cm: int, wfa_idx: int, position: str, proficiency: str, *,
+                        manager_p: Optional[int] = None, booster_bonus: Optional[Mapping[str, int]] = None) -> int:
+    """比赛中某位置的"角色总评"估算：先按 04 §3.6 的位置适性倍率（和主教练倍率）折算卡面值，再加增能，再代入 §7 公式。
+
+    本组推断（T4）：v4.2.0 官方说比赛中的位置评价含增能、位置适性和主教练（T1），但没有给出算法；
+    pesdb 的各位置总评不含位置适性惩罚。待客户端核实。
+    """
+    st = match_stats(card, proficiency=proficiency, manager_p=manager_p, booster_bonus=booster_bonus)
+    return overall(st, height_cm, wfa_idx, position)

@@ -1,0 +1,58 @@
+{
+ "canvas": [
+  1024,
+  1434
+ ],
+ "layers": [
+  "10_background",
+  "20_watermark",
+  "30_portrait",
+  "40_frame",
+  "50_text"
+ ],
+ "rating_stage": "MAX+FIXED",
+ "rating": 102,
+ "position": "CF",
+ "outputs": {
+  "card_full": [
+   1024,
+   1434
+  ],
+  "card_squad": [
+   256,
+   358
+  ],
+  "card_detail": [
+   1024,
+   1024
+  ],
+  "card_pack": [
+   1184,
+   1594
+  ],
+  "card_back": [
+   1024,
+   1434
+  ]
+ },
+ "safe_areas": {
+  "rating_badge": [
+   48,
+   48,
+   290,
+   390
+  ],
+  "name_plate": [
+   40,
+   1094,
+   984,
+   1394
+  ],
+  "portrait": [
+   0,
+   0,
+   1024,
+   1094
+  ]
+ }
+}

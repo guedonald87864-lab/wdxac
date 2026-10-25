@@ -166,17 +166,19 @@ def split_head_body():
     return head_f, body_f
 
 
-def head_uv(ob):
-    """Dedicated face-texture UV ("HeadUV"): one island, seam down the back of the head.
+def head_uv(ob, magnify=8.0):
+    """Dedicated, FACE-WEIGHTED texture UV ("HeadUV").
 
-    Seam edges: the posterior midline (|x| small, behind the ears) from the neck cut to the
-    crown. The island is unwrapped angle-based (low distortion over the crown, unlike a
-    cylindrical projection) and then rotated/scaled so the face is upright and centred,
-    which is the usual game face-texture layout."""
+    One island (seam down the posterior midline, angle-based unwrap, face upright and centred),
+    then a radial log magnification about the face centre in UV space:
+        r' = R * log(1 + a r / R) / log(1 + a)
+    which keeps the map continuous and bijective while giving the face most of the texels.
+    Reason: a game face texture is tiny (256 px in the Henry donor); with a plain unwrap the face
+    got ~2.6 % of the map and brows/eyes collapsed to 1-2 texels (gestalt critique 2026-10-25).
+    The achieved face share is stored on the object as 'face_uv_area_fraction'."""
     me = ob.data
     bm = bmesh.new()
     bm.from_mesh(me)
-    bm.verts.ensure_lookup_table()
     co = np.array([v.co[:] for v in bm.verts])
     y_ear = np.percentile(co[:, 1], 70)            # Blender +Y is the back of the head
     for e in bm.edges:
@@ -195,7 +197,6 @@ def head_uv(ob):
     bpy.ops.mesh.select_all(action="SELECT")
     bpy.ops.uv.unwrap(method="ANGLE_BASED", margin=0.01)
     bpy.ops.object.mode_set(mode="OBJECT")
-    # orient: vector from chin (low z) to crown (high z) should point to +v; nose (min y) centred
     uv = np.array([d.uv[:] for d in uvl.data])
     vidx = np.array([l.vertex_index for l in me.loops])
     vco = np.array([v.co[:] for v in me.vertices])[vidx]
@@ -207,10 +208,29 @@ def head_uv(ob):
     left = vco[:, 0] > 0.03                        # subject's left side (Blender +X)
     if uv[left, 0].mean() < uv[~left, 0].mean():   # keep the subject's left on image-right
         uv[:, 0] = -uv[:, 0]
+    # face centre = UV of the most frontal points around nose height
+    zc = np.percentile(vco[:, 2], 55)
+    front = (vco[:, 1] < np.percentile(vco[:, 1], 4)) & (np.abs(vco[:, 2] - zc) < 0.06)
+    c = uv[front].mean(0) if front.any() else uv.mean(0)
+    d = uv - c
+    r = np.linalg.norm(d, axis=1)
+    Rmax = r.max()
+    rn = Rmax * np.log1p(magnify * r / Rmax) / np.log1p(magnify)
+    uv = c + d * (rn / np.maximum(r, 1e-12))[:, None]
     mn, mx = uv.min(0), uv.max(0)
     s = 0.98 / (mx - mn).max()
     uv = (uv - (mn + mx) / 2) * s + 0.5
     uvl.data.foreach_set("uv", uv.ravel())
+    # face share (in front of the ears, between chin and upper forehead) for the build report
+    zs = vco[:, 2]
+    area = 0.0
+    for p in me.polygons:
+        li = list(p.loop_indices)
+        cc = vco[li].mean(0)
+        if cc[1] < np.percentile(vco[:, 1], 45) and np.percentile(zs, 20) < cc[2] < np.percentile(zs, 80):
+            x, y = uv[li, 0], uv[li, 1]
+            area += 0.5 * abs(np.dot(x, np.roll(y, 1)) - np.dot(y, np.roll(x, 1)))
+    ob["face_uv_area_fraction"] = float(area)
     return uvl
 
 

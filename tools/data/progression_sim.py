@@ -31,11 +31,15 @@
     {"slot": 1, "kind": "fixed", "name": "Striker's Instinct", "value": 4, "active": true},
     {"slot": 2, "kind": "craftable", "name": "Agility", "value": 1, "active": true}   # name=null 表示空槽
   ],
+  "live_update_rating": "B",           # 可选；Epic/Big Time/Legendary 固定 B（T3）
   "allocation": "auto" | "optimal" | {"shooting": 10, "dexterity": 12, ...},
   "objective": {"positions": {"CF": 1.0}, "targets": {"finishing": 95}, "limits": {"heading": 74}},  # optimal 用：
                                        # targets=软上限（超出不计分），limits=硬上限（培养后不得超过）
   "manager": {"proficiency": 89, "model": "efx", "boosters": {"physical_contact": 1}}
 }
+allocation / objective / manager 是模拟用的输入，不属于卡数据。可以写在顶层（旧格式），也可以放进
+"simulation": {"allocation": ..., "objective": ..., "manager": ...}（推荐：避免接入时被误写进客户端卡数据）；
+两处同时给出同一个键时报 ERROR。
 """
 
 from __future__ import annotations
@@ -57,8 +61,9 @@ KNOWN_KEYS = {
     "name", "card_id", "card_type", "registered_position", "position_proficiency", "height_cm", "weight_kg", "age",
     "stronger_foot", "weak_foot_usage", "weak_foot_accuracy", "form", "injury_resistance", "max_level", "stats",
     "playing_style", "ai_playing_styles", "skills", "additional_skills", "boosters", "allocation", "objective",
-    "manager", "notes", "_comment", "schema",
+    "manager", "notes", "_comment", "schema", "simulation", "live_update_rating",
 }
+SIM_KEYS = ("allocation", "objective", "manager")      # 只用于模拟、不属于卡数据的键
 
 
 # ---------------------------------------------------------------------------------------------
@@ -127,6 +132,7 @@ class PlayerCard:
     injury_resistance: Optional[str] = None
     weight_kg: Optional[int] = None
     age: Optional[int] = None
+    live_update_rating: Optional[str] = None
     card_id: Optional[str] = None
     card_type: Optional[str] = None
     attacking_style: str = "Basic"
@@ -213,8 +219,7 @@ def parse_card(d: Mapping[str, Any]) -> Tuple[PlayerCard, List[Issue]]:
         if P not in R.POS_INDEX:
             issues.append(Issue("ERROR", "POSITION", f"未知位置 {p!r}"))
             continue
-        L = {"high": "high", "mid": "mid", "low": "low", "高": "high", "中": "mid", "低": "low",
-             "深绿": "high", "浅绿": "mid", "无色": "low"}.get(str(lvl).strip().lower())
+        L = R.PROFICIENCY_ALIASES.get(str(lvl).strip().lower())
         if L is None:
             issues.append(Issue("ERROR", "PROFICIENCY", f"{P} 的适性 {lvl!r} 不是 high/mid/low", "POSITION_LEVELS"))
             continue
@@ -278,7 +283,21 @@ def parse_card(d: Mapping[str, Any]) -> Tuple[PlayerCard, List[Issue]]:
         default_active = (kind == "craftable") or slot == 1
         boosters.append(BoosterSlot(slot, kind, cname, btype, int(value), tuple(st), bool(b.get("active", default_active))))
 
-    alloc = d.get("allocation", "auto")
+    sim = d.get("simulation", {}) or {}
+    if not isinstance(sim, dict):
+        issues.append(Issue("ERROR", "SIMULATION", "simulation 必须是对象"))
+        sim = {}
+    unknown_sim = sorted(set(sim) - set(SIM_KEYS))
+    if unknown_sim:
+        issues.append(Issue("WARN", "UNKNOWN_FIELD", f"simulation 中忽略未知字段：{', '.join(unknown_sim)}"))
+    for key in SIM_KEYS:
+        if key in sim and key in d:
+            issues.append(Issue("ERROR", "SIM_FIELD_DUP", f"{key} 同时出现在顶层和 simulation 中"))
+
+    def sim_get(key, default):
+        return sim[key] if key in sim else d.get(key, default)
+
+    alloc = sim_get("allocation", "auto")
     if isinstance(alloc, dict):
         a2: Dict[str, int] = {}
         for k, v in alloc.items():
@@ -294,7 +313,7 @@ def parse_card(d: Mapping[str, Any]) -> Tuple[PlayerCard, List[Issue]]:
         issues.append(Issue("ERROR", "ALLOC", f"allocation 必须是 auto / optimal / 对象，收到 {alloc!r}"))
         alloc = "auto"
 
-    obj = dict(d.get("objective", {}) or {})
+    obj = dict(sim_get("objective", {}) or {})
     obj_pos = {str(k).upper(): float(v) for k, v in dict(obj.get("positions", {}) or {}).items()}
     for p in obj_pos:
         if p not in R.POS_INDEX:
@@ -307,7 +326,7 @@ def parse_card(d: Mapping[str, Any]) -> Tuple[PlayerCard, List[Issue]]:
             if sk:
                 dst[sk] = int(v)
 
-    m = dict(d.get("manager", {}) or {})
+    m = dict(sim_get("manager", {}) or {})
     mboost = {}
     for k, v in dict(m.get("boosters", {}) or {}).items():
         sk = _resolve(R.resolve_stat, k, issues, "STAT_NAME", "MANAGER_BOOSTER")
@@ -322,6 +341,7 @@ def parse_card(d: Mapping[str, Any]) -> Tuple[PlayerCard, List[Issue]]:
         stronger_foot=enum("stronger_foot", R.STRONGER_FOOT, None), form=enum("form", R.FORM, "FORM"),
         injury_resistance=enum("injury_resistance", R.INJURY_RESISTANCE, "INJURY"),
         weight_kg=d.get("weight_kg"), age=d.get("age"),
+        live_update_rating=enum("live_update_rating", R.LIVE_UPDATE_RATING, "LIVE_UPDATE_RATING"),
         card_id=None if d.get("card_id") is None else str(d.get("card_id")), card_type=d.get("card_type"),
         attacking_style=att, defensive_style=dfn, ai_styles=ai, skills=skills, additional_skills=add_sk,
         boosters=boosters, allocation=alloc, objective_positions=obj_pos, targets=targets, limits=limits, manager=manager)
@@ -367,7 +387,7 @@ def validate_card(card: PlayerCard, alloc: Optional[Mapping[str, int]] = None) -
 
     # 位置
     if card.proficiency.get(card.registered_position) != "high":
-        E("POSITION", f"注册位置 {card.registered_position} 的适性必须是高（深绿）", "POSITION_LEVELS")
+        E("POSITION", f"注册位置 {card.registered_position} 的适性必须是高（亮绿）", "POSITION_LEVELS")
 
     # 比赛风格
     usable = card.usable_positions()
@@ -391,6 +411,9 @@ def validate_card(card: PlayerCard, alloc: Optional[Mapping[str, int]] = None) -
         E("SKILL_CARD_MAX", f"卡面技能 {len(card.skills)} 个，超过 {R.MAX_CARD_SKILLS}", "SKILL_CARD_MAX")
     if len(card.additional_skills) > R.MAX_ADDITIONAL_SKILLS:
         E("SKILL_ADDITIONAL_MAX", f"附加技能 {len(card.additional_skills)} 个，超过 {R.MAX_ADDITIONAL_SKILLS}", "SKILL_ADDITIONAL_MAX")
+    if card.card_type in ("Epic", "Big Time", "Show Time") and len(card.skills) < R.MAX_CARD_SKILLS:
+        I("SKILL_CARD_COUNT", f"卡面技能 {len(card.skills)} 个；抽样所见 {card.card_type} 卡都是 {R.MAX_CARD_SKILLS} 个，"
+          "少于 10 个时客户端的编码与是否接受未知", "SKILL_CARD_COUNT_TYPICAL")
     allsk = card.skills + card.additional_skills
     dups = sorted({s for s in allsk if allsk.count(s) > 1})
     if dups:
@@ -404,6 +427,10 @@ def validate_card(card: PlayerCard, alloc: Optional[Mapping[str, int]] = None) -
             I("SKILL_NOTE", f"{s}：{sk.note}", "SKILL_SPECIAL")
         if sk.group == "goalkeeping" and card.registered_position != "GK":
             W("SKILL_GK", f"外场球员带门将技能 {s}", None)
+
+    # Live Update Rating
+    if card.live_update_rating and card.card_type in R.FIXED_LIVE_UPDATE_CARD_TYPES and card.live_update_rating != "B":
+        I("LIVE_UPDATE_RATING", f"{card.card_type} 卡抽样所见固定为 B，本卡为 {card.live_update_rating}", "LIVE_UPDATE_RATING")
 
     # 增能
     slots = [b.slot for b in card.boosters]
@@ -614,6 +641,51 @@ def optimal_allocation(base: Mapping[str, int], budget: int, weights: Mapping[st
     return {c: int(res.get(c, 0)) for c in categories}
 
 
+def top_allocations(base: Mapping[str, int], height_cm: int, wfa_idx: int, position: str, budget: int, *,
+                    categories: Optional[Sequence[str]] = None, k: int = 5) -> List[Tuple[int, int, Dict[str, int]]]:
+    """精确列出注册位置总评分子（rating_total）最高的 k 个加点方案：[(rating_total, 花费, 加点), ...]。
+
+    用于说明"自动提升"的结果有多稳：第一名与第二名差多少（总评 = 分子 // 1000）。
+    共享能力的类别（Aerial Strength 与 GK 1）合并枚举；同分时花费少的排前面，再按类别顺序。
+    """
+    cats = list(categories or R.categories_for_position(position))
+    groups: List[List[str]] = []
+    for c in cats:
+        st = set(R.TRAINING_CATEGORIES[c].stats)
+        hit = [g for g in groups if any(st & set(R.TRAINING_CATEGORIES[x].stats) for x in g)]
+        merged = [c] + [x for g in hit for x in g]
+        groups = [g for g in groups if g not in hit] + [sorted(merged, key=cats.index)]
+    base_t = R.rating_total(base, height_cm, wfa_idx, position)
+
+    def max_n(c):
+        n = 0
+        while R.cumulative_cost(n + 1) <= budget:
+            n += 1
+        return n
+
+    dp: Dict[int, List[Tuple[int, Dict[str, int]]]] = {0: [(0, {})]}
+    for g in groups:
+        opts = []
+        for ns in itertools.product(*(range(max_n(c) + 1) for c in g)):
+            cost = sum(R.cumulative_cost(n) for n in ns)
+            if cost > budget:
+                continue
+            a = dict(zip(g, ns))
+            opts.append((cost, R.rating_total(R.apply_training(base, a), height_cm, wfa_idx, position) - base_t, a))
+        nd: Dict[int, List[Tuple[int, Dict[str, int]]]] = {}
+        for cost0, items in dp.items():
+            for cost, val, a in opts:
+                t = cost0 + cost
+                if t > budget:
+                    continue
+                for v0, a0 in items:
+                    nd.setdefault(t, []).append((v0 + val, {**a0, **a}))
+        dp = {t: sorted(L, key=lambda x: -x[0])[:k] for t, L in nd.items()}
+    out = [(v + base_t, t, {c: int(a.get(c, 0)) for c in cats}) for t, L in dp.items() for v, a in L]
+    out.sort(key=lambda x: (-x[0], x[1], [-x[2][c] for c in cats]))
+    return out[:k]
+
+
 def order_steps(base: Mapping[str, int], alloc: Mapping[str, int], height_cm: int, wfa_idx: int, position: str
                 ) -> List[Step]:
     """给定最终加点，排出一个"逐步点击"的顺序：每步在剩余次数里选 (总评增量 ÷ 花费) 最大的类别。"""
@@ -670,14 +742,24 @@ class Result:
     match: Dict[str, Dict[str, int]]
     situational: List[Tuple[str, str, List[Tuple[str, int, int, int]]]]
     issues: List[Issue]
+    aim: List[Tuple[str, str, Dict[str, Tuple[int, int]]]] = field(default_factory=list)
 
 
-def resolve_allocation(card: PlayerCard, mode: Optional[str] = None) -> Tuple[Dict[str, int], str, str, List[Step]]:
-    """返回 (加点, 类型 auto/optimal/card, 说明, 步骤)。"""
+def resolve_allocation(card: PlayerCard, mode: Optional[str] = None, auto_with_manager: bool = False
+                       ) -> Tuple[Dict[str, int], str, str, List[Step]]:
+    """返回 (加点, 类型 auto/optimal/card, 说明, 步骤)。
+
+    auto_with_manager=True：自动加点按"比赛计划下（含主教练熟练度）"的总评最大化（RULES AUTO_DEV_MANAGER，未核实）。
+    """
     spec = card.allocation if mode in (None, "card") else mode
     cats = R.categories_for_position(card.registered_position)
     args = (card.stats, card.height_cm, card.wfa_idx, card.registered_position)
     if spec == "auto":
+        m = card.manager
+        if auto_with_manager and m.proficiency is not None:
+            alloc, steps = greedy_allocation(*args, card.budget, categories=cats, manager_p=m.proficiency, manager_model=m.model)
+            return alloc, "auto", (f"auto（复现 pesdb 贪心，按含主教练熟练度 {m.proficiency}（{m.model}）的总评最大化；"
+                                   "游戏内是否这样做未找到）"), steps
         alloc, steps = greedy_allocation(*args, card.budget, categories=cats)
         return alloc, "auto", "auto（复现 pesdb 贪心；游戏内'自动提升'的目标是最大化总评（T1），具体算法未找到）", steps
     if spec == "optimal":
@@ -693,14 +775,14 @@ def resolve_allocation(card: PlayerCard, mode: Optional[str] = None) -> Tuple[Di
 
 def simulate(card: PlayerCard, *, allocation: Optional[str] = None, manager_p: Optional[int] = None,
              manager_model: Optional[str] = None, manager_boosters: Optional[Mapping[str, int]] = None,
-             per_level: bool = True) -> Result:
+             per_level: bool = True, auto_with_manager: bool = False) -> Result:
     if manager_p is not None:
         card.manager.proficiency = manager_p
     if manager_model is not None:
         card.manager.model = manager_model
     if manager_boosters:
         card.manager.boosters = dict(manager_boosters)
-    alloc, kind, mode, steps = resolve_allocation(card, allocation)
+    alloc, kind, mode, steps = resolve_allocation(card, allocation, auto_with_manager)
     issues = validate_card(card, alloc)
 
     h, w = card.height_cm, card.wfa_idx
@@ -732,17 +814,20 @@ def simulate(card: PlayerCard, *, allocation: Optional[str] = None, manager_p: O
     levels: List[Tuple[int, int, Dict[str, int], int]] = []
     cats = R.categories_for_position(card.registered_position)
     if per_level and kind == "auto":
+        mkw = ({"manager_p": card.manager.proficiency, "manager_model": card.manager.model}
+               if auto_with_manager and card.manager.proficiency is not None else {})
         for L in range(1, card.max_level + 1):
             b = R.progression_points(L)
-            a, _ = greedy_allocation(card.stats, h, w, card.registered_position, b, categories=cats)
+            a, _ = greedy_allocation(card.stats, h, w, card.registered_position, b, categories=cats, **mkw)
             levels.append((L, b, a, R.overall(R.apply_training(card.stats, a), h, w, card.registered_position)))
     # 与精确最优比较（注册位置总评，无增能；增能在 99 后相加，不影响最优加点）
     best = optimal_allocation(card.stats, card.budget, objective_weights({card.registered_position: 1}), categories=cats)
     t_best = R.rating_total(R.apply_training(card.stats, best), h, w, card.registered_position)
     t_used = R.rating_total(trained, h, w, card.registered_position)
     if t_best > t_used:
-        deliberate = kind == "optimal" and (bool(card.targets) or bool(card.limits) or
+        deliberate = (kind == "optimal" and (bool(card.targets) or bool(card.limits) or
                                              (card.objective_positions or {card.registered_position: 1.0}) != {card.registered_position: 1.0})
+                      ) or (kind == "auto" and auto_with_manager and m.proficiency is not None)
         lvl = "INFO" if (t_best // 1000 == t_used // 1000 or deliberate) else "WARN"
         issues.append(Issue(lvl, "ALLOC_NOT_OPTIMAL", f"所用加点的注册位置总评 raw={t_used / 1000:.3f}，精确最优 raw={t_best / 1000:.3f}"
                             f"（floor {t_used // 1000} vs {t_best // 1000}）：" + ", ".join(f"{k}={v}" for k, v in best.items() if v),
@@ -769,6 +854,13 @@ def simulate(card: PlayerCard, *, allocation: Optional[str] = None, manager_p: O
             issues.append(Issue("INFO", "SKILL_BONUS_CAPPED", f"{s} 的加成在 99 封顶前相加，"
                                 f"{', '.join(wasted)} 已接近/达到 99，加成部分浪费", "SKILL_BONUS_BEFORE_CAP"))
 
+    # "按能力 +N 瞄准/计算"型技能的有效值（注册位置、完整培养；不受 99 限，RULES SKILL_AIM_UNCAPPED）
+    aim = []
+    reg_match = match.get(card.registered_position) or R.match_stats(trained, manager_p=m.proficiency, booster_bonus=mb)
+    for s in card.skills + card.additional_skills:
+        if R.SKILLS[s].aim_bonus:
+            aim.append((s, R.SKILLS[s].aim_condition, R.aim_effective(reg_match, s)))
+
     # 设计护栏（T4，不是规则）
     pos = card.registered_position
     l1, mx = ratings["L1"][pos], ratings["MAX+FIXED"][pos]
@@ -780,7 +872,7 @@ def simulate(card: PlayerCard, *, allocation: Optional[str] = None, manager_p: O
     if len(top) >= 8:
         issues.append(Issue("WARN", "DESIGN_TOO_HIGH", f"满级中性卡有 {len(top)} 项 ≥95：{', '.join(top)}"
                             "（任务书 §6：不能全部 95–99）", "DESIGN_BAND"))
-    return Result(card, alloc, kind, mode, steps, stages, ratings, levels, match, situ, issues)
+    return Result(card, alloc, kind, mode, steps, stages, ratings, levels, match, situ, issues, aim)
 
 
 # ---------------------------------------------------------------------------------------------
@@ -814,6 +906,8 @@ def format_report(res: Result, show_steps: bool = True, show_levels: bool = True
       f"（{R.WEAK_FOOT_USAGE[c.weak_foot_usage].note if c.weak_foot_usage else ''}）；"
       f"逆足精度 {c.weak_foot_accuracy}（pesdb 编码 {c.wfa_idx}，总评 WFR={R.weak_foot_rating(c.wfa_idx)}；"
       f"逆足踢球扣分 {R.WEAK_FOOT_ACCURACY[c.weak_foot_accuracy].note}）{R.RULES['WEAK_FOOT'].tag()}")
+    if c.live_update_rating:
+        P(f"Live Update Rating {c.live_update_rating}（{R.LIVE_UPDATE_RATING[c.live_update_rating].note}）{R.RULES['LIVE_UPDATE_RATING'].tag()}")
     P(f"状态波动 {c.form or '-'}（影响状态抽取，比赛逻辑不直接读取）{R.RULES['FORM'].tag()}；抗伤 {c.injury_resistance or '-'}"
       f"（{R.INJURY_RESISTANCE[c.injury_resistance].note if c.injury_resistance else ''}）")
     P("位置适性：" + "  ".join(f"{p}={R.PROFICIENCY_ZH[c.proficiency[p]]}" for p in R.POSITIONS if c.proficiency[p] != "low")
@@ -875,6 +969,12 @@ def format_report(res: Result, show_steps: bool = True, show_levels: bool = True
         P(f"  技能情境加成（注册位置，按最大叠加）{R.RULES['SKILL_BONUS_BEFORE_CAP'].tag()}：")
         for s, cond, rows in res.situational:
             P(f"    {s}（{cond}）：" + "；".join(f"{k} +{b}: {a0}→{a1}" for k, b, a0, a1 in rows))
+    else:
+        P(f"  直接加能力值的技能：无 {R.RULES['SKILL_BONUS_BEFORE_CAP'].tag()}")
+    if res.aim:
+        P(f"  '按能力 +N 瞄准/计算'型技能的有效值（注册位置；不改能力值，不受 99 封顶）{R.RULES['SKILL_AIM_UNCAPPED'].tag()}：")
+        for s, cond, vals in res.aim:
+            P(f"    {s}（{cond}）：" + "；".join(f"{R.STAT_BY_KEY[k].en} {a}→{e}" for k, (a, e) in vals.items()))
     P("")
     P("--- 校验 ---")
     if not res.issues:
@@ -884,8 +984,9 @@ def format_report(res: Result, show_steps: bool = True, show_levels: bool = True
     P("")
     used_rules = ["STAT_RANGE", "POINTS", "STEP_COST", "CATEGORY_MAP", "TRAIN_CAP_99", "AUTO_DEV_GOAL", "AUTO_DEV_GREEDY",
                   "BOOST_AFTER_CAP", "BOOST_CAP_120", "RATING_FORMULA", "RATING_WEIGHTS", "MANAGER_FORMULA",
-                  "MANAGER_THRESHOLDS", "MATCH_ORDER", "OUT_OF_POSITION", "SKILL_LIST", "SKILL_CARD_MAX", "SKILL_SPECIAL",
-                  "BOOSTER_LIST", "BOOSTER_FIXED_RANGE", "STYLE_COMPAT"]
+                  "MANAGER_THRESHOLDS", "MATCH_ORDER", "OUT_OF_POSITION", "POSITION_LEVELS", "SKILL_LIST", "SKILL_CARD_MAX",
+                  "SKILL_CARD_COUNT_TYPICAL", "SKILL_SPECIAL", "SKILL_BONUS_BEFORE_CAP", "SKILL_AIM_UNCAPPED",
+                  "AUTO_DEV_MANAGER", "BOOSTER_LIST", "BOOSTER_FIXED_RANGE", "STYLE_COMPAT"]
     P("--- 本次用到的规则与出处 ---")
     for r in used_rules:
         rule = R.RULES[r]
@@ -903,6 +1004,8 @@ def result_to_json(res: Result) -> Dict[str, Any]:
         "stages": res.stages, "ratings": res.ratings,
         "per_level": [{"level": L, "points": b, "allocation": a, "overall": o} for L, b, a, o in res.per_level],
         "match": res.match,
+        "aim_effective": [{"skill": s, "condition": c, "values": {k: {"match": a, "effective": e} for k, (a, e) in v.items()}}
+                          for s, c, v in res.aim],
         "issues": [i.__dict__ for i in res.issues],
         "note": "全部规则来自社区逆向/数据库（T3）与本组推断（T4），数值待客户端核实；见 efootball_rules.RULES",
     }
@@ -927,6 +1030,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     ap.add_argument("--manager", type=int, help="主教练球队风格熟练度（0–99）")
     ap.add_argument("--manager-model", choices=["efx", "pesdb"], help="主教练倍率模型（默认 efx）")
     ap.add_argument("--manager-booster", nargs="*", default=[], help="主教练增能，如 physical_contact=1 stamina=1")
+    ap.add_argument("--auto-with-manager", action="store_true",
+                    help="--allocation auto 时按含主教练熟练度的总评最大化（游戏内是否这样做未找到，待客户端核实）")
     ap.add_argument("--json", help="把结果另存为 JSON")
     ap.add_argument("--no-steps", action="store_true")
     ap.add_argument("--no-levels", action="store_true")
@@ -947,7 +1052,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         with open(a.limits, encoding="utf-8") as fh:
             card.limits = {R.resolve_stat(k): int(v) for k, v in json.load(fh).items()}
     res = simulate(card, allocation=a.allocation, manager_p=a.manager, manager_model=a.manager_model,
-                   manager_boosters=_kv(a.manager_booster), per_level=not a.no_levels)
+                   manager_boosters=_kv(a.manager_booster), per_level=not a.no_levels,
+                   auto_with_manager=a.auto_with_manager)
     res.issues = issues + res.issues
     print(format_report(res, show_steps=not a.no_steps, show_levels=not a.no_levels))
     if a.json:

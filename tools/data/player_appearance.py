@@ -22,8 +22,12 @@
 LZ4、UE .utoc/.uasset、Mach-O 等特征）一律拒绝：布局里的偏移是"表内偏移"，不是 IPA/CPK/.utoc/.ucas/
 加密 .bin 的文件偏移，也不是内存结构里的位置（任务书第五节：严禁把内存字段的 bit 位置直接当成 IPA 文件偏移写入）。
 
-写入规则：输出永远写到新文件（--out 不能等于输入），并在旁边写 <out>.patch.json（输入/输出 SHA-256、
-改动的字段与逐位差异）。写入后自检：新旧记录的异或只能落在被改字段的位上，表的其余字节必须完全相同。
+写入规则：输出永远写到新文件（--out 和 <out>.patch.json 都不能是任何输入文件：--table/--record/encode 的 JSON/
+--set-json；已存在时要加 --overwrite），并在旁边写 <out>.patch.json（输入/输出 SHA-256、改动的字段与逐位差异、
+结构检验结果）。decode 的 --out 同样不能是输入，已存在时也要 --overwrite（防止覆盖保存好的原始记录）。
+写入后自检：新旧记录的异或只能落在被改字段的位上，表的其余字节必须完全相同。
+整表写入（patch/encode 给 --table）前先做结构检验（06 §8 第 4 步：身体半字节 ≤ 14 的记录 ≥ 99%、众数 7；
+ef64 还要求 PID 严格递增）；不通过就拒绝（多半是布局/行长/起点选错），确认无误时才可加 --skip-structure-check。
 
 用法示例：
   python3 tools/data/player_appearance.py decode --layout ef64 --table PlayerAppearance.dec --pid 15038
@@ -65,6 +69,23 @@ class AppearanceError(Exception):
 
 class NotDecodedError(AppearanceError):
     """输入看起来不是解码后的表数据。"""
+
+
+def _as_int(name, v):
+    """严格的整数解析：int（不含 bool）或整数字符串（十进制，或 0x/0o/0b 前缀）。
+    拒绝 bool、浮点（包括 10.0）和其他类型，绝不截断（10.9 不会悄悄变成 10）。"""
+    if isinstance(v, bool):
+        raise AppearanceError(f"{name}: 值 {v!r} 是布尔值，不是整数")
+    if isinstance(v, int):
+        return v
+    if isinstance(v, str):
+        s = v.strip()
+        for base in (10, 0):
+            try:
+                return int(s, base)
+            except ValueError:
+                pass
+    raise AppearanceError(f"{name}: 值 {v!r} 不是整数")
 
 
 # ============================================================================= layout
@@ -215,16 +236,14 @@ class Layout:
             disp = spec.get("display")
             if raw is None and disp is None:
                 raise AppearanceError(f"{name}: 需要 raw 或 display")
-            if raw is not None and disp is not None and f.to_display(int(raw)) != int(disp):
+            raw = None if raw is None else _as_int(f"{name}.raw", raw)       # 浮点/布尔/非数字一律拒绝，不截断
+            disp = None if disp is None else _as_int(f"{name}.display", disp)
+            if raw is not None and disp is not None and f.to_display(raw) != disp:
                 raise AppearanceError(f"{name}: raw={raw} 与 display={disp} 不一致（display = raw "
                                       f"{f.transform.get('display_offset', 0):+d}），无法判断要写哪一个，拒绝")
-            raw = int(raw) if raw is not None else f.from_display(int(disp))
+            raw = raw if raw is not None else f.from_display(disp)
         else:
-            if isinstance(spec, bool) or not isinstance(spec, int):
-                try:
-                    spec = int(str(spec), 0)
-                except ValueError:
-                    raise AppearanceError(f"{name}: 值 {spec!r} 不是整数") from None
+            spec = _as_int(name, spec)
             raw = f.from_display(spec) if display else spec
         if not 0 <= raw <= f.max_raw:
             raise AppearanceError(f"{name}: 存储值 {raw} 超出 {f.width} 位范围 0..{f.max_raw}")
@@ -261,8 +280,8 @@ class Layout:
         allowed = 0
         for n in changed:
             allowed |= self.by_name[n].mask
-        if (v ^ v0) & ~allowed:  # 自检：异或只能落在被改字段上
-            raise AssertionError("internal: bits outside the patched fields changed")
+        if (v ^ v0) & ~allowed:  # 自检：异或只能落在被改字段上（显式检查，python -O 也不会跳过）
+            raise RuntimeError("internal: bits outside the patched fields changed")
         return self.to_bytes(v), changed
 
 
@@ -305,44 +324,68 @@ def shannon_entropy(data):
     return -sum(c / n * math.log2(c / n) for c in collections.Counter(data).values())
 
 
-def _zlib_inflates(data, off):
+def _zlib_inflates(data, off, wbits=15):
+    """从 off 开始是不是一条真正的压缩流（wbits=15 zlib，31 gzip）：解压不出错，并且要么走到流的结尾，
+    要么解出满 4 KiB。只要求"解出了一点数据"不够：固定哈夫曼块能把很多普通字节解成几个字面量，
+    输入耗尽前又不报错（实测约万分之一的单条记录会这样被误判）。"""
     try:
-        d = zlib.decompressobj()
+        d = zlib.decompressobj(wbits)
         out = d.decompress(data[off:off + 65536], 4096)
-        return len(out) > 0
+        return d.eof or len(out) >= 4096
     except zlib.error:
         return False
 
 
+# 各种魔数只占 3–4 字节，而解码后的表第 0 条记录的开头就是 PID：某些 PID 的字节恰好等于魔数
+# （例如 PID 559903 = 1F 8B 08 00 像 gzip，PID 0x04034B50 像 zip）。守卫没有"强制放行"开关，
+# 所以每个魔数之后都再核对一个该格式必有的结构字段，避免把合法的解码表误拒。
+_ZIP_METHODS = {0, 1, 6, 8, 9, 12, 14, 93, 95, 98, 99}
+_MACHO_CPU = {0x0100000C, 0x0200000C, 0x01000007, 0x0000000C, 0x00000007}
+
+
+def _u16(b, o):
+    return int.from_bytes(b[o:o + 2], "little")
+
+
+def _u32(b, o):
+    return int.from_bytes(b[o:o + 4], "little")
+
+
 def _magic_hits(data):
-    """返回命中的容器/压缩/加密特征列表（尽量避免误报：zlib 还要求能真正解压出数据）。"""
+    """返回命中的容器/压缩/加密特征列表。每个魔数都要再通过一项结构核对（zlib/gzip 要求能真正解压出数据）。"""
     hits = []
     h = bytes(data[:64])
+    n = len(data)
     if h[:4] == b"CPK " and data[16:20] == b"@UTF":
         hits.append("CPK 容器（'CPK ' + '@UTF'）")
     if b"WESYS" in h[:16]:
         hits.append("WESYS 外壳头（加密 + zlib，06 §1.1 第③层）")
     if len(h) >= 2 and h[0] == 0x78 and ((h[0] << 8) | h[1]) % 31 == 0 and _zlib_inflates(data, 0):
         hits.append("zlib 压缩流（偏移 0）")
-    if len(data) > 18 and data[16] == 0x78 and ((data[16] << 8) | data[17]) % 31 == 0 and _zlib_inflates(data, 16):
+    if n > 18 and data[16] == 0x78 and ((data[16] << 8) | data[17]) % 31 == 0 and _zlib_inflates(data, 16):
         hits.append("16 字节头之后是 zlib 压缩流（像 WESYS 外壳）")
-    if h[:3] == b"\x1f\x8b\x08":
+    if h[:3] == b"\x1f\x8b\x08" and _zlib_inflates(data, 0, 31):
         hits.append("gzip")
-    if h[:4] in (b"PK\x03\x04", b"PK\x05\x06"):
+    if h[:4] == b"PK\x03\x04" and len(h) >= 30 and _u16(h, 4) <= 63 and _u16(h, 8) in _ZIP_METHODS \
+            and 1 <= _u16(h, 26) <= 1024:
         hits.append("zip（IPA 也是 zip）")
+    if h[:4] == b"PK\x05\x06" and len(h) >= 22 and n == 22 + _u16(h, 20):
+        hits.append("zip（空 zip 的目录尾）")
     if h[:4] == b"\x28\xb5\x2f\xfd":
         hits.append("zstd")
-    if h[:4] == b"\x04\x22\x4d\x18":
+    if h[:4] == b"\x04\x22\x4d\x18" and len(h) >= 6 and h[4] >> 6 == 1 and not h[4] & 0x02 \
+            and not h[5] & 0x8F and 4 <= (h[5] >> 4) & 7 <= 7:
         hits.append("LZ4 frame")
     if h[:6] == b"\xfd7zXZ\x00":
         hits.append("xz")
     if h[:16] == b"-==--==--==--==-":
         hits.append("UE IoStore .utoc")
-    if h[:4] == b"\xc1\x83\x2a\x9e":
-        hits.append("UE 包（.uasset/.uexp 标记 0x9E2A83C1）")
-    if h[:4] in (b"\xcf\xfa\xed\xfe", b"\xce\xfa\xed\xfe", b"\xca\xfe\xba\xbe"):
+    if h[:4] == b"\xc1\x83\x2a\x9e" and len(h) >= 8 and -9 <= int.from_bytes(h[4:8], "little", signed=True) <= -1:
+        hits.append("UE 包（.uasset/.uexp 标记 0x9E2A83C1 + LegacyFileVersion）")
+    if (h[:4] in (b"\xcf\xfa\xed\xfe", b"\xce\xfa\xed\xfe") and len(h) >= 8 and _u32(h, 4) in _MACHO_CPU) or \
+            (h[:4] == b"\xca\xfe\xba\xbe" and len(h) >= 8 and 1 <= int.from_bytes(h[4:8], "big") <= 32):
         hits.append("Mach-O 可执行文件（不是数据表；也不能把其中/内存中的位置当表偏移）")
-    if h[:4] == b"\x13\xab\xa1\x5c":
+    if h[:4] == b"\x13\xab\xa1\x5c" and len(h) >= 7 and 4 <= h[4] <= 12 and 4 <= h[5] <= 12 and 1 <= h[6] <= 6:
         hits.append("ASTC 纹理")
     return hits
 
@@ -401,15 +444,23 @@ def _size_hint(n):
 class Table:
     """解码后的表：第 i 条记录从 start + i*stride 开始，长 record_size。默认 start=0、stride=record_size。"""
 
-    def __init__(self, data, layout, start=0, stride=None):
+    def __init__(self, data, layout, start=0, stride=None, count=None):
         self.data = bytes(data)
         self.layout = layout
         self.start = int(start)
         self.stride = int(stride or layout.record_size)
+        if self.start < 0:
+            raise AppearanceError("--start 不能为负")
         if self.stride < layout.record_size:
             raise AppearanceError("--stride 不能小于记录长度")
         n = len(self.data) - self.start
         self.n = 0 if n < layout.record_size else (n - layout.record_size) // self.stride + 1
+        if count is not None:
+            # 例如 PES 存档 data.dat：球员区之后还有球队等其他区段，不限条数就会把它们当成"记录"
+            if not 0 < int(count) <= self.n:
+                raise AppearanceError(f"--count {count} 超出范围：从 --start {self.start} 起按 --stride "
+                                      f"{self.stride} 最多放得下 {self.n} 条")
+            self.n = int(count)
 
     def offset(self, i):
         if not 0 <= i < self.n:
@@ -455,7 +506,11 @@ def find_pid(table, pid):
         out[f"pattern_hits_{k}"] = [{"file_offset": o, "aligned": (o - table.start) % table.stride == 0 and o >= table.start,
                                      "offset_mod_stride": (o - table.start) % table.stride} for o in offs]
     hint = []
-    if not hits and any(h["file_offset"] >= 0 for k in pats for h in out[f"pattern_hits_{k}"]):
+    if not hits and any(h["aligned"] for h in out.get("pattern_hits_u32", []) if pw == 8):
+        hint.append("PID 的低 32 位出现在记录起点，但记录 0x04–0x07 不为 0：这张表可能是"
+                    "'u32 PID + u32 cardType'，而不是 u64 PID（06 §3.2b、§8 第 4 步）。先用 roundtrip-check "
+                    "看 bytes_4_7_zero_fraction，不要直接写入")
+    elif not hits and any(h["file_offset"] >= 0 for k in pats for h in out[f"pattern_hits_{k}"]):
         hint.append("PID 的字节模式出现在非记录起点：行长、PID 宽度或 --start 可能选错（06 §8 第 4 步）")
     if not asc:
         hint.append("PID 不是严格递增：不是按 PID 排序的表，或布局/行长不对")
@@ -466,15 +521,47 @@ def find_pid(table, pid):
     return out
 
 
+def structure_check(table):
+    """06 §8 第 4 步的结构检验（只读）。返回 (structure, checks)。
+    身体半字节全部 ≤ 14 的记录 ≥ 99%、身体半字节众数为 7；ef64 另要求 u64 PID 严格递增。"""
+    lay = table.layout
+    hist = collections.Counter()
+    all_legal = 0
+    body = [lay.by_name[n] for n in BODY_FIELDS if n in lay.by_name]
+    hi32_zero = 0
+    for i in range(table.n):
+        rec = table.record(i)
+        v = int.from_bytes(rec, "little")
+        vals = [(v >> f.pos) & f.max_raw for f in body]
+        hist.update(vals)
+        all_legal += all(b <= 14 for b in vals)
+        if lay.id == "ef64":
+            hi32_zero += rec[4:8] == b"\0\0\0\0"
+    pids = table.pids() if lay.pid_field else []
+    asc_viol = sum(1 for a, b in zip(pids, pids[1:]) if not a < b)
+    n = max(table.n, 1)
+    structure = {
+        "pid_strictly_ascending": asc_viol == 0, "pid_order_violations": asc_viol,
+        "body_all_nibbles_le_14_fraction": all_legal / n,
+        "body_nibble_histogram": {str(k): hist.get(k, 0) for k in range(16)},
+        "body_modal_value": hist.most_common(1)[0][0] if hist else None,
+    }
+    if lay.id == "ef64":
+        structure["bytes_4_7_zero_fraction"] = hi32_zero / n
+    checks = {
+        "body_nibbles_le_14_ge_99pct": structure["body_all_nibbles_le_14_fraction"] >= 0.99,
+        "body_modal_value_is_7": structure["body_modal_value"] == 7,
+    }
+    if lay.id == "ef64":
+        checks["pid_strictly_ascending"] = asc_viol == 0
+    return structure, checks
+
+
 def roundtrip_check(table):
     """整表往返 + 结构检验。返回报告 dict；report['roundtrip_identical'] 是硬性结论。"""
     lay = table.layout
     mismatches = []
     rebuilt = bytearray(table.data)
-    hist = collections.Counter()
-    all_legal = 0
-    body_names = [n for n in BODY_FIELDS if n in lay.by_name]
-    hi32_zero = 0
     for i in range(table.n):
         rec = table.record(i)
         dec = lay.decode(rec)
@@ -494,34 +581,14 @@ def roundtrip_check(table):
             mismatches.append(i)
         o = table.offset(i)
         rebuilt[o:o + lay.record_size] = rec_a
-        body = [js["fields"][n]["raw"] for n in body_names]
-        hist.update(body)
-        all_legal += all(b <= 14 for b in body)
-        if lay.id == "ef64":
-            hi32_zero += rec[4:8] == b"\0\0\0\0"
-    pids = table.pids() if lay.pid_field else []
-    asc_viol = sum(1 for a, b in zip(pids, pids[1:]) if not a < b)
-    n = max(table.n, 1)
+    structure, checks = structure_check(table)
     rep = {
         "layout": lay.id, "layout_status": lay.status, "records": table.n, "bytes": len(table.data),
         "start": table.start, "stride": table.stride,
         "roundtrip_identical": not mismatches and bytes(rebuilt) == table.data,
         "roundtrip_mismatch_records": mismatches[:50],
-        "structure": {
-            "pid_strictly_ascending": asc_viol == 0, "pid_order_violations": asc_viol,
-            "body_all_nibbles_le_14_fraction": all_legal / n,
-            "body_nibble_histogram": {str(k): hist.get(k, 0) for k in range(16)},
-            "body_modal_value": hist.most_common(1)[0][0] if hist else None,
-        },
+        "structure": structure,
     }
-    if lay.id == "ef64":
-        rep["structure"]["bytes_4_7_zero_fraction"] = hi32_zero / n
-    checks = {
-        "body_nibbles_le_14_ge_99pct": rep["structure"]["body_all_nibbles_le_14_fraction"] >= 0.99,
-        "body_modal_value_is_7": rep["structure"]["body_modal_value"] == 7,
-    }
-    if lay.id in ("ef64",):
-        checks["pid_strictly_ascending"] = asc_viol == 0
     rep["structure_checks"] = checks
     rep["structure_ok"] = all(checks.values())
     rep["note"] = ("往返一致只证明本工具对这份数据无损；字段**含义**是否正确要靠 06 §8 第 5–7 步"
@@ -578,7 +645,34 @@ def _sha(b):
 
 
 def _int(s):
-    return int(str(s), 0)
+    """argparse 的 type=：十进制或 0x 前缀；出错抛 ValueError（由 argparse 报参数错误，退出码 2）。"""
+    try:
+        return _as_int("参数", s)
+    except AppearanceError as e:
+        raise ValueError(str(e)) from None
+
+
+def _input_paths(args):
+    """本次命令读取的所有文件（输出和清单都不能落到它们上面）。"""
+    return [p for p in (getattr(args, "table", None), getattr(args, "record", None), getattr(args, "json", None),
+                        getattr(args, "set_json", None)) if p]
+
+
+def _same_file(a, b):
+    a, b = os.path.abspath(a), os.path.abspath(b)
+    if a == b or os.path.realpath(a) == os.path.realpath(b):
+        return True
+    return os.path.exists(a) and os.path.exists(b) and os.path.samefile(a, b)
+
+
+def _guard_output(path, inputs, overwrite, what="--out"):
+    """输出路径守卫：不能是任何输入文件（含符号链接/硬链接）；已存在时必须明确 --overwrite。"""
+    for p in inputs:
+        if _same_file(p, path):
+            raise AppearanceError(f"拒绝：{what} {path} 与输入 {p} 是同一个文件；输出必须写到新文件"
+                                  f"（输入永远不被覆盖，保留原表/原记录用于回退）")
+    if os.path.exists(path) and not overwrite:
+        raise AppearanceError(f"拒绝：{path} 已存在（加 --overwrite 才覆盖；输入文件永远不能被覆盖）")
 
 
 def _locate(args, layout):
@@ -589,7 +683,7 @@ def _locate(args, layout):
     if not args.table:
         raise AppearanceError("需要 --table（解码后的整表）或 --record（单条记录）")
     data = read_input(args.table, layout, "table", args.start, args.stride)
-    tab = Table(data, layout, args.start, args.stride)
+    tab = Table(data, layout, args.start, args.stride, getattr(args, "count", None))
     if args.index is not None and args.pid is not None:
         raise AppearanceError("--index 与 --pid 只能给一个")
     if args.pid is not None:
@@ -606,29 +700,41 @@ def _locate(args, layout):
         raise AppearanceError("整表输入需要 --index 或 --pid")
     rec = tab.record(idx)
     return data, tab, idx, rec, {"file": args.table, "sha256": _sha(data), "kind": "table", "record_index": idx,
-                                 "table_offset": tab.offset(idx), "start": tab.start, "stride": tab.stride}
+                                 "table_offset": tab.offset(idx), "start": tab.start, "stride": tab.stride,
+                                 "count": tab.n}
 
 
 def _write_out(args, payload, manifest, inputs):
     out = os.path.abspath(args.out)
-    for p in inputs:
-        if not p:
-            continue
-        same = os.path.abspath(p) == out or (os.path.exists(out) and os.path.exists(p) and os.path.samefile(p, out))
-        if same:
-            raise AppearanceError(f"拒绝：--out {args.out} 与输入是同一个文件；输出必须写到新文件（保留原表用于回退）")
-    if os.path.exists(out) and not args.overwrite:
-        raise AppearanceError(f"拒绝：{args.out} 已存在（加 --overwrite 才覆盖；输入文件永远不能被覆盖）")
+    man = out + ".patch.json"
+    _guard_output(out, inputs, args.overwrite)
+    _guard_output(man, inputs, args.overwrite, what="清单")
     with open(out, "wb") as fh:
         fh.write(payload)
     manifest["output"] = {"file": args.out, "sha256": _sha(payload), "bytes": len(payload)}
-    with open(out + ".patch.json", "w", encoding="utf-8") as fh:
+    with open(man, "w", encoding="utf-8") as fh:
         json.dump(manifest, fh, indent=1, ensure_ascii=False)
 
 
 def _apply_and_emit(args, layout, data, tab, idx, rec, src, changes, cmd):
     groups = tuple(g for g, flag in (("header", getattr(args, "allow_header", False)),
                                      ("unused", getattr(args, "allow_unused", False))) if flag)
+    structure = None
+    if tab is not None:
+        # 写入前的结构闸门（06 §8 第 4 步）：布局/行长/起点选错时，--index 或巧合的 PID 命中会把值写到错误的位上
+        st, checks = structure_check(tab)
+        structure = {"checks": checks, "structure": st, "skipped": bool(getattr(args, "skip_structure_check", False))}
+        if not all(checks.values()) and not structure["skipped"]:
+            failed = [k for k, ok in checks.items() if not ok]
+            raise AppearanceError(
+                f"拒绝：按布局 {layout.id}（start {tab.start}，stride {tab.stride}，{tab.n} 条）读这张表，结构检验不通过："
+                f"{', '.join(failed)}（身体半字节 ≤ 14 的记录比例 {st['body_all_nibbles_le_14_fraction']:.3f}，"
+                f"众数 {st['body_modal_value']}，PID 逆序 {st['pid_order_violations']} 处）。多半是布局、行长、"
+                f"PID 宽度或 --start/--stride/--count 选错（06 §8 第 4 步）；先跑 roundtrip-check 查明。"
+                f"确认无误时才可加 --skip-structure-check。")
+    elif layout.status == "candidate":
+        print(f"警告：{layout.id} 是候选布局（{layout.confidence}）；单条记录模式没有整表可做结构检验，"
+              f"写回游戏数据前必须先在整表上通过 06 §8 的检验。", file=sys.stderr)
     new, changed = layout.apply(rec, changes, allow_groups=groups)
     toff = src.get("table_offset", 0)
     print(f"[{cmd}] 布局 {layout.id}（{layout.status}）记录 "
@@ -636,12 +742,14 @@ def _apply_and_emit(args, layout, data, tab, idx, rec, src, changes, cmd):
     print(format_diff(layout, rec, new, toff))
     if tab is not None:
         payload = tab.replaced(idx, new)
-        # 自检：表的其余字节完全不变
+        # 自检：表的其余字节完全不变（显式检查，python -O 也不会跳过）
         o = tab.offset(idx)
-        assert payload[:o] == data[:o] and payload[o + layout.record_size:] == data[o + layout.record_size:]
+        if payload[:o] != data[:o] or payload[o + layout.record_size:] != data[o + layout.record_size:] \
+                or len(payload) != len(data):
+            raise RuntimeError("internal: bytes outside the patched record changed")
         if layout.pid_field and layout.pid_field.name in changed:
             p0 = tab.pids()
-            p1 = Table(payload, layout, tab.start, tab.stride).pids()
+            p1 = Table(payload, layout, tab.start, tab.stride, tab.n).pids()
             if all(a < b for a, b in zip(p0, p0[1:])) and not all(a < b for a, b in zip(p1, p1[1:])):
                 raise AppearanceError("拒绝：改 PID 会破坏表的严格递增顺序（游戏可能按 PID 二分查找）")
     else:
@@ -649,31 +757,38 @@ def _apply_and_emit(args, layout, data, tab, idx, rec, src, changes, cmd):
     manifest = {"tool": "tools/data/player_appearance.py", "command": cmd, "layout": layout.id,
                 "layout_status": layout.status, "layout_confidence": layout.confidence,
                 "offset_space": layout.meta.get("offset_space", ""), "input": src,
+                "structure_check": structure,
                 "record_before_hex": rec.hex(), "record_after_hex": new.hex(),
                 "field_changes": field_changes(layout, rec, new), "bit_diff": bit_diff(layout, rec, new, toff),
                 "preserved": "除上列字段外的所有位（含未分配位）与原记录逐位相同；表的其余字节逐字节相同"}
     if getattr(args, "dry_run", False):
         print("[dry-run] 未写文件")
         return 0
-    _write_out(args, payload, manifest, [args.table, args.record, getattr(args, "json", None)])
+    _write_out(args, payload, manifest, _input_paths(args))
     print(f"已写入 {args.out}（sha256 {manifest['output']['sha256'][:16]}…）及 {args.out}.patch.json")
     return 0
 
 
 def cmd_decode(args):
     lay = load_layout(args.layout)
+    if args.out:  # 先检查输出路径，再读输入：decode 的输出常常就是"原始记录备份"，不能覆盖输入或旧备份
+        _guard_output(args.out, _input_paths(args), args.overwrite)
     if args.all:
         if not args.table:
             raise AppearanceError("--all 需要 --table")
         data = read_input(args.table, lay, "table", args.start, args.stride)
-        tab = Table(data, lay, args.start, args.stride)
-        out = open(args.out, "w", encoding="utf-8") if args.out else sys.stdout
+        tab = Table(data, lay, args.start, args.stride, args.count)
+        lines = []
         for i in range(tab.n):
             d = lay.decode(tab.record(i), {"file": args.table, "record_index": i, "table_offset": tab.offset(i)})
-            out.write(json.dumps({"index": i, "pid": d["pid"], "record_hex": d["record_hex"],
-                                  "values": {n: e["raw"] for n, e in d["fields"].items()}}, ensure_ascii=False) + "\n")
+            lines.append(json.dumps({"index": i, "pid": d["pid"], "record_hex": d["record_hex"],
+                                     "values": {n: e["raw"] for n, e in d["fields"].items()}},
+                                    ensure_ascii=False) + "\n")
         if args.out:
-            out.close()
+            with open(args.out, "w", encoding="utf-8") as fh:
+                fh.writelines(lines)
+        else:
+            sys.stdout.writelines(lines)
         return 0
     data, tab, idx, rec, src = _locate(args, lay)
     d = lay.decode(rec, src)
@@ -725,7 +840,13 @@ def _parse_sets(args, lay):
     if args.set_json:
         with open(args.set_json, encoding="utf-8") as fh:
             j = json.load(fh)
-        j = j.get("codec_patch", j)
+        if not isinstance(j, dict):
+            raise AppearanceError("--set-json 需要 {名: 值} 或含 codec_patch 的 JSON 对象")
+        if "codec_patch" in j:
+            if args.display:
+                # codec_patch 里是存储值（0–14）。按显示值解释会把 4 写成 11 这样的错值，而且有时不会越界报错
+                raise AppearanceError("拒绝：--set-json 的 codec_patch 是存储值（0–14），不能和 --display 一起用")
+            j = j["codec_patch"]
         if isinstance(j, dict) and "fields" in j and isinstance(j["fields"], dict):
             j = j["fields"]
         if not isinstance(j, dict):
@@ -753,7 +874,7 @@ def cmd_patch(args):
 def cmd_find(args):
     lay = load_layout(args.layout)
     data = read_input(args.table, lay, "table", args.start, args.stride)
-    rep = find_pid(Table(data, lay, args.start, args.stride), args.pid)
+    rep = find_pid(Table(data, lay, args.start, args.stride, args.count), args.pid)
     print(json.dumps(rep, indent=1, ensure_ascii=False))
     return 0 if rep["aligned_hits"] else 1
 
@@ -761,7 +882,7 @@ def cmd_find(args):
 def cmd_roundtrip(args):
     lay = load_layout(args.layout)
     data = read_input(args.table, lay, "table", args.start, args.stride)
-    rep = roundtrip_check(Table(data, lay, args.start, args.stride))
+    rep = roundtrip_check(Table(data, lay, args.start, args.stride, args.count))
     rep["input"] = {"file": args.table, "sha256": _sha(data)}
     print(json.dumps(rep, indent=1, ensure_ascii=False))
     if not rep["roundtrip_identical"]:
@@ -797,6 +918,8 @@ def build_parser():
         p.add_argument("--start", type=_int, default=0, help="第 0 条记录的表内起点（默认 0）")
         p.add_argument("--stride", type=_int, default=None, help="记录间距（默认 = 行长；PES 20/21 存档里外观块"
                                                                    "嵌在 0x138 字节的球员记录中）")
+        p.add_argument("--count", type=_int, default=None, help="记录条数（默认 = 到文件尾放得下的条数；PES 存档"
+                                                                  "data.dat 的球员区之后还有其他区段，必须给出球员条数）")
         if need_locate:
             p.add_argument("--record", help="单条记录文件（长度必须等于行长）")
             p.add_argument("--index", type=_int, help="记录序号")
@@ -808,11 +931,15 @@ def build_parser():
         p.add_argument("--dry-run", action="store_true", help="只打印差异，不写文件")
         p.add_argument("--allow-header", action="store_true", help="允许改 PID/标志等头部字段")
         p.add_argument("--allow-unused", action="store_true", help="允许改实测未用的位")
+        p.add_argument("--skip-structure-check", action="store_true",
+                       help="整表写入前不做结构检验（06 §8 第 4 步）。只有在已用 roundtrip-check 确认布局无误、"
+                            "且检验因已知原因不适用时才用")
 
     p = sub.add_parser("decode", help="记录 → JSON")
     src_opts(p)
     p.add_argument("--all", action="store_true", help="整表逐条输出 JSON Lines")
-    p.add_argument("--out")
+    p.add_argument("--out", help="输出 JSON 文件（不能是输入；已存在时需 --overwrite，防止覆盖原始记录备份）")
+    p.add_argument("--overwrite", action="store_true", help="允许覆盖已存在的输出（输入永远不能被覆盖）")
     p.set_defaults(fn=cmd_decode)
 
     p = sub.add_parser("encode", help="JSON → 字节（从原记录出发，只写给出的字段）")

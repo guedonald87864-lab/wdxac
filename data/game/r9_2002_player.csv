@@ -1,84 +1,82 @@
-﻿section,key,name_en,name_en_us,name_zh,category,level1,training_add,max_neutral,fixed_booster,max_fixed,crafted_booster_rec,max_fixed_crafted,manager89_fixed,manager89_full,match_CF,match_SS,match_LWF,value,special,trainable_as_additional,client_check,source
-identity,display_name,,,,,,,,,,,,,,,,,Ronaldo Nazário,,,,—
-identity,full_name,,,,,,,,,,,,,,,,,Ronaldo Luís Nazário de Lima,,,,03 抬头
-identity,nationality,,,,,,,,,,,,,,,,,Brazil,,,,任务书 §4；03 抬头（巴西队）
-identity,date_of_birth,,,,,,,,,,,,,,,,,1976-09-18,,,,02 H8（Inter 官网）
-identity,age,,,,,,,,,,,,,,,,,25,,,,03 抬头；04 §3.1
-identity,shirt_number,,,,,,,,,,,,,,,,,9,,,,03 抬头
-identity,card_moment,,,,,,,,,,,,,,,,,"2002 FIFA World Cup Final, Germany 0–2 Brazil, Yokohama, 2002-06-30",,,,03 抬头
-identity,height_cm,,,,,,,,,,,,,,,,,183,,,,02 工作基线
-identity,weight_kg,,,,,,,,,,,,,,,,,82,,,,02 §3（可接受 80–84）
-identity,card_id,,,,,,,,,,,,,,,,,88044146203441,,,必须与主项目核对,04 §8.4（T4）
-identity,card_type,,,,,,,,,,,,,,,,,Epic,,,待客户端核实,只用于套用 Epic 培养规格
-profile,stronger_foot,,,,,,,,,,,,,,,,,Right,,,编码待客户端核实,03 §4 附加特性：已知用脚的 5 球中 4 球是右脚
-profile,weak_foot_usage,,,,,,,,,,,,,,,,,Regularly,,,编码待客户端核实,03 §4 建议'Occasionally，偏 Regularly'；生涯'能用双脚'（03 §3.2，T3）；对比利时 87' 右路低平横传到左侧时左脚一脚推射（03 §1.2 #5，核查记录 #7 确认）。04 §3.2：频率只决定球偏向逆足侧时是否允许用逆足，不会强迫使用。
-profile,weak_foot_accuracy,,,,,,,,,,,,,,,,,High,,,编码待客户端核实,03 §4：对比利时 87' 左脚一脚推射质量高（03 核查记录 #7 确认），但已知的左脚射门样本只有 2 次左右，不给 Very High。决赛 18' 单刀偏出的'左脚'只有维基转引 BBC 计时稿一处 T3 来源（03 核查记录 #27 部分未核实），只作旁证
-profile,form,,,,,,,,,,,,,,,,,Standard,,,编码待客户端核实,03 §4：7 场 6 场进球，但身体起伏大（半决赛 Zagallo 认为他'不对劲'），二选一取 Standard
-profile,injury_resistance,,,,,,,,,,,,,,,,,Low,,,编码待客户端核实,03 §2.2：1999、2000 两次髌腱断裂；2001/02 三次以上大腿肌肉伤；世界杯期间右大腿伤
-profile,registered_position,,,,,,,,,,,,,,,,,CF,,,,03 §4
-profile,max_level,,,,,,,,,,,,,,,,,32,,,待客户端核实,04 §5.2
-profile,progression_points,,,,,,,,,,,,,,,,,62,,,待客户端核实,04 §5.2：2×(最高等级−1)，社区逆向
-stat,offensive_awareness,Attacking Awareness,Offensive Awareness,进攻意识,dexterity,81,12,93,3,96,0,96,99,99,99,94,94,,,,字段名/编码待客户端核实,DESIGN.md §2
-stat,ball_control,Ball Control,Ball Control,控球,dribbling,84,4,88,3,91,1,92,94,95,95,88,88,,,,字段名/编码待客户端核实,DESIGN.md §2
-stat,dribbling,Dribbling,Dribbling,盘球,dribbling,82,4,86,0,86,0,86,89,89,89,82,82,,,,字段名/编码待客户端核实,DESIGN.md §2
-stat,tight_possession,Tight Possession,Tight Possession,紧密控球,dribbling,82,4,86,0,86,1,87,89,90,90,90,90,,,,字段名/编码待客户端核实,DESIGN.md §2
-stat,low_pass,Low Pass,Low Pass,地面传球,passing,72,0,72,0,72,0,72,74,74,74,69,69,,,,字段名/编码待客户端核实,DESIGN.md §2
-stat,lofted_pass,Lofted Pass,Lofted Pass,空中传球,passing,67,0,67,0,67,0,67,69,69,69,64,64,,,,字段名/编码待客户端核实,DESIGN.md §2
-stat,finishing,Finishing,Finishing,射门,shooting,82,10,92,3,95,0,95,98,98,98,91,91,,,,字段名/编码待客户端核实,DESIGN.md §2
-stat,heading,Heading,Heading,头球,aerial_strength,64,4,68,0,68,0,68,70,70,70,65,65,,,,字段名/编码待客户端核实,DESIGN.md §2
-stat,set_piece_taking,Set Piece Taking,Set Pieces,罚定位球,shooting,58,10,68,0,68,0,68,70,70,70,65,65,,,,字段名/编码待客户端核实,DESIGN.md §2
-stat,curl,Curl,Curl,弧线球,shooting,67,10,77,0,77,0,77,79,79,79,74,74,,,,字段名/编码待客户端核实,DESIGN.md §2
-stat,defensive_awareness,Defensive Awareness,Defensive Awareness,防守意识,defending,42,0,42,0,42,0,42,43,43,43,41,41,,,,字段名/编码待客户端核实,DESIGN.md §2
-stat,tackling,Tackling,Tackling,抢球,defending,45,0,45,0,45,0,45,46,46,46,43,43,,,,字段名/编码待客户端核实,DESIGN.md §2
-stat,aggression,Aggression,Aggression,积极性,defending,50,0,50,0,50,0,50,51,51,51,51,51,,,,字段名/编码待客户端核实,DESIGN.md §2
-stat,defensive_engagement,Defensive Engagement,Defensive Engagement,防守参与度,defending,42,0,42,0,42,0,42,43,43,43,43,43,,,,字段名/编码待客户端核实,DESIGN.md §2
-stat,gk_awareness,GK Awareness,GK Awareness,守门员意识,gk_1,40,0,40,0,40,0,40,41,41,41,40,40,,,,字段名/编码待客户端核实,DESIGN.md §2
-stat,gk_catching,GK Catching,GK Catching,守门员接球能力,gk_3,40,0,40,0,40,0,40,41,41,41,40,40,,,,字段名/编码待客户端核实,DESIGN.md §2
-stat,gk_parrying,GK Parrying,GK Deflecting,守门员扑救,gk_2,40,0,40,0,40,0,40,41,41,41,40,40,,,,字段名/编码待客户端核实,DESIGN.md §2
-stat,gk_reflexes,GK Reflexes,GK Reflexes,守门员扑救反应,gk_3,40,0,40,0,40,0,40,41,41,41,40,40,,,,字段名/编码待客户端核实,DESIGN.md §2
-stat,gk_reach,GK Reach,GK Reach,守门员臂展,gk_2,40,0,40,0,40,0,40,41,41,41,40,40,,,,字段名/编码待客户端核实,DESIGN.md §2
-stat,speed,Speed,Speed,速度,lower_body_strength,79,8,87,0,87,0,87,90,90,90,83,83,,,,字段名/编码待客户端核实,DESIGN.md §2
-stat,acceleration,Acceleration,Acceleration,加速,dexterity,79,12,91,3,94,0,94,97,97,97,92,92,,,,字段名/编码待客户端核实,DESIGN.md §2
-stat,kicking_power,Kicking Power,Kicking Power,脚下力量,lower_body_strength,77,8,85,0,85,0,85,88,88,88,83,83,,,,字段名/编码待客户端核实,DESIGN.md §2
-stat,jumping,Jumping,Jumping,跳起,aerial_strength/gk_1,64,4,68,0,68,0,68,70,70,70,65,65,,,,字段名/编码待客户端核实,DESIGN.md §2
-stat,physical_contact,Physical Contact,Physical Contact,身体接触,aerial_strength,81,4,85,0,85,1,86,88,89,89,86,86,,,,字段名/编码待客户端核实,DESIGN.md §2
-stat,balance,Balance,Balance,平衡,dexterity,74,12,86,0,86,1,87,89,90,90,87,87,,,,字段名/编码待客户端核实,DESIGN.md §2
-stat,stamina,Stamina,Stamina,体力,lower_body_strength,58,8,66,0,66,0,66,68,68,68,66,66,,,,字段名/编码待客户端核实,DESIGN.md §2
-overall,GK,,,,,44,,46,,46,,46,48,49,,,,low,,,总评公式待客户端核实,04 §7（社区逆向公式）
-overall,CB,,,,,65,,71,,72,,72,75,75,,,,low,,,总评公式待客户端核实,04 §7（社区逆向公式）
-overall,LB,,,,,73,,82,,83,,83,87,87,,,,low,,,总评公式待客户端核实,04 §7（社区逆向公式）
-overall,RB,,,,,73,,82,,83,,83,87,87,,,,low,,,总评公式待客户端核实,04 §7（社区逆向公式）
-overall,DMF,,,,,67,,73,,74,,74,77,78,,,,low,,,总评公式待客户端核实,04 §7（社区逆向公式）
-overall,CMF,,,,,75,,83,,84,,85,88,89,,,,low,,,总评公式待客户端核实,04 §7（社区逆向公式）
-overall,LMF,,,,,81,,90,,92,,92,96,96,,,,low,,,总评公式待客户端核实,04 §7（社区逆向公式）
-overall,RMF,,,,,81,,90,,92,,92,96,96,,,,low,,,总评公式待客户端核实,04 §7（社区逆向公式）
-overall,AMF,,,,,84,,93,,95,,95,99,99,,,,low,,,总评公式待客户端核实,04 §7（社区逆向公式）
-overall,LWF,,,,,86,,97,,99,,100,104,104,,,,mid,,,总评公式待客户端核实,04 §7（社区逆向公式）
-overall,RWF,,,,,86,,97,,99,,100,104,104,,,,low,,,总评公式待客户端核实,04 §7（社区逆向公式）
-overall,SS,,,,,88,,99,,101,,101,106,106,,,,mid,,,总评公式待客户端核实,04 §7（社区逆向公式）
-overall,CF,,,,,87,,100,,102,,103,107,107,,,,high,,,总评公式待客户端核实,04 §7（社区逆向公式）
-allocation,shooting,Shooting,,射门,"finishing,set_piece_taking,curl",,10,,,,,,,,,,,10,,,待客户端核实,推荐 = 自动提升（pesdb 贪心 = 精确最优）
-allocation,passing,Passing,,传球,"low_pass,lofted_pass",,0,,,,,,,,,,,0,,,待客户端核实,推荐 = 自动提升（pesdb 贪心 = 精确最优）
-allocation,dribbling,Dribbling,,盘球,"ball_control,dribbling,tight_possession",,4,,,,,,,,,,,4,,,待客户端核实,推荐 = 自动提升（pesdb 贪心 = 精确最优）
-allocation,dexterity,Dexterity,,灵巧,"offensive_awareness,acceleration,balance",,12,,,,,,,,,,,12,,,待客户端核实,推荐 = 自动提升（pesdb 贪心 = 精确最优）
-allocation,defending,Defending,,防守,"defensive_awareness,tackling,aggression,defensive_engagement",,0,,,,,,,,,,,0,,,待客户端核实,推荐 = 自动提升（pesdb 贪心 = 精确最优）
-allocation,aerial_strength,Aerial Strength,,空中力量,"heading,jumping,physical_contact",,4,,,,,,,,,,,4,,,待客户端核实,推荐 = 自动提升（pesdb 贪心 = 精确最优）
-allocation,lower_body_strength,Lower Body Strength,,下肢力量,"speed,kicking_power,stamina",,8,,,,,,,,,,,8,,,待客户端核实,推荐 = 自动提升（pesdb 贪心 = 精确最优）
-allocation,cost,,,,,,,,,,,,,,,,,62/62,,,,04 §5.4
-playing_style,attacking,Goal Poacher,Adv. Striker,偷猎者,,,,,,,,,,,,,,active: CF,,,ID 待客户端核实,04 §3.7
-playing_style,defensive,Attack Outlet,Attack Outlet,突前球员,,,,,,,,,,,,,,active: LWF SS CF,,,ID 待客户端核实,04 §3.7
-ai_playing_style,Trickster,Trickster,,魔术师,,,,,,,,,,,,,,no position check,,,ID 待客户端核实,04 §3.7
-card_skill,Scissors Feint,Scissors Feint,Scissors Feint,剪刀脚假动作,,,,,,,,,,,,,,,no,yes,ID/特殊标志待客户端核实,03 §3.2 踩单车：对土耳其首战'trademark step over'，对比利时 22' 'pedalou'
-card_skill,Cut Behind & Turn,Cut Behind & Turn,Cut Behind & Turn,向后切球并转身,,,,,,,,,,,,,,,no,yes,ID/特殊标志待客户端核实,03 §3.2 短距离变向/转身：对哥斯达黎加 13' 转身摆脱、半决赛第一脚趟球摆脱、决赛 45' 'twists on a sixpence'
-card_skill,Acceleration Burst,Acceleration Burst,Acceleration Burst,瞬间加速,,,,,,,,,,,,,,,yes,no,ID/特殊标志待客户端核实,03 §3.2 原地启动/爆发：'burst through'（对比利时 37'）、短距离爆发保留得最好；不直接加 Speed/Acceleration（04 #12），不会重复计算
-card_skill,Acrobatic Finishing,Acrobatic Finishing,Acrobatic Finishing,杂技般进球,,,,,,,,,,,,,,,no,yes,ID/特殊标志待客户端核实,03 §1.2 进球 #1：对土耳其飞身伸腿垫射
-card_skill,First-time Shot,First-time Shot,One-time Shot,一脚射门,,,,,,,,,,,,,,,no,yes,ID/特殊标志待客户端核实,03 §1.2：8 球中 5 球一脚出球
-card_skill,Phenomenal Finishing,Phenomenal Finishing,Phenomenal Finishing,无定型射门,,,,,,,,,,,,,,,yes,no,ID/特殊标志待客户端核实,03 §1.2 进球 #1（伸腿脚尖垫射）、#6（几乎不后摆的脚尖捅射）、#4（打得不实的低射）都是别扭姿势下的射门；04 #28 的效果正是别扭姿势射门的瞄准与误触修正
-card_skill,Gamesmanship,Gamesmanship,Gamesmanship,假摔,,,,,,,,,,,,,,,no,yes,ID/特殊标志待客户端核实,03 §1.1、§1.3：7 场被犯规 14 次，造了对中国的点球
-additional_skill_recommended,One-touch Pass,One-touch Pass,,一脚传球,,,,,,,,,,,,,,optional（出厂为空，玩家训练）,no,yes,,弱：03 §1.4 分边与撞墙配合、§2.1 2001-12-09 与 Vieri 撞墙后进球
-additional_skill_recommended,Fighting Spirit,Fighting Spirit,,战斗精神,,,,,,,,,,,,,,optional（出厂为空，玩家训练）,no,yes,,主观：03 §3.1 带伤上场（'half a leg'），03 §5.3 注明缺乏可量化证据
-additional_skill_recommended,Chop Turn,Chop Turn,,脚后跟磕球变向,,,,,,,,,,,,,,optional（出厂为空，玩家训练）,no,yes,,弱：03 §5.3 与 Cut Behind & Turn 二选一的另一项；'turn and jink'、'shimmying'
-booster,slot1,Striker's Instinct,,射手本能,"Attacking Awareness,Ball Control,Finishing,Acceleration",,,,,,,,,,,,,fixed +3 active,,,增能 ID 待客户端核实,04 §6.2 常规增能列表（pesdb id 64，官网简中'射手本能'）
-booster,slot2_shipped,Empty Booster Slot,,,,,,,,,,,,,,,,craftable +1（出厂为空）,,,空槽表示方法待客户端核实,04 §6.4
-booster,slot2_recommended,Ball Protection,,,"Ball Control,Tight Possession,Physical Contact,Balance",,,,,,,,,,,,,crafted +1（玩家制作）,,,,04 §6.2 常规增能列表（pesdb id 176，v5.2.0 新增的 12 种可制作增能之一）
-manager_assumption,team_playstyle_proficiency,,,,,,,,,,,,,,,,,89,,,,典型值假设（T4）；倍率公式 04 §6.5 社区逆向
+﻿section,key,name_en,name_en_us,name_zh,category,level1,training_add,max_neutral,fixed_booster,max_fixed,crafted_booster_rec,max_fixed_crafted,manager89_fixed,manager89_full,match_CF,match_SS,match_LWF,penalised_max_fixed_T4,penalised_manager89_full_T4,value,special,trainable_as_additional,client_check,source
+identity,display_name,,,,,,,,,,,,,,,,,,,Ronaldo Nazário,,,,—
+identity,full_name,,,,,,,,,,,,,,,,,,,Ronaldo Luís Nazário de Lima,,,,03 抬头
+identity,nationality,,,,,,,,,,,,,,,,,,,Brazil,,,,任务书 §4；03 抬头（巴西队）
+identity,date_of_birth,,,,,,,,,,,,,,,,,,,1976-09-18,,,,02 H8（Inter 官网）
+identity,age,,,,,,,,,,,,,,,,,,,25,,,,03 抬头；04 §3.1
+identity,shirt_number,,,,,,,,,,,,,,,,,,,9,,,,03 抬头
+identity,card_moment,,,,,,,,,,,,,,,,,,,"2002 FIFA World Cup Final, Germany 0–2 Brazil, Yokohama, 2002-06-30",,,,03 抬头
+identity,height_cm,,,,,,,,,,,,,,,,,,,183,,,,02 工作基线
+identity,weight_kg,,,,,,,,,,,,,,,,,,,82,,,,02 §3（可接受 80–84）
+identity,card_id,,,,,,,,,,,,,,,,,,,88044146203441,,,必须与主项目核对,04 §8.4（T4）
+identity,card_type,,,,,,,,,,,,,,,,,,,Epic,,,待客户端核实,只用于套用 Epic 培养规格
+profile,stronger_foot,,,,,,,,,,,,,,,,,,,Right,,,编码待客户端核实,03 §4 附加特性：已知用脚的 5 球中 4 球是右脚
+profile,weak_foot_usage,,,,,,,,,,,,,,,,,,,Occasionally,,,编码待客户端核实,03 §4 的首选是 Occasionally。2002 年确认的左脚射门只有对比利时 87' 的进球（03 #5，核查 #7 确认）；决赛 18' 的'左脚'只有 T3 单一来源；CNN 写明对比利时 19' 是右脚射门。约 33 次射门（T4 计数，见 DESIGN §2.4）中左脚约占 3%。同组官方卡没有一张是 Regularly（Kaká Occasionally，其余 Rarely/Almost Never）。旧稿用的'生涯能用双脚'（维基 T3，跨年份）违反'只做 2002'，不再使用。游戏效果（04 §3.2，社区逆向）：球偏向逆足侧 >15° 时允许用逆足的概率 67%，对比利时那类来球多数仍可用左脚。不进总评
+profile,weak_foot_accuracy,,,,,,,,,,,,,,,,,,,High,,,编码待客户端核实,03 §4：对比利时 87' 左脚一脚推射质量高（03 核查记录 #7 确认），但 2002 年确认的左脚射门样本只有 1 次（另 1 次只有 T3 来源），不给 Very High。逆足精度进总评（WFR = 79，04 §7.1）
+profile,form,,,,,,,,,,,,,,,,,,,Unwavering,,,编码待客户端核实,本组设计选择（T4）。产出稳定性：7 场 6 场进球，含半决赛和决赛（03 §1.1）。旧稿取 Standard 的理由（Zagallo 认为他'不对劲'、身体起伏大）是伤病证据，已经用在抗伤 Low 和 Stamina 66 上，再用于 Form 就是同一事实计三次。03 §4 原建议'Standard 至 Unwavering 之间，二选一取 Standard'，其前提正是身体起伏。同组官方卡多为 Unwavering（Romário、Rivaldo、Kaká、Ronaldinho、Adriano E05-06）。游戏效果：社区逆向称比赛逻辑不读取 Form，只影响状态抽取（04 §3.3、C19）；官方说 v3.0.0 只降低了 Standard/Inconsistent 抽到 Poor 的概率（T1）
+profile,injury_resistance,,,,,,,,,,,,,,,,,,,Low,,,编码待客户端核实,03 §2.2：1999、2000 两次髌腱断裂；2001/02 三次以上大腿肌肉伤；世界杯期间右大腿伤
+profile,live_update_rating,,,,,,,,,,,,,,,,,,,B,,,编码待客户端核实,第三方指南称 Epic、Big Time、Legendary 卡固定为 B（T3 [S29]，04 §3.3、核查记录 C30）。官方 Form 规则与条件型增能都以 'B or higher' 为界（T1）
+profile,registered_position,,,,,,,,,,,,,,,,,,,CF,,,位置序号与适性编码待客户端核实,03 §4
+profile,max_level,,,,,,,,,,,,,,,,,,,32,,,待客户端核实,04 §5.2
+profile,progression_points,,,,,,,,,,,,,,,,,,,62,,,待客户端核实,04 §5.2：2×(最高等级−1)，社区逆向
+stat,offensive_awareness,Attacking Awareness,Offensive Awareness,进攻意识,dexterity,81,12,93,3,96,0,96,99,99,99,94,94,,,,,,字段名/编码待客户端核实,DESIGN.md §2
+stat,ball_control,Ball Control,Ball Control,控球,dribbling,84,4,88,3,91,1,92,94,95,95,88,88,,,,,,字段名/编码待客户端核实,DESIGN.md §2
+stat,dribbling,Dribbling,Dribbling,盘球,dribbling,84,4,88,0,88,0,88,91,91,91,84,84,,,,,,字段名/编码待客户端核实,DESIGN.md §2
+stat,tight_possession,Tight Possession,Tight Possession,紧密控球,dribbling,84,4,88,0,88,1,89,91,92,92,92,92,,,,,,字段名/编码待客户端核实,DESIGN.md §2
+stat,low_pass,Low Pass,Low Pass,地面传球,passing,72,0,72,0,72,0,72,74,74,74,69,69,,,,,,字段名/编码待客户端核实,DESIGN.md §2
+stat,lofted_pass,Lofted Pass,Lofted Pass,空中传球,passing,69,0,69,0,69,0,69,71,71,71,66,66,,,,,,字段名/编码待客户端核实,DESIGN.md §2
+stat,finishing,Finishing,Finishing,射门,shooting,81,10,91,3,94,0,94,97,97,97,90,90,,,,,,字段名/编码待客户端核实,DESIGN.md §2
+stat,heading,Heading,Heading,头球,aerial_strength,64,4,68,0,68,0,68,70,70,70,65,65,,,,,,字段名/编码待客户端核实,DESIGN.md §2
+stat,set_piece_taking,Set Piece Taking,Set Pieces,罚定位球,shooting,58,10,68,0,68,0,68,70,70,70,65,65,,,,,,字段名/编码待客户端核实,DESIGN.md §2
+stat,curl,Curl,Curl,弧线球,shooting,67,10,77,0,77,0,77,79,79,79,74,74,,,,,,字段名/编码待客户端核实,DESIGN.md §2
+stat,defensive_awareness,Defensive Awareness,Defensive Awareness,防守意识,defending,42,0,42,0,42,0,42,43,43,43,41,41,,,,,,字段名/编码待客户端核实,DESIGN.md §2
+stat,tackling,Tackling,Tackling,抢球,defending,45,0,45,0,45,0,45,46,46,46,43,43,,,,,,字段名/编码待客户端核实,DESIGN.md §2
+stat,aggression,Aggression,Aggression,积极性,defending,50,0,50,0,50,0,50,51,51,51,51,51,,,,,,字段名/编码待客户端核实,DESIGN.md §2
+stat,defensive_engagement,Defensive Engagement,Defensive Engagement,防守参与度,defending,42,0,42,0,42,0,42,43,43,43,43,43,,,,,,字段名/编码待客户端核实,DESIGN.md §2
+stat,gk_awareness,GK Awareness,GK Awareness,守门员意识,gk_1,40,0,40,0,40,0,40,41,41,41,40,40,,,,,,字段名/编码待客户端核实,DESIGN.md §2
+stat,gk_catching,GK Catching,GK Catching,守门员接球能力,gk_3,40,0,40,0,40,0,40,41,41,41,40,40,,,,,,字段名/编码待客户端核实,DESIGN.md §2
+stat,gk_parrying,GK Parrying,GK Deflecting,守门员扑救,gk_2,40,0,40,0,40,0,40,41,41,41,40,40,,,,,,字段名/编码待客户端核实,DESIGN.md §2
+stat,gk_reflexes,GK Reflexes,GK Reflexes,守门员扑救反应,gk_3,40,0,40,0,40,0,40,41,41,41,40,40,,,,,,字段名/编码待客户端核实,DESIGN.md §2
+stat,gk_reach,GK Reach,GK Reach,守门员臂展,gk_2,40,0,40,0,40,0,40,41,41,41,40,40,,,,,,字段名/编码待客户端核实,DESIGN.md §2
+stat,speed,Speed,Speed,速度,lower_body_strength,79,8,87,0,87,0,87,90,90,90,83,83,,,,,,字段名/编码待客户端核实,DESIGN.md §2
+stat,acceleration,Acceleration,Acceleration,加速,dexterity,77,12,89,3,92,0,92,95,95,95,90,90,,,,,,字段名/编码待客户端核实,DESIGN.md §2
+stat,kicking_power,Kicking Power,Kicking Power,脚下力量,lower_body_strength,77,8,85,0,85,0,85,88,88,88,83,83,,,,,,字段名/编码待客户端核实,DESIGN.md §2
+stat,jumping,Jumping,Jumping,跳起,aerial_strength/gk_1,64,4,68,0,68,0,68,70,70,70,65,65,,,,,,字段名/编码待客户端核实,DESIGN.md §2
+stat,physical_contact,Physical Contact,Physical Contact,身体接触,aerial_strength,81,4,85,0,85,1,86,88,89,89,86,86,,,,,,字段名/编码待客户端核实,DESIGN.md §2
+stat,balance,Balance,Balance,平衡,dexterity,74,12,86,0,86,1,87,89,90,90,87,87,,,,,,字段名/编码待客户端核实,DESIGN.md §2
+stat,stamina,Stamina,Stamina,体力,lower_body_strength,58,8,66,0,66,0,66,68,68,68,66,66,,,,,,字段名/编码待客户端核实,DESIGN.md §2
+overall,GK,,,,,44,,46,,46,,46,48,49,,,,41,42,low,,,总评公式待客户端核实；penalised 列为本组估算（T4）,04 §7（社区逆向公式）；penalised = §3.6 位置倍率折算后再代入公式（T4）
+overall,CB,,,,,65,,71,,72,,72,75,75,,,,56,59,low,,,总评公式待客户端核实；penalised 列为本组估算（T4）,04 §7（社区逆向公式）；penalised = §3.6 位置倍率折算后再代入公式（T4）
+overall,LB,,,,,73,,82,,83,,83,87,87,,,,63,67,low,,,总评公式待客户端核实；penalised 列为本组估算（T4）,04 §7（社区逆向公式）；penalised = §3.6 位置倍率折算后再代入公式（T4）
+overall,RB,,,,,73,,82,,83,,83,87,87,,,,63,67,low,,,总评公式待客户端核实；penalised 列为本组估算（T4）,04 §7（社区逆向公式）；penalised = §3.6 位置倍率折算后再代入公式（T4）
+overall,DMF,,,,,67,,73,,74,,75,78,78,,,,58,60,low,,,总评公式待客户端核实；penalised 列为本组估算（T4）,04 §7（社区逆向公式）；penalised = §3.6 位置倍率折算后再代入公式（T4）
+overall,CMF,,,,,76,,84,,85,,85,89,89,,,,65,68,low,,,总评公式待客户端核实；penalised 列为本组估算（T4）,04 §7（社区逆向公式）；penalised = §3.6 位置倍率折算后再代入公式（T4）
+overall,LMF,,,,,81,,91,,92,,93,96,97,,,,70,74,low,,,总评公式待客户端核实；penalised 列为本组估算（T4）,04 §7（社区逆向公式）；penalised = §3.6 位置倍率折算后再代入公式（T4）
+overall,RMF,,,,,81,,91,,92,,93,96,97,,,,70,74,low,,,总评公式待客户端核实；penalised 列为本组估算（T4）,04 §7（社区逆向公式）；penalised = §3.6 位置倍率折算后再代入公式（T4）
+overall,AMF,,,,,84,,93,,95,,95,99,100,,,,72,76,low,,,总评公式待客户端核实；penalised 列为本组估算（T4）,04 §7（社区逆向公式）；penalised = §3.6 位置倍率折算后再代入公式（T4）
+overall,LWF,,,,,86,,98,,99,,100,104,104,,,,91,96,mid,,,总评公式待客户端核实；penalised 列为本组估算（T4）,04 §7（社区逆向公式）；penalised = §3.6 位置倍率折算后再代入公式（T4）
+overall,RWF,,,,,86,,98,,99,,100,104,104,,,,76,81,low,,,总评公式待客户端核实；penalised 列为本组估算（T4）,04 §7（社区逆向公式）；penalised = §3.6 位置倍率折算后再代入公式（T4）
+overall,SS,,,,,88,,99,,101,,102,106,106,,,,93,97,mid,,,总评公式待客户端核实；penalised 列为本组估算（T4）,04 §7（社区逆向公式）；penalised = §3.6 位置倍率折算后再代入公式（T4）
+overall,CF,,,,,87,,100,,102,,102,106,107,,,,102,107,high,,,总评公式待客户端核实；penalised 列为本组估算（T4）,04 §7（社区逆向公式）；penalised = §3.6 位置倍率折算后再代入公式（T4）
+allocation,shooting,Shooting,,射门,"finishing,set_piece_taking,curl",,10,,,,,,,,,,,,,10,,,待客户端核实,推荐 = 自动提升的复现（pesdb 贪心 = 精确最优；第二名只差 13/1000）
+allocation,passing,Passing,,传球,"low_pass,lofted_pass",,0,,,,,,,,,,,,,0,,,待客户端核实,推荐 = 自动提升的复现（pesdb 贪心 = 精确最优；第二名只差 13/1000）
+allocation,dribbling,Dribbling,,盘球,"ball_control,dribbling,tight_possession",,4,,,,,,,,,,,,,4,,,待客户端核实,推荐 = 自动提升的复现（pesdb 贪心 = 精确最优；第二名只差 13/1000）
+allocation,dexterity,Dexterity,,灵巧,"offensive_awareness,acceleration,balance",,12,,,,,,,,,,,,,12,,,待客户端核实,推荐 = 自动提升的复现（pesdb 贪心 = 精确最优；第二名只差 13/1000）
+allocation,defending,Defending,,防守,"defensive_awareness,tackling,aggression,defensive_engagement",,0,,,,,,,,,,,,,0,,,待客户端核实,推荐 = 自动提升的复现（pesdb 贪心 = 精确最优；第二名只差 13/1000）
+allocation,aerial_strength,Aerial Strength,,空中力量,"heading,jumping,physical_contact",,4,,,,,,,,,,,,,4,,,待客户端核实,推荐 = 自动提升的复现（pesdb 贪心 = 精确最优；第二名只差 13/1000）
+allocation,lower_body_strength,Lower Body Strength,,下肢力量,"speed,kicking_power,stamina",,8,,,,,,,,,,,,,8,,,待客户端核实,推荐 = 自动提升的复现（pesdb 贪心 = 精确最优；第二名只差 13/1000）
+allocation,cost,,,,,,,,,,,,,,,,,,,62/62,,,,04 §5.4
+playing_style,attacking,Goal Poacher,Adv. Striker,偷猎者,,,,,,,,,,,,,,,,active: CF,,,ID 待客户端核实,04 §3.7
+playing_style,defensive,Attack Outlet,Attack Outlet,突前球员,,,,,,,,,,,,,,,,active: LWF SS CF,,,ID 待客户端核实,04 §3.7
+ai_playing_style,Trickster,Trickster,,魔术师,,,,,,,,,,,,,,,,no position check,,,ID 待客户端核实,04 §3.7
+card_skill,Scissors Feint,Scissors Feint,Scissors Feint,剪刀脚假动作,,,,,,,,,,,,,,,,,no,yes,ID 待客户端核实,03 §3.2 踩单车：对土耳其首战 BBC 'trademark step over'，对比利时 22' Trivela 'pedalou'
+card_skill,Cut Behind & Turn,Cut Behind & Turn,Cut Behind & Turn,向后切球并转身,,,,,,,,,,,,,,,,,no,yes,ID 待客户端核实,03 §3.2 短距离变向/转身：对哥斯达黎加 13' 转身摆脱、半决赛第一脚趟球摆脱、决赛 45' 'twists on a sixpence'。03 §5.3 要求与 Chop Turn 二选一，本卡只给这一个
+card_skill,Acceleration Burst,Acceleration Burst,Acceleration Burst,瞬间加速,,,,,,,,,,,,,,,,,yes,no,ID/特殊标志待客户端核实（特殊身份只有 T2/T3 依据）,03 §3.2：原地启动和短距离爆发仍有记录：对比利时 37' 'burst through'、对哥斯达黎加 48' 'sprints through the middle'、半决赛 49' 'races into the area'。它只给慢速/静止带球时的快速 Sharp Touch 动作，不直接加 Speed/Acceleration（04 #12、C20），所以与 Acceleration 能力值、Striker's Instinct 增能不是同一层；Acceleration 已按 'took away the explosiveness'（Smyth）下调到 89
+card_skill,First-time Shot,First-time Shot,One-time Shot,一脚射门,,,,,,,,,,,,,,,,,no,yes,ID 待客户端核实,03 §1.2：8 球中 5 球一脚出球。效果是一脚射门时来球速度按 90% 计，不是瞄准加成，也不改能力值
+card_skill,Phenomenal Finishing,Phenomenal Finishing,Phenomenal Finishing,无定型射门,,,,,,,,,,,,,,,,瞄准/计算 Finishing +7、Heading +7（别扭姿势射门（含头球）；不受 99 封顶）,yes,no,ID/特殊标志待客户端核实（特殊身份只有 T2/T3 依据）,本组设计选择（T4），证据中等：2002 年他多次在别扭姿势下射门——#1 对土耳其飞身伸腿垫射（进球）、对哥斯达黎加 13' 转身后射门（进球，但 'scuffed'）、决赛 45' 原地转身抽射（被卡恩挡出）。不再引用 #4 的'打得不实'（它是 PF 要减少的误触，属于反证）和 #6 的脚尖捅射（03 §5.3 要求不为脚尖捅射硬套技能）。副作用：PF 对头球也适用，别扭姿势的头球按 Heading +7 瞄准（比赛中 CF 70→77），而 2002 年 0 个头球进球；Heading 本身仍是 68，未拔高
+card_skill,Gamesmanship,Gamesmanship,Gamesmanship,假摔,,,,,,,,,,,,,,,,,no,yes,ID 待客户端核实,03 §1.1、§1.3：7 场被犯规 14 次，造了对中国的点球；ESPN：对土耳其 43' 突破时被 Alpay 放倒，对哥斯达黎加 68' 倒地未判，半决赛 54'、67' 被犯规
+additional_skill_recommended,One-touch Pass,One-touch Pass,,一脚传球,,,,,,,,,,,,,,,,optional（出厂为空，玩家训练）,no,yes,,中：对中国 44' 'collects a one-two' 后造点；对土耳其 29' 与 Cafu、Rivaldo 连线；决赛 22' 与 Lúcio 撞墙未成（ESPN，T3）；03 §1.4 分边与撞墙配合
+booster,slot1,Striker's Instinct,,射手本能,"Attacking Awareness,Ball Control,Finishing,Acceleration",,,,,,,,,,,,,,,fixed +3 active,,,增能 ID 待客户端核实,04 §6.2 常规增能列表（pesdb id 64，官网简中'射手本能'）
+booster,slot2_shipped,Empty Booster Slot,,,,,,,,,,,,,,,,,,craftable +1（出厂为空）,,,空槽表示方法待客户端核实,04 §6.4
+booster,slot2_recommended,Ball Protection,,,"Ball Control,Tight Possession,Physical Contact,Balance",,,,,,,,,,,,,,,crafted +1（玩家制作）,,,,04 §6.2 常规增能列表（pesdb id 176，v5.2.0 新增的 12 种可制作增能之一）
+manager_assumption,team_playstyle_proficiency,,,,,,,,,,,,,,,,,,,89,,,,典型值假设（T4），只用于模拟（JSON simulation.manager），不属于卡数据；倍率公式 04 §6.5 社区逆向

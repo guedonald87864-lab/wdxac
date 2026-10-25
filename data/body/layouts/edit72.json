@@ -100,7 +100,7 @@
    "name": "gk_gloves_id",
    "byte": 6,
    "bit": 2,
-   "width": 10,
+   "width": 14,
    "group": "header",
    "transform": {
     "kind": "uint"
@@ -108,7 +108,7 @@
    "confidence": "high(edit)",
    "nibble": null,
    "conflict": "width (wiki vs 4cc-studio)",
-   "note": "edit-only; wiki says 10 bits + 4-bit Unknown A, 4ccEditor reads 14 bits; wiki 10 bit + 4-bit 'Unknown A'; 4ccEditor reads 14 bit"
+   "note": "edit-only; 14 bits as read AND written by 4ccEditor (pes20.cpp L155/L591/L885 'using Unk A space') and 4cc-studio (pes20.rs GlovesId bit_offset 1970, bit_width 14); wiki: 10 bits + 4-bit Unknown A (review K28); wiki 10 bit + 4-bit 'Unknown A' at 0x07:4; 4ccEditor and 4cc-studio read/write 14 bit (schema keeps 14, 06 核查记录 K28)"
   },
   {
    "name": "base_copy_player_id",
@@ -3020,7 +3020,9 @@
      62,
      0
     ]
-   }
+   },
+   "conflict": "width (wiki vs 4cc-studio)",
+   "note": "wiki 2 bit 'Hair Style Front' + 1 bit 'Unknown S' at 0x42:2; 4cc-studio 3 bit (06 核查记录 K26)"
   },
   {
    "name": "HairParted",
@@ -3134,13 +3136,7 @@
   }
  ],
  "unmapped_bits": {
-  "runs": [
-   [
-    7,
-    4,
-    4
-   ]
-  ],
+  "runs": [],
   "note": "bits no source assigns to a field; decode reports them raw, encode/patch always keep them unchanged"
  }
 }

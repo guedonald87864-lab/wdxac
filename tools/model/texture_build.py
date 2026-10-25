@@ -155,8 +155,8 @@ def smooth(x, e0, e1):
 
 
 def save(path, arr, srgb=True):
-    if srgb:
-        arr = lin_to_srgb(arr)
+    if srgb:   # colour channels only; alpha stays linear
+        arr = np.concatenate([lin_to_srgb(arr[..., :3]), arr[..., 3:]], -1)
     arr = np.clip(arr, 0, 1)
     h, w, c = arr.shape
     img = bpy.data.images.new(os.path.basename(path), w, h, alpha=(c == 4))
@@ -246,7 +246,13 @@ alb = alb * (1 - 0.10 * cheek[..., None]) + hexc(PAL["skin_warm"]) * 0.10 * chee
 peri = np.exp(-(np.minimum(dist_to_polyline(POS, EYE_R, True), dist_to_polyline(POS, EYE_L, True)) / (0.9 * cm)) ** 2)
 alb *= (1 - 0.18 * peri[..., None])
 nostr = np.exp(-(np.min([np.linalg.norm(POS - L[i], axis=-1) for i in NOSTRIL], axis=0) / (0.45 * cm)) ** 2)
-alb *= (1 - 0.35 * nostr[..., None])
+alb *= (1 - 0.45 * nostr[..., None])
+# alar crease (groove around each nostril wing) - strong dark accent in the photos that makes
+# his broad lower nose read at a distance (likeness critique 2026-10-25)
+ALAR_R = [129, 98, 64, 48, 219, 218, 237]       # MediaPipe points along the right ala base
+ALAR_L = [358, 327, 294, 278, 439, 438, 457]
+alar = np.exp(-(np.minimum(dist_to_polyline(POS, ALAR_R), dist_to_polyline(POS, ALAR_L)) / (0.18 * cm)) ** 2)
+alb *= (1 - 0.40 * alar[..., None])
 # lips
 lip_d = dist_to_polyline(POS, LIP_OUTER, True)
 poly = L[LIP_OUTER][:, [0, 2]]
@@ -258,7 +264,13 @@ for (x1, z1), (x2, z2) in zip(poly, np.roll(poly, -1, 0)):
 c_out = L[LIP_OUTER].mean(0)
 inside_lip &= (POS[..., 1] < c_out[1] + 1.5 * cm)          # front of the face only
 lip_mask = np.where(inside_lip, 1.0, 1 - smooth(lip_d, 0.0, 0.12 * cm)).astype(np.float32)
-alb = alb * (1 - lip_mask[..., None]) + hexc(PAL["lip"]) * (0.9 + 0.2 * nz_mid) * lip_mask[..., None]
+# two-tone lips: darker brown upper lip, lighter pink-brown lower lip, soft (not lipstick) edge
+upper = (POS[..., 2] > (L[13][2] + L[14][2]) / 2).astype(np.float32)
+lip_col = hexc(PAL["lip_upper"]) * upper[..., None] + hexc(PAL["lip_lower"]) * (1 - upper[..., None])
+lip_mask = lip_mask * 0.85
+alb = alb * (1 - lip_mask[..., None]) + lip_col * (0.9 + 0.2 * nz_mid) * lip_mask[..., None]
+mouth_line = np.exp(-(dist_to_polyline(POS, [78, 191, 80, 81, 82, 13, 312, 311, 310, 415, 308]) / (0.08 * cm)) ** 2)
+alb *= (1 - 0.6 * mouth_line[..., None])
 # brows: dense dark short hairs between upper and lower brow curves
 def brow_mask(up, low):
     mid = 0.5 * (L[up] + L[low])
@@ -268,20 +280,46 @@ def brow_mask(up, low):
         ab = b_ - a_
         t = np.clip(((POS - a_) @ ab) / max(ab @ ab, 1e-12), 0, 1)
         dc = np.minimum(dc, np.linalg.norm(POS - (a_ + t[..., None] * ab), axis=-1))
-    return 1 - smooth(dc, 0.35 * width, 0.65 * width)
+    # thick, low, straight brows; the tail (lateral 30 %) tapers so they do not read as bars
+    tcoord = np.zeros(POS.shape[:-1], np.float32)
+    best = np.full(POS.shape[:-1], np.inf, np.float32)
+    seg_len = np.linalg.norm(np.diff(mid, axis=0), axis=1)
+    cum = np.concatenate([[0], np.cumsum(seg_len)]) / max(seg_len.sum(), 1e-9)
+    for i, (a_, b_) in enumerate(zip(mid[:-1], mid[1:])):
+        ab = b_ - a_
+        t = np.clip(((POS - a_) @ ab) / max(ab @ ab, 1e-12), 0, 1)
+        d = np.linalg.norm(POS - (a_ + t[..., None] * ab), axis=-1)
+        closer = d < best
+        best = np.where(closer, d, best)
+        tcoord = np.where(closer, cum[i] + t * (cum[i + 1] - cum[i]), tcoord)
+    taper = 0.55 + 0.45 * smooth(tcoord, 0.0, 0.3)   # MediaPipe brow lists run tail -> head
+    return 1 - smooth(dc, 0.40 * width * taper, 0.78 * width * taper)
 brows = np.maximum(brow_mask(BROW_R, BROW_R_LOW), brow_mask(BROW_L, BROW_L_LOW))
 hair_strands = noise3(POS * np.array([1.0, 1.0, 3.0]), 900.0, a.seed + 2, 2)
-brows = brows * (0.75 + 0.25 * smooth(hair_strands, 0.3, 0.6))
-alb = alb * (1 - 0.92 * brows[..., None]) + hexc(PAL["brow"]) * 0.92 * brows[..., None]
+brows = brows * (0.82 + 0.18 * smooth(hair_strands, 0.3, 0.6))
+alb = alb * (1 - 0.98 * brows[..., None]) + hexc(PAL["brow"]) * 0.98 * brows[..., None]
 # lash line / upper lid shadow
 lash = np.exp(-(np.minimum(dist_to_polyline(POS, EYE_R[:9]), dist_to_polyline(POS, EYE_L[:9])) / (0.12 * cm)) ** 2)
 alb *= (1 - 0.7 * lash[..., None])
+# heavy, hooded upper lid: broad soft shadow between lash line and brow
+lid = np.exp(-(np.minimum(dist_to_polyline(POS, [33, 246, 161, 160, 159, 158, 157, 173, 133]),
+                          dist_to_polyline(POS, [263, 466, 388, 387, 386, 385, 384, 398, 362])) / (0.45 * cm)) ** 2)
+alb *= (1 - 0.22 * lid[..., None])
 # scalp: hair-bearing region bounded by a natural hairline that runs round the head:
 # forehead -> temples -> (shaved) sideburns in front of the ear -> behind the ear -> nape.
 # The threshold height is a smooth function of azimuth about the head's vertical axis.
 z_up = POS[..., 2]
 brow_z = np.nanmean(L[BROW_R + BROW_L][:, 2])
-hairline_z = brow_z + PAL["hairline_above_brow_cm"] * cm
+# the texture's hairline must coincide with the hair shell's front edge (otherwise a strip of
+# shaved-scalp texture shows under the shell): read it from the hair params when present
+_meta = json.loads(bpy.context.scene.get("r9_build_meta", "{}") or "{}")
+_hp_path = _meta.get("params", {}).get("hair")
+_hl = PAL["hairline_above_brow_cm"]
+if _hp_path and os.path.exists(_hp_path):
+    _hl = json.load(open(_hp_path))["hairline_above_brow"]
+# skin continues ~4 mm UNDER the shell's front edge (the shell edge sits up to one raycast grid
+# step inside the analytic hairline), so no strip of shaved texture shows below the hair
+hairline_z = brow_z + (_hl + 0.4) * cm
 ear_lm = L[[234, 454]]                                  # face-oval points at the ears
 tragus_z = float(np.nanmean(ear_lm[:, 2]))
 centre = np.array([0.0, float(np.nanmean(ear_lm[:, 1])), tragus_z])
@@ -302,7 +340,8 @@ if frame and hp_path and os.path.exists(hp_path):
     hp = json.load(open(hp_path))
     mh = np.stack([POS[..., 0], POS[..., 2], -POS[..., 1]], -1) * 10.0      # Blender m -> MH dm
     # the predicate's front edge is the hairline: allow a 3 mm margin under the shell
-    patch = HAIRMOD.inside_patch(mh.reshape(-1, 3) + np.array([0, 0.03, 0]), frame, hp).reshape(POS.shape[:-1])
+    # dark scalp only well inside the shell (2 mm inset at the front) so it never peeks out
+    patch = HAIRMOD.inside_patch(mh.reshape(-1, 3) - np.array([0, 0.02, 0]), frame, hp).reshape(POS.shape[:-1])
     patch = patch.astype(np.float32)
 else:
     patch = smooth(HAIR, 0.3, 0.7)
@@ -327,7 +366,8 @@ shaved *= smooth(ear_d, 0.4 * cm, 1.0 * cm)
 # 256 px), so it is rendered as an averaged tone plus a little ~2 mm noise, not as dots
 stub_cov = PAL["stubble_coverage"]
 dots = (stub_cov * (0.8 + 0.4 * noise3(POS, 500.0, a.seed + 3, 2))).astype(np.float32)
-scalp_base = alb * 0.85 + hexc(PAL["scalp_tint"]) * 0.15
+mix_ = PAL.get("scalp_tint_mix", 0.15)
+scalp_base = alb * (1 - mix_) + hexc(PAL["scalp_tint"]) * mix_
 scalp_col = scalp_base * (1 - dots[..., None]) + hexc(PAL["stubble"]) * dots[..., None]
 alb = alb * (1 - shaved[..., None]) + scalp_col * shaved[..., None]
 alb = alb * (1 - patch[..., None]) + hexc(PAL["hair"]) * patch[..., None]
@@ -379,6 +419,25 @@ if body:
     bnz *= noise3(bmap, 90.0, a.seed + 1, 3)[..., None] * 0.06 + 0.97
     balb = (np.broadcast_to(skin, (BM, BM, 3)) * bnz).astype(np.float32)
     save(os.path.join(a.out, "r9_body_albedo.png"), dilate(balb, bcov))
+
+# ----------------------------------------------------------------------------- eye albedo
+# MakeHuman's brown_eye.png iris is maroon (renders a* ~16, reads as red eyes); recolour the iris
+# to the palette's near-black brown and keep the sclera and the cornea alpha.
+EYE_SRC = os.path.join(os.environ.get("MH_DATA", "/opt/tools/mh/makehuman/makehuman/data"), "eyes", "materials", "brown_eye.png")
+if os.path.exists(EYE_SRC):
+    eimg = bpy.data.images.load(EYE_SRC)
+    ew, eh = eimg.size
+    epx = np.array(eimg.pixels[:], np.float32).reshape(eh, ew, 4)[::-1]
+    rgb = epx[..., :3]
+    lum = rgb.mean(-1)
+    sat = rgb.max(-1) - rgb.min(-1)
+    iris = (lum < 0.45) & (sat > 0.04)                     # coloured, darker texels = iris
+    target = hexc(PAL["iris"])                             # linear
+    lin = srgb_to_lin(rgb)
+    scale = np.where(iris[..., None], lin.mean(-1, keepdims=True) / max(float(lin[iris].mean()), 1e-6), 1.0)
+    rec = np.where(iris[..., None], np.clip(target * scale, 0, 1), lin)
+    out = np.concatenate([rec, epx[..., 3:4]], -1)
+    save(os.path.join(a.out, "r9_eye_albedo.png"), np.concatenate([out[..., :3], out[..., 3:]], -1), srgb=True)
 
 # ----------------------------------------------------------------------------- hair shell texture
 M = 1024

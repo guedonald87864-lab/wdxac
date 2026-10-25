@@ -108,8 +108,8 @@ def test_layout_structure(lid):
     for f in lay.fields:  # 每个字段都带 6 个要素
         assert f.width > 0 and 0 <= f.bit < 8 and f.confidence and f.transform.get("kind")
         assert f.nibble in (None, "low", "high")
-    expected_gaps = {"edit72": [(7 * 8 + 4, 4)], "pesdb60": [], "ef64": []}[lid]
-    assert lay.unmapped_runs == expected_gaps  # edit72 只有维基的 "Unknown A"（0x07:4，4 bit）
+    # 三种布局的每一位都有归属。edit72 的门将手套 ID 按 4ccEditor/4cc-studio 读写 14 bit，覆盖维基的 "Unknown A"（0x07:4）
+    assert lay.unmapped_runs == []
     assert "DECODED" in lay.meta["offset_space"] or "decrypted" in lay.meta["offset_space"]
     assert "NOT memory" in lay.meta["offset_space"]
 
@@ -387,8 +387,10 @@ def _wrap_variants(t):
         "cpk": b"CPK " + bytes(12) + b"@UTF" + t[:4000],
         "zstd": b"\x28\xb5\x2f\xfd" + t[:2000],
         "utoc": b"-==--==--==--==-" + t[:2000],
-        "uasset": b"\xc1\x83\x2a\x9e" + t[:2000],
-        "macho": b"\xcf\xfa\xed\xfe" + t[:2000],
+        # 真实 UE 包：标记后是 LegacyFileVersion（UE4.26 = −7）；真实 Mach-O：魔数后是 cputype（arm64 = 0x0100000C）。
+        # 只有魔数、后面直接是表字节的情形与"PID 恰好等于魔数"无法区分，不应拒绝（见 test_player_appearance_adversarial.py）
+        "uasset": b"\xc1\x83\x2a\x9e" + (-7).to_bytes(4, "little", signed=True) + t[:2000],
+        "macho": b"\xcf\xfa\xed\xfe" + (0x0100000C).to_bytes(4, "little") + t[:2000],
         "random": random.Random(1).randbytes(64 * 300),
     }
 

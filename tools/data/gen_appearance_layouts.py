@@ -23,13 +23,14 @@ S = json.loads(re.search(r"```json\n(.*?)\n```", sec, re.S).group(1))
 BODY = ["NeckLength","NeckSize","ShoulderHeight","ShoulderWidth","ChestMeasurement","WaistSize",
         "ArmSize","ArmLength","ThighSize","CalfSize","LegLength","HeadLength","HeadWidth","HeadDepth"]
 WIKI_CONFLICT = {  # 06 §2.3: width conflicts wiki vs 4cc-studio (schema keeps 4cc-studio measured width)
- "gk_gloves_id": "wiki 10 bit + 4-bit 'Unknown A'; 4ccEditor reads 14 bit",
+ "gk_gloves_id": "wiki 10 bit + 4-bit 'Unknown A' at 0x07:4; 4ccEditor and 4cc-studio read/write 14 bit (schema keeps 14, 06 核查记录 K28)",
  "UpperEyelidType": "wiki 3 bit; 4cc-studio 5 bit", "LowerEyelidType": "wiki 3 bit; 4cc-studio 4 bit",
  "EyebrowType": "wiki 3 bit; 4cc-studio 5 bit", "NeckLineType": "wiki 2 bit; 4cc-studio 3 bit",
  "NoseType": "wiki 3 bit + 5-bit 'Unknown N'; 4cc-studio 6 bit", "HairStyle": "wiki 3 bit; 4cc-studio 4 bit",
  "HairCroppedStyle": "wiki 3 bit (1-6); 4cc-studio 4 bit; PES21 crashes if the high bit is set (4cc-studio)",
  "HairVariation": "wiki 5 bit (1-29); 4cc-studio 8 bit", "Hairline": "wiki 2 bit; 4cc-studio 3 bit",
  "HairForeheadWidth": "wiki 2 bit; 4cc-studio 4 bit",
+ "HairFrontStyle": "wiki 2 bit 'Hair Style Front' + 1 bit 'Unknown S' at 0x42:2; 4cc-studio 3 bit (06 核查记录 K26)",
  "SkinColor": "value meaning conflicts: wiki 0=white/transparent,1-6 tones,7 none; GodotFootball 1-6 (0/7 special); 4ccEditor 7->0 for PES18+",
 }
 def transform(f):

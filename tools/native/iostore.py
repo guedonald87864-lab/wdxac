@@ -12,6 +12,7 @@ Subcommands (all JSON-capable):
   container-header  decode the UE4.26 container header / package store (stock 32-byte or eFootball
              16-byte FPackageStoreEntry, detected structurally)
   package-id FPackageId::FromName (CityHash64 of the lower-cased UTF-16LE name) and chunk ids
+  find-refs  read-only: which paths / store entries / package headers mention a package or a text
   diff       compare two containers (or two hash-all JSONs) by chunk id
   selfcheck  byte-exact TOC re-serialisation, perfect-hash lookup, layout, meta hashes, signatures
   build-ooz  build the open-source "ooz" Oodle decoder as a shared library (for Oodle containers)
@@ -625,8 +626,38 @@ class TocResource:
 
     @property
     def ue5_naming(self) -> bool:
-        """EIoChunkType5 applies from UE5 (TOC v4 PerfectHash onwards); UE4.25-4.27 used v1-v3."""
-        return self.header.version >= TocVersion.PerfectHash
+        """True when chunk types follow EIoChunkType5 (UE5), False for EIoChunkType (UE4); see
+        chunk_type_naming() for the evidence and whether it is certain."""
+        return self.chunk_type_naming()["ue5"]
+
+    def chunk_type_naming(self) -> dict:
+        """Which chunk-type enum this TOC uses. v1-v3 are written by UE4.25-4.27 only (EIoChunkType);
+        v5+ by UE5 (EIoChunkType5: retoc lib.rs `is_new = version > PerfectHash`, CUE4Parse
+        `Game >= GAME_UE5_0`). For v4 the two references DISAGREE (retoc: old enum; CUE4Parse: by engine
+        version, and no shipped engine is mapped to v4 by retoc version.rs), so v4 is decided from the
+        container's own ContainerHeader chunk (ContainerId, 0, type): 10 = UE4 enum, 6 = UE5 enum;
+        without it the naming is reported as uncertain and writers that need a type code refuse."""
+        cached = self.__dict__.get("_naming_cache")
+        if cached is not None and cached[0] == (self.header.version, len(self.chunk_ids)):
+            return cached[1]
+        v = self.header.version
+        if v < TocVersion.PerfectHash:
+            res = {"ue5": False, "certain": True, "source": f"TOC v{v} (<= PartitionSize) is UE4.25-4.27: EIoChunkType"}
+        elif v > TocVersion.PerfectHash:
+            res = {"ue5": True, "certain": True, "source": f"TOC v{v} (> PerfectHash) is UE5+: EIoChunkType5"}
+        else:
+            cid = self.header.container_id
+            types = {x.type for x in self.chunk_ids if x.id == cid and x.index == 0 and x.padding == 0}
+            if 10 in types and 6 not in types:
+                res = {"ue5": False, "certain": True, "source": "TOC v4: ContainerHeader chunk has the UE4 type 10"}
+            elif 6 in types and 10 not in types:
+                res = {"ue5": True, "certain": True, "source": "TOC v4: ContainerHeader chunk has the UE5 type 6"}
+            else:
+                res = {"ue5": True, "certain": False,
+                       "source": "TOC v4 without a recognisable ContainerHeader chunk: retoc reads v4 with the UE4 "
+                                 "enum, CUE4Parse by engine version - chunk type names are a guess (UE5 shown)"}
+        self.__dict__["_naming_cache"] = ((v, len(self.chunk_ids)), res)
+        return res
 
     def resolve(self, chunk_id: ChunkId) -> Optional[int]:
         """IoStoreReader.TryResolve: perfect-hash lookup, overflow fallback, else linear search.
@@ -1465,6 +1496,7 @@ class IoStoreContainer:
                           "size": os.path.getsize(p) if os.path.exists(p) else None})
         return {"compression_methods": methods, "chunk_types": types,
                 "chunk_type_naming": "UE5 (EIoChunkType5)" if toc.ue5_naming else "UE4 (EIoChunkType)",
+                "chunk_type_naming_evidence": toc.chunk_type_naming(),
                 "meta_flags": mflags, "partitions": parts,
                 "total_uncompressed": sum(ln for _, ln in toc.offsets)}
 
@@ -2224,13 +2256,12 @@ class StoreEntry:
 
     @classmethod
     def from_json(cls, d: dict) -> "StoreEntry":
-        def pid(x):
-            if isinstance(x, int):
-                return x
-            x = str(x)
-            return int(x, 16) if x.lower().startswith("0x") else package_id_from_name(x)
-        return cls(int(d["export_count"]), int(d["export_bundle_count"]),
-                   [pid(x) for x in d.get("imported_packages", [])],
+        imp = d.get("imported_packages", [])
+        if not isinstance(imp, list):
+            raise IoStoreError("imported_packages must be a list of /Root/... package names or 0x ids")
+        # _pid_arg refuses anything that is neither /Root/... nor 0x-hex (a missing leading '/' used to
+        # be hashed silently into an id that matches no package)
+        return cls(int(d["export_count"]), int(d["export_bundle_count"]), [_pid_arg(x) for x in imp],
                    d.get("export_bundles_size"), d.get("load_order"), d.get("pad", 0 if "load_order" in d else None))
 
 
@@ -2489,6 +2520,77 @@ class ContainerHeaderUE4:
         return d
 
 
+def _check_new_store_entries(c: "IoStoreContainer", ch: ContainerHeaderUE4, layout: str,
+                             store_entries: Sequence[Tuple[int, StoreEntry]], new_chunks: Sequence["NewChunk"],
+                             ebd: int, warnings: List[str], sample: int = 32) -> dict:
+    """Cross-check every NEW store entry against the package header in its new ExportBundleData chunk.
+
+    * FPackageId::FromName(name in the header) must equal the registered id.
+    * ExportCount / ExportBundleCount must equal the header's export and bundle counts. UE4.26's
+      AsyncLoading2 is reported to size its per-package export / export-bundle arrays from the store
+      entry before the header is read [T4: Epic source not available here]; CUE4Parse ignores them.
+    * ImportedPackages vs the graph data's imported package ids (warning only: their exact relation in
+      UE4.26 is not verified).
+    Each rule is first MEASURED on up to `sample` existing packages of this container; a violation is
+    refused only when the container's own packages follow the rule, otherwise it is a warning."""
+    zp = _zen()
+    idx = {cid.id: i for i, cid in enumerate(c.toc.chunk_ids) if cid.type == ebd and cid.index == 0}
+    checked, count_bad, id_bad = 0, [], []
+    for pid, e in zip(ch.package_ids, ch.entries(layout)):
+        if checked >= sample:
+            break
+        i = idx.get(pid)
+        if i is None:
+            continue
+        try:
+            p = zp.parse_legacy(c.read_chunk(i))
+        except Exception:
+            continue
+        checked += 1
+        if (e.export_count, e.export_bundle_count) != (len(p.exports), len(p.export_bundles)):
+            count_bad.append(f"0x{pid:016X}")
+        if package_id_from_name(p.package_name) != pid:
+            id_bad.append(f"0x{pid:016X}")
+    counts_rule = bool(checked) and not count_bad
+    id_rule = bool(checked) and not id_bad
+    data_of = {nc.chunk_id.id: nc.data for nc in new_chunks if nc.chunk_id.type == ebd and nc.chunk_id.index == 0}
+    results = []
+    for pid, e in store_entries:
+        rec = {"package_id": f"0x{pid:016X}"}
+        data = data_of.get(pid)
+        if data is None:
+            results.append({**rec, "checked": False, "reason": "no new ExportBundleData chunk for it in this run"})
+            continue
+        try:
+            p = zp.parse_legacy(data)
+        except Exception as ex:
+            warnings.append(f"package 0x{pid:016X}: the new ExportBundleData chunk is not a UE4.26/4.27 Zen package "
+                            f"this tool parses ({type(ex).__name__}: {ex}); its store entry was not cross-checked")
+            results.append({**rec, "checked": False, "reason": "package header not parsed"})
+            continue
+        counts = (len(p.exports), len(p.export_bundles))
+        name_id = package_id_from_name(p.package_name)
+        for ok, rule, msg in (
+                (name_id == pid, id_rule, f"the package header names {p.package_name!r}, whose FPackageId is "
+                                          f"0x{name_id:016X}, not the registered 0x{pid:016X}"),
+                ((e.export_count, e.export_bundle_count) == counts, counts_rule,
+                 f"store entry ExportCount/ExportBundleCount ({e.export_count}, {e.export_bundle_count}) != the "
+                 f"package header's {counts}")):
+            if ok:
+                continue
+            if rule:
+                raise IoStoreError(f"package 0x{pid:016X}: {msg} (all {checked} measured packages of this container "
+                                   f"follow the rule). Refusing.")
+            warnings.append(f"package 0x{pid:016X}: {msg} (rule not established on this container's own packages)")
+        graph = {g["package_id"] for g in p.imported_packages}
+        if graph != set(e.imported_packages):
+            warnings.append(f"package 0x{pid:016X}: store entry ImportedPackages {len(e.imported_packages)} id(s) and the "
+                            f"package's graph data {len(graph)} id(s) are not the same set")
+        results.append({**rec, "checked": True, "header_name": p.package_name, "header_counts": list(counts)})
+    return {"measured_existing_packages": checked, "counts_rule_holds": counts_rule, "counts_rule_violations": count_bad[:8],
+            "package_id_rule_holds": id_rule, "package_id_rule_violations": id_bad[:8], "entries": results}
+
+
 def find_container_header_index(toc: TocResource) -> Optional[int]:
     """TOC index of the (ContainerId, 0, ContainerHeader) chunk (IoStoreReader.ReadContainerHeader);
     the type code follows the TOC's chunk-type naming, the other naming is tried as a fallback."""
@@ -2671,7 +2773,8 @@ def add_to_container(c: IoStoreContainer, new_chunks: Sequence[NewChunk], out_di
                      align: int = AES_BLOCK, unsign: bool = False, verify: bool = False,
                      allow_unverified_key: bool = False, extra_inputs: Sequence[str] = (),
                      argv: Optional[List[str]] = None, key_source: str = "none", operation: str = "add",
-                     extra_manifest: Optional[dict] = None, max_seed: int = 1 << 20) -> dict:
+                     extra_manifest: Optional[dict] = None, max_seed: int = 1 << 20,
+                     allow_toc_trailing: bool = False) -> dict:
     """Write a NEW container (same base name) into out_dir with chunks appended.
 
     * New chunks are appended to the TOC (FIoChunkId, FIoOffsetAndLength, meta) and their data to
@@ -2695,6 +2798,16 @@ def add_to_container(c: IoStoreContainer, new_chunks: Sequence[NewChunk], out_di
     if align < 1 or align % AES_BLOCK:
         raise IoStoreError("--align must be a positive multiple of 16")
     key_check = _writer_preflight(c, unsign, allow_unverified_key, warnings, "adding chunks")
+    if h_in.source_hash_count:
+        raise IoStoreError(f"TOC v{h_in.version} declares {h_in.source_hash_count} source hashes (AddedSourceHashes); "
+                           f"their layout is not known to this tool (CUE4Parse does not read them either), so they "
+                           f"could not be kept consistent with a changed chunk set. Refusing.")
+    if toc_in.trailing and not allow_toc_trailing:
+        raise IoStoreError(f"{len(toc_in.trailing)} unparsed bytes follow the TOC meta section. If they are per-chunk "
+                           f"data they would no longer match once chunks are added (or permuted by the perfect hash). "
+                           f"Refusing; pass --keep-toc-trailing to copy them verbatim anyway.")
+    if toc_in.trailing:
+        warnings.append(f"{len(toc_in.trailing)} unparsed bytes after the TOC meta copied verbatim (--keep-toc-trailing)")
     n_in = len(toc_in.chunk_ids)
     ue5 = toc_in.ue5_naming
     for i in replacements:
@@ -2741,6 +2854,14 @@ def add_to_container(c: IoStoreContainer, new_chunks: Sequence[NewChunk], out_di
                 rec["chunk_id"] = nc.chunk_id.hex
                 paths_added.append(rec)
 
+    if h_in.version >= TocVersion.PerfectHash and toc_in.perfect_hash_seeds and toc_in.directory_index_raw \
+            and (h_in.flags & ContainerFlags.Indexed):
+        d_chk = c.directory_index()
+        bad = [f[2] for f in (d_chk.files if d_chk else []) if not 0 <= f[2] < n_in]
+        if bad:   # checked before anything is written: the perfect-hash rebuild must remap every UserData
+            raise IoStoreError(f"directory index file entries point at TOC indices {bad[:5]} (only {n_in} entries); "
+                               f"they cannot be remapped for the rebuilt perfect hash")
+
     # --- container header (package store) ------------------------------------------------------
     header_info = None
     if store_entries:
@@ -2768,6 +2889,7 @@ def add_to_container(c: IoStoreContainer, new_chunks: Sequence[NewChunk], out_di
             if pid not in new_ebd and pid not in old_ebd:
                 warnings.append(f"package 0x{pid:016X} is registered in the container header but has no "
                                 f"ExportBundleData chunk in this container")
+        entry_check = _check_new_store_entries(c, ch, layout, store_entries, new_chunks, ebd, warnings)
         ch2 = ch.copy()
         add_rec = ch2.add_packages(layout, store_entries, store_order)
         new_raw = ch2.serialize()
@@ -2792,7 +2914,8 @@ def add_to_container(c: IoStoreContainer, new_chunks: Sequence[NewChunk], out_di
             raise IoStoreError("internal error: container header tail/names changed")
         replacements[hidx] = new_raw
         header_info = {"toc_index": hidx, "chunk_id": toc_in.chunk_ids[hidx].hex, "layout": layout,
-                       "layout_evidence": layout_evidence, "old_size": len(raw), "new_size": len(new_raw),
+                       "layout_evidence": layout_evidence, "entry_vs_package_header": entry_check,
+                       "old_size": len(raw), "new_size": len(new_raw),
                        "old_package_count": ch.package_count, **add_rec,
                        "added_entries": [{"package_id": f"0x{p:016X}", **e.to_json()} for p, e in store_entries],
                        "tail": ch.tail_info()}
@@ -2908,6 +3031,9 @@ def add_to_container(c: IoStoreContainer, new_chunks: Sequence[NewChunk], out_di
         if d_new is None:
             d_new = _dir_index_copy(c.directory_index())
         for f in d_new.files:
+            if not 0 <= f[2] < n_out:
+                raise IoStoreError(f"directory index file entry points at TOC index {f[2]} (only {n_out} entries); "
+                                   f"cannot remap it for the rebuilt perfect hash")
             f[2] = perm[f[2]]
         plain = d_new.serialize()
         if c.encrypted:
@@ -2955,7 +3081,8 @@ def add_to_container(c: IoStoreContainer, new_chunks: Sequence[NewChunk], out_di
         "outputs": [file_record(p) for p in out_files if os.path.exists(p)],
         "container": {"name": c.name, "toc_version": h.version, "toc_version_name": h.version_name,
                       "encrypted": c.encrypted, "encryption_method": h.encryption_method.name,
-                      "chunk_type_naming": "UE5" if ue5 else "UE4"},
+                      "chunk_type_naming": "UE5" if ue5 else "UE4",
+                      "chunk_type_naming_evidence": toc_in.chunk_type_naming()},
         "meta_hash_algorithm": algo, "meta_hash_algorithm_info": algo_info,
         "header_changes": {k: {"old": v, "new": new_hj[k]} for k, v in old_hj.items() if new_hj[k] != v},
         "added_chunks": added, "replaced_chunks": replaced, "container_header": header_info,
@@ -3099,7 +3226,8 @@ def verify_add(c_in: IoStoreContainer, utoc_out: str, new_chunks: Sequence[NewCh
                 new_map = {strip_mount(p): o.toc.chunk_ids[i].raw for p, i in o.paths()}
                 lost = [p for p, r in old_map.items() if new_map.get(p) != r]
                 extra = {p: r for p, r in new_map.items() if p not in old_map}
-                want = {rec["path"]: bytes.fromhex(rec["chunk_id"]) for rec in paths_added}
+                mp = c_in.mount_point if c_in.mount_point.endswith("/") or not c_in.mount_point else c_in.mount_point + "/"
+                want = {strip_mount(mp + rec["path"]): bytes.fromhex(rec["chunk_id"]) for rec in paths_added}
                 checks["paths"] = {"old": len(old_map), "new": len(new_map), "old_paths_unchanged": not lost,
                                    "added_as_requested": extra == want}
                 if lost:
@@ -3219,9 +3347,11 @@ def _export_bundles_size_relation(c: IoStoreContainer, ch: ContainerHeaderUE4, l
 def clone_packages(c: IoStoreContainer, renames: Sequence[Tuple[str, str]], out_dir: str, *,
                    name_renames: Optional[Dict[str, str]] = None, store_layout: str = "auto",
                    store_order: str = "auto", export_bundles_size: str = "auto", new_paths: Optional[Dict[str, str]] = None,
+                   rewire: Sequence[Tuple[str, str]] = (), rewire_containers: Sequence[IoStoreContainer] = (),
                    hash_algo: str = "auto", align: int = AES_BLOCK, unsign: bool = False, verify: bool = False,
                    allow_unverified_key: bool = False, argv: Optional[List[str]] = None,
-                   key_source: str = "none") -> dict:
+                   key_source: str = "none", extra_inputs: Sequence[str] = (),
+                   allow_toc_trailing: bool = False) -> dict:
     """Copy each package OLD -> NEW (UE4.26/4.27 Zen packages): its ExportBundleData chunk is
     renamed with zen_package.rename_legacy_package (see there for the exact field list), its other
     chunks with the same package id (BulkData / OptionalBulkData / MemoryMappedBulkData) are copied
@@ -3231,13 +3361,22 @@ def clone_packages(c: IoStoreContainer, renames: Sequence[Tuple[str, str]], out_
     are rewired to each other: import-map hashes of their public exports, graph-data package ids
     and store-entry ImportedPackages that pointed at a source now point at its clone. Nothing
     else in the container changes; in particular every package that imported a source keeps
-    importing the source (that is the point: the donor stays shared, the clone is private)."""
+    importing the source (that is the point: the donor stays shared, the clone is private).
+
+    `rewire` (OLD=NEW pairs cloned EARLIER, e.g. textures cloned in pc3611 before the mesh in
+    pc3600) extends the rewiring to packages outside this run: both OLD and NEW must be readable from
+    this container or one of `rewire_containers`; their public exports are matched index by index
+    (a clone keeps the export order), giving the import-hash and package-id maps."""
     zp = _zen()
     if not renames:
         raise IoStoreError("no package to clone")
     name_renames = dict(name_renames or {})
     new_paths = dict(new_paths or {})
-    ue5 = c.toc.ue5_naming
+    naming = c.toc.chunk_type_naming()
+    if not naming["certain"]:
+        raise IoStoreError(f"cannot tell which chunk-type numbering this container uses ({naming['source']}); "
+                           f"clone-package needs it to find the ExportBundleData chunks")
+    ue5 = naming["ue5"]
     ebd = chunk_type_code("ExportBundleData", ue5)
     olds = [o for o, _ in renames]
     news = [n for _, n in renames]
@@ -3255,6 +3394,9 @@ def clone_packages(c: IoStoreContainer, renames: Sequence[Tuple[str, str]], out_
     for n, nid in zip(news, new_ids):
         if nid in existing_ids:
             raise IoStoreError(f"{n} (id 0x{nid:016X}) already has chunks in this container")
+        for other in rewire_containers:   # the runtime package store is global: an id must be unique
+            if any(cid.id == nid for cid in other.toc.chunk_ids):
+                raise IoStoreError(f"{n} (id 0x{nid:016X}) already has chunks in {other.utoc_path}")
     hidx = find_container_header_index(c.toc)
     if hidx is None:
         raise IoStoreError("no ContainerHeader chunk in this container; cannot register clones")
@@ -3267,10 +3409,40 @@ def clone_packages(c: IoStoreContainer, renames: Sequence[Tuple[str, str]], out_
             raise IoStoreError(f"{n} (id 0x{nid:016X}) is already registered in the container header")
     paths = c.path_by_index()
     pkg_id_map = dict(zip(old_ids, new_ids))
+    gidx_map: Dict[int, int] = {}
+    rewire_info = []
+    for old, new in rewire:
+        oid, nid = package_id_from_name(old), package_id_from_name(new)
+        if oid in pkg_id_map or nid in new_ids:
+            raise IoStoreError(f"--rewire {old}={new} overlaps the packages cloned in this run")
+
+        def find(pid, label):
+            for cc in [c] + list(rewire_containers):
+                t = chunk_type_code("ExportBundleData", cc.toc.ue5_naming)
+                for i, cid in enumerate(cc.toc.chunk_ids):
+                    if cid.id == pid and cid.type == t and cid.index == 0:
+                        try:
+                            return zp.parse_legacy(cc.read_chunk(i)), cc.utoc_path
+                        except zp.ZenFormatError as e:
+                            raise IoStoreError(f"--rewire {label}: not a UE4.26/4.27 package ({e})") from None
+            raise IoStoreError(f"--rewire {old}={new}: {label} (0x{pid:016X}) not found in this container or the "
+                               f"--rewire-with containers")
+        (po, src_o), (pn, src_n) = find(oid, old), find(nid, new)
+        if zp.lower_ascii(pn.package_name) != zp.lower_ascii(new) or len(po.exports) != len(pn.exports):
+            raise IoStoreError(f"--rewire {old}={new}: {new} is not a clone of {old} (name/export count differ)")
+        for a, b in zip(po.exports, pn.exports):
+            ga, gb = a.global_import_index_or_hash, b.global_import_index_or_hash
+            if (ga == zp.NULL_OBJECT_INDEX) != (gb == zp.NULL_OBJECT_INDEX):
+                raise IoStoreError(f"--rewire {old}={new}: export {a.index} is public in only one of them")
+            if ga != zp.NULL_OBJECT_INDEX:
+                gidx_map[ga] = gb
+        pkg_id_map[oid] = nid
+        rewire_info.append({"old": old, "new": new, "old_found_in": src_o, "new_found_in": src_n,
+                            "public_exports_mapped": sum(1 for e in po.exports
+                                                         if e.global_import_index_or_hash != zp.NULL_OBJECT_INDEX)})
 
     # pass 1: parse sources, compute the export GlobalImportIndex maps
     sources = []
-    gidx_map: Dict[int, int] = {}
     renames_used = set()
     for (old, new), oid, nid in zip(renames, old_ids, new_ids):
         chunks = [i for i, cid in enumerate(c.toc.chunk_ids) if cid.id == oid]
@@ -3302,7 +3474,16 @@ def clone_packages(c: IoStoreContainer, renames: Sequence[Tuple[str, str]], out_
                         "data": data, "pkg": pkg, "name_renames": mine})
     unused = set(name_renames) - renames_used
     if unused:
-        raise IoStoreError(f"--rename-name entries not found in any cloned package: {sorted(unused)}")
+        hints = []
+        for o in sorted(unused):
+            for s in sources:
+                e = next((e for e in s["pkg"].exports if e.object_name == o and e.name_ref[1]), None)
+                if e is not None:
+                    hints.append(f"{o!r} in {s['old']} is name-map entry {s['pkg'].names[e.name_ref[0]]!r} with FName "
+                                 f"number {e.name_ref[1]}; --rename-name works on entry text only")
+                    break
+        raise IoStoreError(f"--rename-name entries not found in any cloned package: {sorted(unused)}"
+                           + (f" ({'; '.join(hints)})" if hints else ""))
 
     ebs_info = None
     if layout == "ue4-32":
@@ -3333,7 +3514,9 @@ def clone_packages(c: IoStoreContainer, renames: Sequence[Tuple[str, str]], out_
                 ebs, how = int(export_bundles_size, 0), "given"
             elif export_bundles_size == "copy" or (export_bundles_size == "auto" and old_len == new_len and
                                                      s["pkg"].export_data_offset == npk.export_data_offset):
-                ebs, how = src_entry.export_bundles_size, "copied (package size unchanged)"
+                ebs, how = src_entry.export_bundles_size, ("copied (--export-bundles-size copy)"
+                                                           if export_bundles_size == "copy"
+                                                           else "copied (package size unchanged)")
             elif export_bundles_size == "chunk-size" or (export_bundles_size == "auto" and
                                                          ebs_info["relation"] == "chunk_size"):
                 ebs, how = new_len, "new ExportBundleData chunk size"
@@ -3379,11 +3562,105 @@ def clone_packages(c: IoStoreContainer, renames: Sequence[Tuple[str, str]], out_
     extra = {"clone": {"packages": reports, "store_entry_layout": layout, "store_entry_layout_evidence": layout_ev,
                        "export_bundles_size_measurement": ebs_info,
                        "package_id_map": {f"0x{k:016X}": f"0x{v:016X}" for k, v in pkg_id_map.items()},
-                       "import_index_map_size": len(gidx_map)}}
+                       "import_index_map_size": len(gidx_map), "rewire": rewire_info}}
     return add_to_container(c, new_chunks, out_dir, store_entries=store_items, store_layout=layout,
                             store_order=store_order, hash_algo=hash_algo, align=align, unsign=unsign, verify=verify,
                             allow_unverified_key=allow_unverified_key, argv=argv, key_source=key_source,
-                            operation="clone-package", extra_manifest=extra)
+                            operation="clone-package", extra_manifest=extra, extra_inputs=extra_inputs,
+                            allow_toc_trailing=allow_toc_trailing)
+
+
+# ---------------------------------------------------------------------------------------------
+# find-refs: who uses a donor package? (read-only; the first thing to run on real data)
+# ---------------------------------------------------------------------------------------------
+
+def find_references(c: IoStoreContainer, query: str, limit: int = 0) -> dict:
+    """Where does a package (name or 0x id) or a text (e.g. a face number like "110718") appear?
+
+    * paths in the directory index containing the text (case-insensitive);
+    * package store entries whose ImportedPackages contain the package id;
+    * UE4.26/4.27 package headers: name-map entries containing the text (e.g. soft object paths or
+      data-table rows naming the package) and full FNames of the header (package name, export object
+      names: a trailing _<number> is stored as an FName number, not in the entry text), import-map
+      entries equal to the GlobalImportIndex of a public export of the package (= packages that
+      hard-reference it). FNames inside serialized export data are not decoded: a number stored as
+      an FName number there is invisible to the text search.
+    Packages are read and decoded one by one (`limit` caps how many); undecodable ones are counted."""
+    zp = _zen()
+    ue5 = c.toc.ue5_naming
+    ebd = chunk_type_code("ExportBundleData", ue5)
+    q = query.strip()
+    if not q:
+        raise IoStoreError("find-refs needs a package name, a 0x id or a text")
+    pid = None
+    if q.lower().startswith("0x") or (q.startswith("/") and len(q) > 1):
+        pid = _pid_arg(q)
+    text = q.lower() if not q.lower().startswith("0x") else None
+    res: Dict[str, object] = {"query": q, "package_id": f"0x{pid:016X}" if pid is not None else None}
+    paths = c.path_by_index()
+    if text:
+        res["paths"] = sorted(p for p in paths.values() if text in p.lower())
+    if pid is not None:
+        res["chunks_of_package"] = [{"index": i, "chunk_id": cid.hex, "type": cid.type_name(ue5), "path": paths.get(i)}
+                                    for i, cid in enumerate(c.toc.chunk_ids) if cid.id == pid]
+    hidx = find_container_header_index(c.toc)
+    if hidx is not None and pid is not None:
+        try:
+            ch = ContainerHeaderUE4.parse(c.read_chunk(hidx))
+            layout, _ = ch.resolve_layout("auto")
+            ents = ch.entries(layout)
+            res["store_entry_layout"] = layout
+            res["registered_in_container_header"] = pid in ch.package_ids
+            res["store_entries_importing_it"] = [f"0x{p:016X}" for p, e in zip(ch.package_ids, ents)
+                                                 if pid in e.imported_packages]
+        except IoStoreError as e:
+            res["container_header_error"] = str(e)
+    gidx = set()
+    pkg_chunks = [i for i, cid in enumerate(c.toc.chunk_ids) if cid.type == ebd and cid.index == 0]
+    if pid is not None:
+        own = [i for i in pkg_chunks if c.toc.chunk_ids[i].id == pid]
+        if own:
+            try:
+                p0 = zp.parse_legacy(c.read_chunk(own[0]))
+                gidx = {e.global_import_index_or_hash for e in p0.exports
+                        if e.global_import_index_or_hash != zp.NULL_OBJECT_INDEX}
+                res["package_name_in_header"] = p0.package_name
+            except Exception as e:  # reported, not fatal
+                res["own_package_error"] = f"{type(e).__name__}: {e}"
+    name_hits, import_hits, graph_hits = [], [], []
+    scanned = unparsed = 0
+    for i in pkg_chunks[:limit or None]:
+        try:
+            p = zp.parse_legacy(c.read_chunk(i))
+        except Exception:
+            unparsed += 1
+            continue
+        scanned += 1
+        who = {"chunk_id": c.toc.chunk_ids[i].hex, "package": p.package_name, "path": paths.get(i)}
+        if text:
+            hits = [n for n in p.names if text in n.lower()]
+            # Unreal stores "face_110718" as entry "face" + FName number 110719, so a number is only
+            # visible in the FULL names: the package name and the export object names of the header
+            full = sorted({x for x in [p.package_name] + [e.object_name for e in p.exports]
+                           if text in x.lower() and x not in hits})
+            if hits or full:
+                name_hits.append({**who, "names": hits[:10], "header_fnames": full[:10]})
+        if gidx and c.toc.chunk_ids[i].id != pid:
+            k = [f"0x{x:016X}" for x in p.imports if x in gidx]
+            if k:
+                import_hits.append({**who, "imports": k})
+        if pid is not None and any(g["package_id"] == pid for g in p.imported_packages):
+            graph_hits.append(who)
+    res.update(packages_scanned=scanned, packages_unparsed=unparsed, name_map_hits=name_hits,
+               import_map_hits=import_hits, graph_data_hits=graph_hits)
+    return res
+
+
+def cmd_find_refs(args) -> int:
+    c, _ = _open(args)
+    with c:
+        _print_json(find_references(c, args.query, args.limit))
+    return 0
 
 
 # ---------------------------------------------------------------------------------------------
@@ -3862,53 +4139,85 @@ def cmd_selfcheck(args) -> int:
 
 def _pid_arg(value) -> int:
     """FPackageId from a package name, or a 0x-prefixed hex id, or an int."""
-    if isinstance(value, int):
+    if isinstance(value, int) and not isinstance(value, bool):
+        if not 0 <= value <= MASK64:
+            raise IoStoreError(f"{value}: an FPackageId is an unsigned 64-bit value")
         return value
     v = str(value).strip()
     if v.lower().startswith("0x"):
-        return int(v, 16)
-    if v.startswith("/"):
+        try:
+            x = int(v, 16)
+        except ValueError:
+            raise IoStoreError(f"{value!r}: not a hex FPackageId") from None
+        return _pid_arg(x)
+    if v.startswith("/") and len(v) > 1:
         return package_id_from_name(v)
     raise IoStoreError(f"{value!r}: expected a package name (/Root/...) or a 0x-hex FPackageId")
 
 
-def load_add_list(path: str, ue5: bool) -> Tuple[List[NewChunk], List[Tuple[int, StoreEntry]], List[str]]:
+def load_add_list(path: str, ue5: bool, naming_certain: bool = True
+                  ) -> Tuple[List[NewChunk], List[Tuple[int, StoreEntry]], List[str]]:
     """JSON: {"chunks": [...], "store_entries": [...]} (or just the chunk list). Chunk:
     {"file": F, "chunk_id": HEX24 | "package": NAME | "package_id": 0xHEX, "type": TYPE, "chunk_index": 0,
      "path": P, "meta_flags": 0}. Store entry: {"package": NAME | "package_id": 0xHEX, "export_count": N,
      "export_bundle_count": N, "imported_packages": [NAME | 0xHEX ...], "export_bundles_size": N,
-     "load_order": N} (the last two only for the ue4-32 layout). Relative files are relative to the JSON."""
-    with open(path, encoding="utf-8") as f:
-        spec = json.load(f)
+     "load_order": N} (the last two only for the ue4-32 layout). Relative files are relative to the JSON.
+    A type given by NAME needs a certain chunk-type naming (TocResource.chunk_type_naming); a numeric
+    type or a full chunk_id is always accepted."""
+    try:
+        with open(path, encoding="utf-8") as f:
+            spec = json.load(f)
+    except (ValueError, UnicodeDecodeError) as e:
+        raise IoStoreError(f"{path}: not valid JSON ({e})") from None
     if isinstance(spec, list):
         spec = {"chunks": spec}
+    if not isinstance(spec, dict):
+        raise IoStoreError(f"{path}: expected a JSON object with 'chunks' / 'store_entries'")
     base = os.path.dirname(os.path.abspath(path))
     chunks, files = [], [path]
-    for e in spec.get("chunks", []):
-        fpath = e["file"] if os.path.isabs(e["file"]) else os.path.join(base, e["file"])
-        with open(fpath, "rb") as f:
-            data = f.read()
-        files.append(fpath)
-        if "chunk_id" in e:
-            cid = ChunkId.from_hex(e["chunk_id"])
-        else:
-            pid = _pid_arg(e.get("package") or e.get("package_id"))
-            cid = ChunkId.from_parts(pid, int(e.get("chunk_index", 0)), chunk_type_code(e.get("type", "ExportBundleData"), ue5))
-        chunks.append(NewChunk(cid, data, e.get("path"), int(e.get("meta_flags", 0)), e.get("label", fpath)))
-    entries = []
-    for e in spec.get("store_entries", []):
-        entries.append((_pid_arg(e.get("package") or e.get("package_id")), StoreEntry.from_json(e)))
+    try:
+        for k, e in enumerate(spec.get("chunks", [])):
+            where = f"{path}: chunks[{k}]"
+            if not isinstance(e, dict) or "file" not in e:
+                raise IoStoreError(f"{where}: needs at least a \"file\"")
+            fpath = e["file"] if os.path.isabs(e["file"]) else os.path.join(base, e["file"])
+            with open(fpath, "rb") as f:
+                data = f.read()
+            files.append(fpath)
+            if "chunk_id" in e:
+                cid = ChunkId.from_hex(e["chunk_id"])
+            else:
+                pid = _pid_arg(e.get("package") or e.get("package_id"))
+                t = e.get("type", "ExportBundleData")
+                if not naming_certain and not (isinstance(t, int) or str(t).strip().isdigit()):
+                    raise IoStoreError(f"{where}: chunk type {t!r} given by name, but this TOC's chunk-type numbering "
+                                       f"is not certain (TOC v4 without a ContainerHeader chunk); give the type as a "
+                                       f"number or a full chunk_id")
+                idx = int(e.get("chunk_index", 0))
+                tcode = chunk_type_code(t, ue5)
+                if not 0 <= idx <= 0xFFFF or not 0 <= tcode <= 0xFF:
+                    raise IoStoreError(f"{where}: chunk_index must fit 16 bits and the type 8 bits")
+                cid = ChunkId.from_parts(pid, idx, tcode)
+            chunks.append(NewChunk(cid, data, e.get("path"), int(e.get("meta_flags", 0)), e.get("label", fpath)))
+        entries = []
+        for k, e in enumerate(spec.get("store_entries", [])):
+            if not isinstance(e, dict):
+                raise IoStoreError(f"{path}: store_entries[{k}] must be an object")
+            entries.append((_pid_arg(e.get("package") or e.get("package_id")), StoreEntry.from_json(e)))
+    except (KeyError, TypeError, ValueError) as e:
+        raise IoStoreError(f"{path}: malformed add list ({type(e).__name__}: {e})") from None
     return chunks, entries, files
 
 
 def cmd_add(args) -> int:
     c, src = _open(args)
     with c:
-        chunks, entries, files = load_add_list(args.add_list, c.toc.ue5_naming)
+        naming = c.toc.chunk_type_naming()
+        chunks, entries, files = load_add_list(args.add_list, naming["ue5"], naming["certain"])
         m = add_to_container(c, chunks, args.out_dir, store_entries=entries, store_layout=args.store_entry_layout,
                              store_order=args.store_order, hash_algo=args.hash_algo, align=args.align, unsign=args.unsign, verify=args.verify,
                              allow_unverified_key=args.allow_unverified_key, extra_inputs=files, argv=sys.argv,
-                             key_source=src, max_seed=args.max_seed)
+                             key_source=src, max_seed=args.max_seed, allow_toc_trailing=args.keep_toc_trailing)
         for w in m["warnings"]:
             print("WARNING:", w, file=sys.stderr)
         print(json.dumps({"out_dir": os.path.abspath(args.out_dir),
@@ -3932,14 +4241,23 @@ def _pairs(values, what) -> List[Tuple[str, str]]:
 
 def cmd_clone_package(args) -> int:
     c, src = _open(args)
-    with c:
+    others = [IoStoreContainer(p, c.aes_key, c.decompressor) for p in (args.rewire_with or [])]
+    try:
         m = clone_packages(c, _pairs(args.package, "--package"), args.out_dir,
                            name_renames=dict(_pairs(args.rename_name, "--rename-name")),
                            store_layout=args.store_entry_layout, store_order=args.store_order,
                            export_bundles_size=args.export_bundles_size,
-                           new_paths=dict(_pairs(args.path, "--path")), hash_algo=args.hash_algo, align=args.align,
+                           new_paths=dict(_pairs(args.path, "--path")), rewire=_pairs(args.rewire, "--rewire"),
+                           rewire_containers=others, hash_algo=args.hash_algo, align=args.align,
                            unsign=args.unsign, verify=args.verify, allow_unverified_key=args.allow_unverified_key,
-                           argv=sys.argv, key_source=src)
+                           argv=sys.argv, key_source=src,
+                           extra_inputs=[f for o in others for f in o.input_files()],
+                           allow_toc_trailing=args.keep_toc_trailing)
+    finally:
+        c.close()
+        for o in others:
+            o.close()
+    if m:
         for w in m["warnings"] + [w for p in m["clone"]["packages"] for w in p["warnings"]]:
             print("WARNING:", w, file=sys.stderr)
         print(json.dumps({"out_dir": os.path.abspath(args.out_dir),
@@ -4074,6 +4392,9 @@ def build_parser() -> argparse.ArgumentParser:
         sp.add_argument("--hash-algo", default="auto", choices=("auto",) + HASH_ALGOS)
         sp.add_argument("--align", type=int, default=AES_BLOCK, help="alignment of new chunk data in the .ucas")
         sp.add_argument("--allow-unverified-key", action="store_true")
+        sp.add_argument("--keep-toc-trailing", action="store_true",
+                        help="copy unparsed bytes after the TOC meta verbatim (refused by default: if they are "
+                             "per-chunk data they stop matching once chunks are added)")
         sp.add_argument("--verify", action="store_true", help="re-read the output and compare with the input")
 
     sp = sub.add_parser("add", help="append NEW chunks / paths / package store entries -> new container")
@@ -4094,6 +4415,10 @@ def build_parser() -> argparse.ArgumentParser:
                     help="directory-index path of the new package's .uasset chunk (default: derived from the source)")
     sp.add_argument("--export-bundles-size", default="auto",
                     help="ue4-32 layout only: auto | copy | chunk-size | export-data-size | N")
+    sp.add_argument("--rewire", action="append", metavar="OLD=NEW",
+                    help="a package cloned EARLIER (e.g. a texture in pc3611): imports of OLD become imports of NEW")
+    sp.add_argument("--rewire-with", action="append", metavar="OTHER.utoc",
+                    help="container(s) holding the --rewire packages (opened with the same AES key)")
     sp.set_defaults(func=cmd_clone_package)
 
     sp = sub.add_parser("container-header", help="decode the container header / package store (UE4.26 layouts)")
@@ -4104,6 +4429,13 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--aes-key-file")
     sp.add_argument("--oodle-lib")
     sp.set_defaults(func=cmd_container_header)
+
+    sp = sub.add_parser("find-refs", help="read-only: paths / store entries / package headers that mention a "
+                                          "package (name or 0x id) or a text such as a face number")
+    common(sp)
+    sp.add_argument("query", help="/Game/... package name, 0x<FPackageId>, or plain text (case-insensitive)")
+    sp.add_argument("--limit", type=int, default=0, help="decode at most N package headers (0 = all)")
+    sp.set_defaults(func=cmd_find_refs)
 
     sp = sub.add_parser("package-id", help="FPackageId (CityHash64 of the lower-cased UTF-16 name) and chunk ids")
     sp.add_argument("names", nargs="+")

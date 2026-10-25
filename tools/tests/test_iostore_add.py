@@ -122,6 +122,25 @@ def test_package_ids_match_ids_written_by_unreal(mode):
     assert n == 97
 
 
+@pytest.mark.skipif(not (os.path.exists(CUE4PARSE_CHECK) and os.path.exists(os.path.join(DOTNET_ROOT, "dotnet"))),
+                    reason="CUE4Parse harness / .NET runtime not built")
+def test_package_ids_match_cue4parse_fromname():
+    """Our FPackageId::FromName vs CUE4Parse's C# FPackageId.FromName (CityHash64 + ToLower)."""
+    names = ["/Game/Face/pc3600/face_110718", "/Game/Face/pc3600/Face_R9_2002", "/GAME/X", "/Game/a",
+             "/Game/" + "VeryLongPackageName_" * 4,                       # > 64 bytes of UTF-16: CityHash long path
+             "/Game/" + "x" * 300,                                         # > 256 chars: CUE4Parse heap branch
+             "/Game/Équipe/Ñandú", "/Game/Mixed/AbCdEfGhIjKlMnOpQrStUvWxYz0123456789_-"]
+    args = []
+    for n in names:
+        args += ["--package-id", n]
+    env = dict(os.environ, DOTNET_ROOT=DOTNET_ROOT)
+    r = subprocess.run([CUE4PARSE_CHECK, *args], capture_output=True, text=True, env=env, timeout=300)
+    assert r.returncode == 0, r.stderr
+    got = {x["name"]: int(x["package_id"], 16) for x in json.loads(r.stdout)["package_ids_from_names"]}
+    for n in names:
+        assert iostore.package_id_from_name(n) == got[n], n
+
+
 # =============================================================================================
 # Independent container-header builder (CUE4Parse FIoContainerHeader / FFilePackageStoreEntry,
 # retoc container_header.rs). NOT iostore.ContainerHeaderUE4.
@@ -217,7 +236,7 @@ def pkg_path(pkg: str, ext: str = ".uasset") -> str:
 
 
 def make_package(name: str, cls: int, imports_from: List[str], sub_exports: int = 0, seed: int = 0,
-                 extra_names=()) -> Tuple[bytes, dict]:
+                 extra_names=(), split: bool = False) -> Tuple[bytes, dict]:
     """A UE4.26-style Zen package: main public export (GlobalImportIndex = hash of its object
     path, as UE4.26/retoc write it), optional public sub-objects, one private export; imports of
     the main export of each package in `imports_from`; graph data lists those packages."""
@@ -231,14 +250,16 @@ def make_package(name: str, cls: int, imports_from: List[str], sub_exports: int 
     exps.append(zp.ExportSpec(f"{obj}_Private", _payload(seed + 50, 64), OBJ, object_flags=0))
     imports = [cls, OBJ] + [gidx(f"{p}.{short(p)}") for p in imports_from]
     graph = [(zp.package_id_from_name(p), [(0, 0)]) for p in imports_from]
-    data = zp.build_legacy_package(name, exps, imports=imports, imported_packages=graph, extra_names=list(extra_names))
+    data = zp.build_legacy_package(name, exps, imports=imports, imported_packages=graph, extra_names=list(extra_names),
+                                   split_numbers=split)
     entry = {"export_count": len(exps), "export_bundle_count": 1,
              "imported": [zp.package_id_from_name(p) for p in imports_from]}
     return data, entry
 
 
-def game_content() -> List[dict]:
-    """[{name, data, entry, bulk}] - face -> MI -> texture; two players share the donor face."""
+def game_content(split: bool = False) -> List[dict]:
+    """[{name, data, entry, bulk}] - face -> MI -> texture; two players share the donor face.
+    split=True stores numbered names the way Unreal does (face_110718 -> entry 'face' + number 110719)."""
     pk = []
     for name, cls, imps, subs, seed, bulk, extra in [
         (TEXP, TEX, [], 0, 1, _payload(71, 70_000, compressible=False), ()),
@@ -248,14 +269,14 @@ def game_content() -> List[dict]:
         (P2, OBJ, [FACE], 0, 5, None, ()),
         (OTHER, OBJ, [], 0, 6, _payload(73, 5000), ()),
     ]:
-        data, entry = make_package(name, cls, imps, subs, seed, extra)
+        data, entry = make_package(name, cls, imps, subs, seed, extra, split)
         pk.append({"name": name, "data": data, "entry": entry, "bulk": bulk})
     return pk
 
 
 def build_game_container(out_dir: str, layout: str, *, version: int = 2, key: Optional[bytes] = None,
-                         partition_size: Optional[int] = None, ebs_rule: str = "chunk") -> dict:
-    content = game_content()
+                         partition_size: Optional[int] = None, ebs_rule: str = "chunk", split: bool = False) -> dict:
+    content = game_content(split)
     container_id = 0x0123456789ABCDEF ^ (version << 8) ^ (len(layout) << 16)
     chunks: List[SChunk] = []
     header_pkgs = []
@@ -549,10 +570,12 @@ def test_rename_legacy_package_fields():
     new = zp.parse_legacy(out)
     assert new.package_name == new_name and new.source_name == new_name
     assert zp.package_id_from_name(new.package_name) == int(rep["new_package_id"], 16)
-    # documented field list
-    assert set(rep["summary_changes"]) <= {"NameMapNamesSize", "NameMapHashesOffset", "NameMapHashesSize",
-                                           "ImportMapOffset", "ExportMapOffset", "ExportBundlesOffset",
-                                           "GraphDataOffset"}
+    # documented field list (Name/SourceName now point at the appended new package-name entry)
+    assert set(rep["summary_changes"]) <= {"Name", "SourceName", "NameMapNamesSize", "NameMapHashesOffset",
+                                           "NameMapHashesSize", "ImportMapOffset", "ExportMapOffset",
+                                           "ExportBundlesOffset", "GraphDataOffset"}
+    assert rep["summary_changes"]["Name"]["new"] == [len(old.names), 0]
+    assert new.names[len(old.names):] == [new_name] and new.names[0] == FACE   # old entry kept, new appended
     assert rep["summary_changes"]["ImportMapOffset"]["new"] > rep["summary_changes"]["ImportMapOffset"]["old"]
     for k in ("PackageFlags", "CookedHeaderSize", "GraphDataSize", "Pad", "NameMapNamesOffset"):
         assert new.summary[k] == old.summary[k]
@@ -571,9 +594,9 @@ def test_rename_legacy_package_fields():
     assert gidx("/Game/Face/r9/MI_r9.MI_r9") in new.imports and gidx(f"{MI}.MI_face_110718") not in new.imports
     assert [p["package_id"] for p in new.imported_packages] == [zp.package_id_from_name("/Game/Face/r9/MI_r9")]
     assert rep["names_mentioning_old_package"] == [f"{FACE}.face_110718"] and rep["warnings"]
-    # names other than the renamed ones are identical
+    # names other than the renamed ones are identical (same index, same text)
     changed = {x["index"] for x in rep["name_map_changes"]}
-    assert [n for i, n in enumerate(new.names) if i not in changed] == \
+    assert [n for i, n in enumerate(new.names[:len(old.names)]) if i not in changed] == \
            [n for i, n in enumerate(old.names) if i not in changed]
 
 
@@ -586,13 +609,89 @@ def test_rename_handles_utf16_names_and_refusals():
         assert p.package_name == new_name and "Ñandú" in p.names
         assert p.exports[0].global_import_index_or_hash == gidx(f"{new_name}.Équipe")
     with pytest.raises(zp.RenameError, match="duplicate"):
-        zp.rename_legacy_package(data, "abc" if False else "/Game/T/pkg", name_renames={"abc": "Ñandú"})
+        zp.rename_legacy_package(data, "/Game/T/pkg2", name_renames={"abc": "Ñandú"})
     with pytest.raises(zp.RenameError, match="names"):
         zp.rename_legacy_package(data, "/Game/T/x", old_name="/Game/T/other")
     bad = zp.build_legacy_package("/Game/T/bad", [zp.ExportSpec("A", b"y" * 9, OBJ, global_import_index=0x1234,
                                                                 object_flags=1)], imports=[OBJ])
     with pytest.raises(zp.RenameError, match="GlobalImportIndex"):
         zp.rename_legacy_package(bad, "/Game/T/bad2")
+
+
+# =============================================================================================
+# FName numbers (review finding): Unreal stores "face_110718" as name-map entry "face" + FName
+# number 110719. The fixtures above store every text whole; these use the Unreal form.
+# =============================================================================================
+
+def _ue58_packages():
+    out = []
+    for mode in ("Tagged", "Unversioned"):
+        utoc = os.path.join(UE58_FIXTURES, mode, "Uncompressed", "CUE4ParseFixtures-Minimal-Uncompressed-Windows.utoc")
+        if not os.path.exists(utoc):
+            pytest.skip("CUE4Parse UE5.8 fixtures not found")
+        with iostore.IoStoreContainer(utoc) as c:
+            for p, i in c.paths():
+                if c.toc.chunk_ids[i].type == 1:   # UE5 ExportBundleData
+                    out.append(zp.parse_package(c.read_chunk(i)))
+    return out
+
+
+def test_split_fname_number_matches_unreal_cooked_data():
+    """Real data: in packages cooked by Unreal Engine 5.8 itself, no name-map entry ends in a
+    splittable _<number>, and every numbered export name is exactly what split_fname_number makes
+    of its text (BodySetup_1 -> ('BodySetup', 2))."""
+    entries = numbered = 0
+    for p in _ue58_packages():
+        for n in p.names:
+            entries += 1
+            assert zp.split_fname_number(n) == (n, 0), n
+        for e in p.exports:
+            idx, num = e.name_ref
+            assert zp.split_fname_number(zp.format_fname(p.names[idx], num)) == (p.names[idx], num)
+            numbered += bool(num)
+    assert entries > 4000 and numbered > 500
+
+
+def test_split_fname_number_rules():
+    s = zp.split_fname_number
+    assert s("face_110718") == ("face", 110719)
+    assert s("/Game/Face/pc3600/face_110718") == ("/Game/Face/pc3600/face", 110719)
+    assert s("x_0") == ("x", 1) and s("Rocket_04") == ("Rocket_04", 0) and s("face") == ("face", 0)
+    assert s("a_b") == ("a_b", 0) and s("a_") == ("a_", 0) and s("a_1_2") == ("a_1", 3)
+    assert s("x_2147483646") == ("x", 2147483647)
+    assert s("x_٣") == ("x_٣", 0)   # a non-ASCII digit is not an FName number
+    for bad in ("x_2147483647", "x_99999999999"):   # boundary not verified against UE: refused
+        with pytest.raises(ValueError):
+            s(bad)
+
+
+def test_rename_numbered_package_names_like_unreal():
+    data, _ = make_package(FACE, SKM, [MI], sub_exports=1, seed=3, split=True)
+    old = zp.parse_legacy(data)
+    assert old.names[0] == "/Game/Face/pc3600/face" and old.package_name == FACE
+    out, rep = zp.rename_legacy_package(data, "/Game/Face/pc3600/face_r9_2002", old_name=FACE)
+    new = zp.parse_legacy(out)
+    idx, num = struct.unpack_from("<II", out, 0)
+    assert new.names[idx] == "/Game/Face/pc3600/face_r9" and num == 2003 and new.package_name.endswith("face_r9_2002")
+    assert struct.unpack_from("<II", out, 8) == (idx, num)                      # SourceName follows
+    assert new.names[:len(old.names)] == old.names                              # nothing edited, one entry added
+    assert rep["name_map_added"] == [{"index": len(old.names), "text": "/Game/Face/pc3600/face_r9"}]
+    assert [e.name_ref for e in new.exports] == [e.name_ref for e in old.exports]
+    assert new.exports[0].global_import_index_or_hash == gidx("/Game/Face/pc3600/face_r9_2002.face_110718")
+    # x_N -> x_M reuses the existing entry (retoc FNameMap::store): no entry added
+    out2, rep2 = zp.rename_legacy_package(data, "/Game/Face/pc3600/face_7")
+    assert rep2["name_map_added"] == [] and zp.parse_legacy(out2).package_name == "/Game/Face/pc3600/face_7"
+    assert struct.unpack_from("<II", out2, 0) == (0, 8)
+    # a name with a leading-zero number is NOT split (Rocket_04 rule)
+    out3, _ = zp.rename_legacy_package(data, "/Game/Face/pc3600/face_r9_02")
+    assert zp.parse_legacy(out3).names[-1] == "/Game/Face/pc3600/face_r9_02" and struct.unpack_from("<I", out3, 4)[0] == 0
+    # --rename-name: entry text only; a numbered target is refused, a numbered full name gets a hint
+    with pytest.raises(zp.RenameError, match=r"ends in _<number>"):
+        zp.rename_legacy_package(data, "/Game/F/r9", name_renames={"face": "face_r9_2002"})
+    with pytest.raises(zp.RenameError, match="FName number 110719"):
+        zp.rename_legacy_package(data, "/Game/F/r9", name_renames={"face_110718": "r9"})
+    out4, _ = zp.rename_legacy_package(data, "/Game/F/r9", name_renames={"face": "r9face"})
+    assert zp.parse_legacy(out4).exports[0].object_name == "r9face_110718"   # the number stays in the reference
 
 
 # =============================================================================================
@@ -799,6 +898,31 @@ def test_add_refusals(tmp_path):
         assert m["verify"]["ok"]
 
 
+def test_add_and_clone_with_deep_mount_point(tmp_path):
+    """Mount point ../../../PesMobile/Content/: paths are stored below it; given with or without it."""
+    content = {p["name"]: p for p in game_content()}
+    cid = 0x51
+    chunks, hp = [], []
+    for k, n in enumerate([TEXP, OTHER]):
+        pid = zp.package_id_from_name(n)
+        chunks.append(SChunk(make_chunk_id(pid, 0, 2), content[n]["data"], pkg_path(n)[len(ROOT) + 1:], "zlib"))
+        hp.append((pid, content[n]["entry"]))
+    chunks.append(SChunk(make_chunk_id(cid, 0, 10), build_container_header(cid, hp, "efootball-16"), None, "zlib"))
+    info = build_container(str(tmp_path / "in"), "deep", chunks, 2, mount=f"../../../{ROOT}/", container_id=cid)
+    with iostore.IoStoreContainer(info["utoc"]) as c:
+        assert c.mount_point == f"../../../{ROOT}/"
+        m = iostore.clone_packages(c, [(TEXP, "/Game/Face/pc3611/T_r9")], str(tmp_path / "o1"), verify=True)
+        assert m["verify"]["ok"], m["verify"]["failures"]
+        assert m["clone"]["packages"][0]["chunks"][0]["new_path"] == f"../../../{pkg_path('/Game/Face/pc3611/T_r9')}"
+        n1 = iostore.NewChunk(iostore.ChunkId.from_parts(1, 0, 2), b"a", "R9/a.uasset")                    # below the mount
+        n2 = iostore.NewChunk(iostore.ChunkId.from_parts(2, 0, 2), b"b", f"../../../{ROOT}/R9/b.uasset")   # with it
+        m = iostore.add_to_container(c, [n1, n2], str(tmp_path / "o2"), verify=True)
+        assert m["verify"]["ok"], m["verify"]["failures"]
+    with iostore.IoStoreContainer(str(tmp_path / "o2" / "deep.utoc")) as o:
+        got = {iostore.strip_mount(p) for p, _ in o.paths()}
+        assert {f"{ROOT}/R9/a.uasset", f"{ROOT}/R9/b.uasset"} <= got
+
+
 def test_add_signed_needs_unsign(tmp_path):
     from test_iostore import standard_chunks
     info = build_container(str(tmp_path / "in"), "signed", standard_chunks()[:4], 3, signed=True)
@@ -827,7 +951,7 @@ def test_clone_face_set_independent(layout, version, tmp_path, global_utoc):
     with iostore.IoStoreContainer(info["utoc"]) as c:
         before = iostore.hash_all(c)
         old_paths = {p: c.toc.chunk_ids[i].hex for p, i in c.paths()}
-        m = iostore.clone_packages(c, CLONE_SET, out_dir, name_renames={"face_110718": "face_r9_2002"}, verify=True)
+        m = iostore.clone_packages(c, CLONE_SET, out_dir, name_renames={"face_110718": "face_r9"}, verify=True)
     assert m["verify"]["ok"], m["verify"]["failures"]
     out_utoc = os.path.join(out_dir, "pc3600_mobile_ios.utoc")
     reps = {r["old_package_name"]: r for r in m["clone"]["packages"]}
@@ -865,8 +989,8 @@ def test_clone_face_set_independent(layout, version, tmp_path, global_utoc):
         assert [p["package_id"] for p in face.imported_packages] == [ids[new_of[MI]]]
         assert gidx(f"{new_of[TEXP]}.T_face_110718") in mi.imports
         assert [p["package_id"] for p in mi.imported_packages] == [ids[new_of[TEXP]]]
-        assert face.exports[0].object_name == "face_r9_2002"   # --rename-name
-        assert face.exports[0].global_import_index_or_hash == gidx(f"{new_of[FACE]}.face_r9_2002")
+        assert face.exports[0].object_name == "face_r9"   # --rename-name (a trailing _<number> is refused)
+        assert face.exports[0].global_import_index_or_hash == gidx(f"{new_of[FACE]}.face_r9")
         hraw = o.read_chunk(iostore.find_container_header_index(o.toc))
     ind = decode_store_independently(hraw, layout)
     assert ind[ids[new_of[FACE]]]["imported"] == [ids[new_of[MI]]]
@@ -910,6 +1034,61 @@ def test_clone_face_set_independent(layout, version, tmp_path, global_utoc):
             assert hdr[pid] == p
 
 
+def build_split_containers(root: str, layout: str = "efootball-16") -> Tuple[str, str]:
+    """pc3611 (textures) and pc3600 (meshes, materials, players) as two containers."""
+    content = {p["name"]: p for p in game_content()}
+    out = []
+    for cname, names, cid in (("pc3611_mobile_ios", [TEXP], 0x3611), ("pc3600_mobile_ios", [MI, FACE, P1, P2], 0x3600)):
+        chunks, hp = [], []
+        for k, n in enumerate(names):
+            p = content[n]
+            pid = zp.package_id_from_name(n)
+            chunks.append(SChunk(make_chunk_id(pid, 0, 2), p["data"], pkg_path(n), "zlib"))
+            if p["bulk"] is not None:
+                chunks.append(SChunk(make_chunk_id(pid, 0, 3), p["bulk"], pkg_path(n, ".ubulk"), "alt"))
+            hp.append((pid, dict(p["entry"], ebs=len(p["data"]), load_order=k)))
+        chunks.append(SChunk(make_chunk_id(cid, 0, 10), build_container_header(cid, hp, layout), None, "zlib"))
+        out.append(build_container(os.path.join(root, cname), cname, chunks, 2, meta_algo="sha1",
+                                   container_id=cid)["utoc"])
+    return out[0], out[1]
+
+
+def test_clone_across_containers_with_rewire(tmp_path):
+    """Textures live in pc3611 and meshes in pc3600 (brief section 7): clone the texture first, then
+    the mesh + material with --rewire, so the material clone imports the TEXTURE CLONE."""
+    tex_utoc, mesh_utoc = build_split_containers(str(tmp_path / "in"))
+    t_new = "/Game/Face/pc3611/T_face_r9_2002"
+    with iostore.IoStoreContainer(tex_utoc) as c:
+        assert iostore.clone_packages(c, [(TEXP, t_new)], str(tmp_path / "t"), verify=True)["verify"]["ok"]
+    tex_out = str(tmp_path / "t" / "pc3611_mobile_ios.utoc")
+    pairs = [(FACE, "/Game/Face/pc3600/face_r9_2002"), (MI, "/Game/Face/pc3600/MI_face_r9_2002")]
+    with iostore.IoStoreContainer(mesh_utoc) as c, iostore.IoStoreContainer(tex_out) as other:
+        m = iostore.clone_packages(c, pairs, str(tmp_path / "m"), rewire=[(TEXP, t_new)], rewire_containers=[other],
+                                   verify=True, extra_inputs=other.input_files())
+        assert m["verify"]["ok"] and m["clone"]["rewire"][0]["public_exports_mapped"] == 1
+        # without --rewire the material clone still points at the SHARED donor texture
+        m0 = iostore.clone_packages(c, pairs, str(tmp_path / "m0"), verify=True)
+    with iostore.IoStoreContainer(str(tmp_path / "m" / "pc3600_mobile_ios.utoc")) as o:
+        mi = zp.parse_legacy(o.read_chunk(o.toc.resolve(iostore.ChunkId.from_parts(
+            zp.package_id_from_name(pairs[1][1]), 0, 2))))
+        hdr = decode_store_independently(o.read_chunk(iostore.find_container_header_index(o.toc)), "efootball-16")
+    assert gidx(f"{t_new}.T_face_110718") in mi.imports and gidx(f"{TEXP}.T_face_110718") not in mi.imports
+    assert [p["package_id"] for p in mi.imported_packages] == [zp.package_id_from_name(t_new)]
+    assert hdr[zp.package_id_from_name(pairs[1][1])]["imported"] == [zp.package_id_from_name(t_new)]
+    with iostore.IoStoreContainer(str(tmp_path / "m0" / "pc3600_mobile_ios.utoc")) as o:
+        mi0 = zp.parse_legacy(o.read_chunk(o.toc.resolve(iostore.ChunkId.from_parts(
+            zp.package_id_from_name(pairs[1][1]), 0, 2))))
+    assert gidx(f"{TEXP}.T_face_110718") in mi0.imports
+    with iostore.IoStoreContainer(mesh_utoc) as c:
+        with pytest.raises(iostore.IoStoreError, match="not found"):
+            iostore.clone_packages(c, pairs, str(tmp_path / "m1"), rewire=[(TEXP, t_new)])
+    # CLI form
+    r = run_cli("clone-package", mesh_utoc, "--out-dir", str(tmp_path / "m2"), "--package", f"{pairs[0][0]}={pairs[0][1]}",
+                "--package", f"{pairs[1][0]}={pairs[1][1]}", "--rewire", f"{TEXP}={t_new}", "--rewire-with", tex_out,
+                "--verify")
+    assert json.loads(r.stdout)["verify"] is True
+
+
 def test_clone_ue4_32_export_bundles_size_rules(tmp_path):
     info = build_game_container(str(tmp_path / "in"), "ue4-32", ebs_rule="arbitrary")
     longer = [(FACE, "/Game/Face/pc3600/face_r9_2002_world_cup_final_version_with_a_long_name")]
@@ -921,7 +1100,11 @@ def test_clone_ue4_32_export_bundles_size_rules(tmp_path):
         assert m["verify"]["ok"]
         r = m["clone"]["packages"][0]["store_entry_export_bundles_size"]
         assert r["rule"] == "new ExportBundleData chunk size" and r["new"] == m["added_chunks"][0]["size"]
-        m = iostore.clone_packages(c, same_len, str(tmp_path / "o3"), verify=True)
+        # the new package name is APPENDED to the name map (the old entry is kept), so even a same-length
+        # name changes the package size: auto cannot copy and the relation is unknown here -> refused
+        with pytest.raises(iostore.IoStoreError, match="ExportBundlesSize"):
+            iostore.clone_packages(c, same_len, str(tmp_path / "o3a"))
+        m = iostore.clone_packages(c, same_len, str(tmp_path / "o3"), export_bundles_size="copy", verify=True)
         r = m["clone"]["packages"][0]["store_entry_export_bundles_size"]
         assert r["rule"].startswith("copied") and r["new"] == r["old"]
         assert m["clone"]["export_bundles_size_measurement"]["relation"] == "unknown"
@@ -955,6 +1138,84 @@ def test_clone_refusals(tmp_path):
             iostore.clone_packages(c, [("/Game/Bad/b", "/Game/Bad/c")], str(tmp_path / "o6"))
     for d in ("o1", "o2", "o3", "o4", "o5", "o6"):
         assert not (tmp_path / d).exists() or not os.listdir(tmp_path / d)
+
+
+@pytest.mark.parametrize("layout", LAYOUTS)
+def test_clone_numbered_donor_stored_like_unreal(layout, tmp_path, global_utoc):
+    """Donor face named like the brief's slot (face_110718) and stored as Unreal stores it: entry
+    '/Game/Face/pc3600/face' + FName number 110719. Before the review fix, clone-package refused such
+    a donor, and wrote a numbered new name (face_r9_2002) whole with number 0, which Unreal never does."""
+    info = build_game_container(str(tmp_path / "in"), layout, split=True)
+    with iostore.IoStoreContainer(info["utoc"]) as c:
+        src = zp.parse_legacy(c.read_chunk(c.toc.resolve(iostore.ChunkId.from_parts(zp.package_id_from_name(FACE), 0, 2))))
+        assert "/Game/Face/pc3600/face" in src.names and FACE not in src.names and src.package_name == FACE
+        with pytest.raises(iostore.IoStoreError, match="entry text only"):
+            iostore.clone_packages(c, CLONE_SET, str(tmp_path / "bad"), name_renames={"face_110718": "face_r9"})
+        m = iostore.clone_packages(c, CLONE_SET, str(tmp_path / "out"), verify=True)
+    assert m["verify"]["ok"], m["verify"]["failures"]
+    out_utoc = str(tmp_path / "out" / "pc3600_mobile_ios.utoc")
+    new_of = dict(CLONE_SET)
+    pkgs = {}
+    with iostore.IoStoreContainer(out_utoc) as o:
+        for old, new in CLONE_SET:
+            raw = o.read_chunk(o.toc.resolve(iostore.ChunkId.from_parts(zp.package_id_from_name(new), 0, 2)))
+            p = pkgs[new] = zp.parse_legacy(raw)
+            base, num = zp.split_fname_number(new)            # e.g. ('/Game/Face/pc3600/face_r9', 2003)
+            idx, number = struct.unpack_from("<II", raw, 0)
+            assert p.names[idx & 0x3FFFFFFF] == base and number == num == 2003 and p.package_name == new
+            assert zp.split_fname_number(old)[0] in p.names    # donor entry kept, not edited
+            assert all(zp.split_fname_number(n) == (n, 0) for n in p.names)   # nothing Unreal would not write
+            assert p.exports[0].object_name == short(old)
+            assert p.exports[0].global_import_index_or_hash == gidx(f"{new}.{short(old)}")
+        assert gidx(f"{new_of[MI]}.MI_face_110718") in pkgs[new_of[FACE]].imports
+        assert gidx(f"{new_of[TEXP]}.T_face_110718") in pkgs[new_of[MI]].imports
+    if _cue4parse_available():
+        j = cue4parse_full(out_utoc, GAME_FOR_LAYOUT[layout], global_utoc=global_utoc)
+        assert_cue4parse_chunks_agree(j, out_utoc, None)
+        prov = {int(p["package_id"], 16): p for p in j["provider"]["packages"]}
+        for old, new in CLONE_SET:
+            p = prov[zp.package_id_from_name(new)]
+            assert p["load_by_id_ok"] and p["load_by_path_ok"] and p["name"] == new and p["name_hash_matches_id"]
+            assert p["exports"][0]["name"] == short(old)
+            assert [int(x["global_import_index"], 16) for x in p["exports"]] == \
+                   [e.global_import_index_or_hash for e in pkgs[new].exports]
+    # find-refs by face number still finds the donor set although "110718" is only an FName number
+    with iostore.IoStoreContainer(info["utoc"]) as c:
+        t = iostore.find_references(c, "110718")
+    assert {x["package"] for x in t["name_map_hits"]} == {FACE, MI, TEXP}
+    assert any(FACE in x["header_fnames"] for x in t["name_map_hits"])
+    if _cue4parse_available():
+        j0 = cue4parse_full(info["utoc"], GAME_FOR_LAYOUT[layout], global_utoc=global_utoc)
+        for p0 in j0["provider"]["packages"]:     # donors and players identical for CUE4Parse too
+            assert p0["name_hash_matches_id"]
+            p1 = prov[int(p0["package_id"], 16)]
+            assert all(p1[k] == p0[k] for k in ("name", "names", "imports", "exports", "path"))
+
+
+def test_find_refs_shows_shared_donor_before_and_after_clone(tmp_path):
+    info = build_game_container(str(tmp_path / "in"), "efootball-16")
+    face_id, p1, p2 = (zp.package_id_from_name(x) for x in (FACE, P1, P2))
+    with iostore.IoStoreContainer(info["utoc"]) as c:
+        r = iostore.find_references(c, FACE)
+        assert r["registered_in_container_header"] and r["package_name_in_header"] == FACE
+        assert sorted(r["store_entries_importing_it"]) == sorted([f"0x{p1:016X}", f"0x{p2:016X}"])
+        assert sorted(x["package"] for x in r["import_map_hits"]) == [P1, P2]
+        assert sorted(x["package"] for x in r["graph_data_hits"]) == [P1, P2]
+        assert [x["type"] for x in r["chunks_of_package"]] == ["ExportBundleData", "BulkData"]
+        t = iostore.find_references(c, "110718")   # a face number as plain text
+        assert sorted(iostore.strip_mount(p) for p in t["paths"]) == sorted(
+            [pkg_path(FACE), pkg_path(FACE, ".ubulk"), pkg_path(MI), pkg_path(TEXP), pkg_path(TEXP, ".ubulk")])
+        assert {x["package"] for x in t["name_map_hits"]} == {FACE, MI, TEXP}
+        iostore.clone_packages(c, CLONE_SET, str(tmp_path / "out"))
+    with iostore.IoStoreContainer(str(tmp_path / "out" / "pc3600_mobile_ios.utoc")) as o:
+        donor = iostore.find_references(o, FACE)
+        clone = iostore.find_references(o, CLONE_SET[0][1])
+        mi_clone = iostore.find_references(o, CLONE_SET[1][1])
+    assert sorted(x["package"] for x in donor["import_map_hits"]) == [P1, P2]   # players keep the donor
+    assert clone["store_entries_importing_it"] == [] and clone["import_map_hits"] == []   # nobody uses the clone yet
+    assert [x["package"] for x in mi_clone["import_map_hits"]] == [CLONE_SET[0][1]]   # only the face clone uses it
+    r = run_cli("find-refs", info["utoc"], FACE)
+    assert json.loads(r.stdout)["store_entries_importing_it"]
 
 
 # =============================================================================================
@@ -1039,7 +1300,7 @@ def test_cli_add_clone_header_package_id(tmp_path):
     # clone through the CLI
     r = run_cli("clone-package", info["utoc"], "--out-dir", str(tmp_path / "c"), "--package",
                 f"{FACE}=/Game/Face/pc3600/face_r9_2002", "--package", f"{MI}=/Game/Face/pc3600/MI_face_r9_2002",
-                "--rename-name", "face_110718=face_r9_2002", "--verify", env_key=kh)
+                "--rename-name", "face_110718=face_r9", "--verify", env_key=kh)
     outputs.append(r.stdout + r.stderr)
     cj = json.loads(r.stdout)
     assert cj["verify"] is True and cj["store_entry_layout"] == "efootball-16"
@@ -1074,3 +1335,243 @@ def test_cli_add_clone_header_package_id(tmp_path):
     blob = "\n".join(outputs)
     for form in (kh, kh.upper()):
         assert form not in blob
+
+
+# =============================================================================================
+# Second adversarial review (registration track): untouched bits, cross-checks, refusals
+# =============================================================================================
+
+HEADER_FIELDS_ADD_MAY_CHANGE = {          # byte ranges of FIoStoreTocHeader that `add` may rewrite
+    (24, 28): "TocEntryCount", (28, 32): "TocCompressedBlockEntryCount", (48, 52): "DirectoryIndexSize",
+    (52, 56): "PartitionCount (only when a partition is created)",
+}
+
+
+def _poison_reserved_header_fields(utoc: str, version: int) -> bytes:
+    """Write non-zero values into every header field the reader ignores for this TOC version
+    (game-specific data must survive a write) plus an unknown container-flag bit."""
+    raw = bytearray(open(utoc, "rb").read())
+    raw[17] = 0xA5                                   # Reserved0
+    raw[18:20] = b"\x5A\xC3"                         # Reserved1
+    raw[80] |= 0x40                                  # unknown EIoContainerFlags bit
+    raw[82:84] = b"\x11\x22"                         # Reserved4
+    if version < 4:
+        raw[84:88] = b"\x33\x44\x55\x66"             # TocChunkPerfectHashSeedsCount (reserved before v4)
+    if version < 3:
+        raw[88:96] = b"\x77" * 8                     # PartitionSize (reserved before v3)
+    if version < 5:
+        raw[96:100] = b"\x88\x99\xAA\xBB"            # TocChunksWithoutPerfectHashCount (reserved before v5)
+    raw[104:144] = bytes(range(1, 41))               # Reserved8 (EncryptionIVCount only from v10)
+    open(utoc, "wb").write(raw)
+    return bytes(raw)
+
+
+@pytest.mark.parametrize("version", [2, 3])
+def test_add_changes_only_documented_header_bytes_and_appends_tables(version, tmp_path):
+    """Bit-level: after `add`, every byte of the 144-byte TOC header outside the documented count
+    fields is identical (including reserved fields holding junk and an unknown flag bit), and the
+    chunk-id, offset/length, compression-block and meta tables of the input are byte-identical
+    PREFIXES of the output tables (v2/v3 have no perfect hash, so nothing is permuted)."""
+    info = build_game_container(str(tmp_path / "in"), "efootball-16", version=version,
+                                partition_size=160 * 1024 if version == 3 else None)
+    before = _poison_reserved_header_fields(info["utoc"], version)
+    name = "/Game/Face/r9/face_r9_2002"
+    chunks, se, _ = _new_package_chunks(name)
+    with iostore.IoStoreContainer(info["utoc"]) as c:
+        assert c.toc.serialize() == before
+        n, nb = len(c.toc.chunk_ids), len(c.toc.blocks)
+        m = iostore.add_to_container(c, chunks, str(tmp_path / "out"),
+                                     store_entries=[(zp.package_id_from_name(name), se)], verify=True)
+    assert m["verify"]["ok"], m["verify"]["failures"]
+    after = open(tmp_path / "out" / "pc3600_mobile_ios.utoc", "rb").read()
+    allowed = set()
+    for (a, b) in HEADER_FIELDS_ADD_MAY_CHANGE:
+        allowed |= set(range(a, b))
+    changed = {i for i in range(144) if before[i] != after[i]}
+    assert changed <= allowed, sorted(changed - allowed)
+    assert after[80] & 0x40 and after[17] == 0xA5 and after[104:144] == bytes(range(1, 41))
+    t_in, t_out = iostore.TocResource.parse(before), iostore.TocResource.parse(after)
+    h = iostore.find_container_header_index(t_in)      # the one replaced chunk: new offset/length/meta hash
+    keep = [i for i in range(n) if i != h]
+    assert [x.raw for x in t_out.chunk_ids[:n]] == [x.raw for x in t_in.chunk_ids]
+    assert [t_out.offsets[i] for i in keep] == [t_in.offsets[i] for i in keep]
+    assert [b.pack() for b in t_out.blocks[:nb]] == [b.pack() for b in t_in.blocks]
+    assert [t_out.metas[i].pack() for i in keep] == [t_in.metas[i].pack() for i in keep]
+    assert t_out.metas[h].flags == t_in.metas[h].flags & ~1 and t_out.offsets[h][0] >= nb * iostore.TocResource.parse(
+        before).header.compression_block_size   # header chunk re-appended after all old blocks
+    assert t_out.method_names_raw == t_in.method_names_raw
+
+
+def test_add_refuses_store_entry_contradicting_its_package_header(tmp_path):
+    info = build_game_container(str(tmp_path / "in"), "efootball-16")
+    name = "/Game/Face/r9/face_r9_2002"
+    pid_ = zp.package_id_from_name(name)
+    with iostore.IoStoreContainer(info["utoc"]) as c:
+        chunks, se, _ = _new_package_chunks(name)
+        bad = iostore.StoreEntry(se.export_count + 1, se.export_bundle_count, se.imported_packages)
+        with pytest.raises(iostore.IoStoreError, match="ExportCount/ExportBundleCount"):
+            iostore.add_to_container(c, chunks, str(tmp_path / "o1"), store_entries=[(pid_, bad)])
+        # chunk registered under one name, package header naming another
+        data_other, entry_other = make_package("/Game/Face/r9/someone_else", OBJ, [FACE], seed=9)
+        wrong = [iostore.NewChunk(iostore.ChunkId.from_parts(pid_, 0, 2), data_other, pkg_path(name))]
+        with pytest.raises(iostore.IoStoreError, match="names '/Game/Face/r9/someone_else'"):
+            iostore.add_to_container(c, wrong, str(tmp_path / "o2"), store_entries=[(pid_, se)])
+        # graph data vs ImportedPackages mismatch is reported, not refused
+        odd = iostore.StoreEntry(se.export_count, se.export_bundle_count, [zp.package_id_from_name(OTHER)])
+        m = iostore.add_to_container(c, chunks, str(tmp_path / "o3"), store_entries=[(pid_, odd)], verify=True)
+        assert m["verify"]["ok"] and any("graph data" in w for w in m["warnings"])
+        chk = m["container_header"]["entry_vs_package_header"]
+        assert chk["counts_rule_holds"] and chk["package_id_rule_holds"] and chk["measured_existing_packages"] == 6
+    for d in ("o1", "o2"):
+        assert not (tmp_path / d).exists() or not os.listdir(tmp_path / d)
+
+
+def test_add_count_rule_only_warns_when_container_does_not_follow_it(tmp_path):
+    """If the container's OWN packages do not follow ExportCount == header export count (unknown
+    Konami semantics), a mismatch on a new entry is a warning, not a refusal."""
+    content = {p["name"]: p for p in game_content()}
+    cid = 0x77
+    chunks, hp = [], []
+    for n in (TEXP, OTHER):
+        pid_ = zp.package_id_from_name(n)
+        chunks.append(SChunk(make_chunk_id(pid_, 0, 2), content[n]["data"], pkg_path(n), "zlib"))
+        hp.append((pid_, dict(content[n]["entry"], export_count=content[n]["entry"]["export_count"] + 5)))
+    chunks.append(SChunk(make_chunk_id(cid, 0, 10), build_container_header(cid, hp, "efootball-16"), None, "zlib"))
+    info = build_container(str(tmp_path / "in"), "odd", chunks, 2, container_id=cid)
+    name = "/Game/Face/r9/face_r9_2002"
+    new_chunks, se, _ = _new_package_chunks(name)
+    se.export_count += 5
+    with iostore.IoStoreContainer(info["utoc"]) as c:
+        m = iostore.add_to_container(c, new_chunks, str(tmp_path / "o"), store_entries=[(zp.package_id_from_name(name), se)],
+                                     verify=True)
+    assert m["verify"]["ok"] and not m["container_header"]["entry_vs_package_header"]["counts_rule_holds"]
+    assert any("rule not established" in w for w in m["warnings"])
+
+
+def test_add_list_malformed_inputs_fail_cleanly(tmp_path):
+    info = build_game_container(str(tmp_path / "in"), "efootball-16")
+    (tmp_path / "x.bin").write_bytes(b"abc")
+    cases = {
+        "not_json.json": "{chunks: [",
+        "no_file.json": json.dumps({"chunks": [{"package": "/Game/A/b"}]}),
+        "bad_hex.json": json.dumps({"chunks": [{"file": "x.bin", "package_id": "0xZZ"}]}),
+        "no_slash.json": json.dumps({"store_entries": [{"package": "/Game/A/b", "export_count": 1,
+                                                        "export_bundle_count": 1, "imported_packages": ["Game/A/c"]}]}),
+        "big_index.json": json.dumps({"chunks": [{"file": "x.bin", "package": "/Game/A/b", "chunk_index": 70000}]}),
+        "imports_not_list.json": json.dumps({"store_entries": [{"package": "/Game/A/b", "export_count": 1,
+                                                                "export_bundle_count": 1, "imported_packages": "/Game/A/c"}]}),
+        "missing_count.json": json.dumps({"store_entries": [{"package": "/Game/A/b"}]}),
+    }
+    for fname, text in cases.items():
+        (tmp_path / fname).write_text(text)
+        r = run_cli("add", info["utoc"], "--out-dir", str(tmp_path / ("o_" + fname)), "--add-list",
+                    str(tmp_path / fname), check=False)
+        assert r.returncode == 2 and "Traceback" not in r.stderr and r.stderr.startswith("error:"), (fname, r.stderr)
+        assert not (tmp_path / ("o_" + fname)).exists() or not os.listdir(tmp_path / ("o_" + fname))
+    r = run_cli("find-refs", info["utoc"], "0xZZ", check=False)
+    assert r.returncode == 2 and "Traceback" not in r.stderr
+
+
+@pytest.mark.parametrize("header_type,expect", [(10, (False, True)), (6, (True, True)), (None, (True, False))])
+def test_v4_chunk_type_naming_comes_from_the_container(header_type, expect, tmp_path):
+    """TOC v4: retoc reads the UE4 enum, CUE4Parse decides by engine version. The container header
+    chunk's own type settles it; without one, writing a type by NAME is refused."""
+    from test_iostore import standard_chunks
+    cid = 0xABCDEF0123
+    chunks = standard_chunks()[:-1]
+    if header_type is not None:
+        chunks.append(SChunk(make_chunk_id(cid, 0, header_type), _payload(11, 777), None, "zlib"))
+    info = build_container(str(tmp_path / "in"), "v4", chunks, 4, perfect_hash=True, meta_algo="blake3", container_id=cid)
+    with iostore.IoStoreContainer(info["utoc"]) as c:
+        nm = c.toc.chunk_type_naming()
+        assert (nm["ue5"], nm["certain"]) == expect
+    (tmp_path / "d.bin").write_bytes(b"payload")
+    by_name = {"chunks": [{"file": "d.bin", "package": "/Game/R9/x", "type": "ExportBundleData", "path": "R9/x.uasset"}]}
+    by_number = {"chunks": [{"file": "d.bin", "package": "/Game/R9/x", "type": 2, "path": "R9/x.uasset"}]}
+    (tmp_path / "n.json").write_text(json.dumps(by_name))
+    (tmp_path / "k.json").write_text(json.dumps(by_number))
+    r = run_cli("add", info["utoc"], "--out-dir", str(tmp_path / "o1"), "--add-list", str(tmp_path / "n.json"),
+                "--verify", check=False)
+    if expect[1]:
+        assert r.returncode == 0, r.stderr
+        with iostore.IoStoreContainer(str(tmp_path / "o1" / "v4.utoc")) as o:
+            t = o.toc.chunk_ids[iostore.resolve_selector(o, "R9/x.uasset")].type
+        assert t == (1 if expect[0] else 2)
+    else:
+        assert r.returncode == 2 and "not certain" in r.stderr
+        r = run_cli("add", info["utoc"], "--out-dir", str(tmp_path / "o2"), "--add-list", str(tmp_path / "k.json"),
+                    "--verify")
+        assert json.loads(r.stdout)["verify"] is True
+
+
+def test_add_refuses_unparsed_toc_tail_and_source_hashes(tmp_path):
+    from test_iostore import standard_chunks
+    info = build_container(str(tmp_path / "in"), "tail", standard_chunks(), 2, meta_algo="sha1")
+    with open(info["utoc"], "ab") as f:
+        f.write(b"\x01\x02\x03\x04")
+    nc = [iostore.NewChunk(iostore.ChunkId.from_parts(77, 0, 2), b"new", "eFootball/Content/n.uasset")]
+    with iostore.IoStoreContainer(info["utoc"]) as c:
+        assert c.toc.trailing == b"\x01\x02\x03\x04"
+        with pytest.raises(iostore.IoStoreError, match="keep-toc-trailing"):
+            iostore.add_to_container(c, nc, str(tmp_path / "o1"))
+        m = iostore.add_to_container(c, nc, str(tmp_path / "o2"), allow_toc_trailing=True, verify=True)
+        assert m["verify"]["ok"] and any("copied verbatim" in w for w in m["warnings"])
+    v9 = build_container(str(tmp_path / "v9"), "v9", standard_chunks(), 9, meta_algo="blake3")
+    raw = bytearray(open(v9["utoc"], "rb").read())
+    raw[100:104] = struct.pack("<I", 3)                 # TocSourceHashCount
+    open(v9["utoc"], "wb").write(raw)
+    with iostore.IoStoreContainer(v9["utoc"]) as c:
+        with pytest.raises(iostore.IoStoreError, match="source hashes"):
+            iostore.add_to_container(c, nc, str(tmp_path / "o3"))
+    assert not (tmp_path / "o1").exists() or not os.listdir(tmp_path / "o1")
+
+
+def test_clone_refuses_new_id_already_in_a_rewire_container(tmp_path):
+    tex_utoc, mesh_utoc = build_split_containers(str(tmp_path / "in"))
+    t_new = "/Game/Face/pc3611/T_face_r9_2002"
+    with iostore.IoStoreContainer(tex_utoc) as c:
+        iostore.clone_packages(c, [(TEXP, t_new)], str(tmp_path / "t"))
+    with iostore.IoStoreContainer(mesh_utoc) as c, \
+            iostore.IoStoreContainer(str(tmp_path / "t" / "pc3611_mobile_ios.utoc")) as other:
+        # cloning the material under the name of a package that lives in pc3611 would give two
+        # packages with one FPackageId in the global package store
+        with pytest.raises(iostore.IoStoreError, match="already has chunks in"):
+            iostore.clone_packages(c, [(MI, TEXP)], str(tmp_path / "m"), rewire=[(TEXP, t_new)],
+                                   rewire_containers=[other])
+
+
+def test_perfect_hash_verify_is_not_vacuous(tmp_path, monkeypatch):
+    """A wrong seed table written by the builder must be caught by --verify (and refused)."""
+    from test_iostore import standard_chunks
+    info = build_container(str(tmp_path / "in"), "ph", standard_chunks(), 5, perfect_hash=True, meta_algo="blake3")
+    real = iostore.build_perfect_hash
+
+    def broken(ids, allow_overflow, max_seed=1 << 20):
+        slot_of, seeds, overflow = real(ids, allow_overflow, max_seed)
+        k = next(i for i, s in enumerate(seeds) if s > 0)
+        seeds[k] += 1                                    # one bucket now hashes to the wrong slots
+        return slot_of, seeds, overflow
+    monkeypatch.setattr(iostore, "build_perfect_hash", broken)
+    nc = [iostore.NewChunk(iostore.ChunkId.from_parts(77, 0, 1), b"new", "eFootball/Content/n.uasset")]
+    with iostore.IoStoreContainer(info["utoc"]) as c:
+        with pytest.raises(iostore.IoStoreError, match="perfect hash"):
+            iostore.add_to_container(c, nc, str(tmp_path / "o"), verify=True)
+
+
+def test_append_keeps_noncanonical_empty_array_offsets():
+    """Old entries with ArrayNum 0 but a non-zero offset (allowed by CArrayView) keep their bytes."""
+    pkgs = [(10, {"export_count": 1, "export_bundle_count": 1, "imported": [20]}),
+            (20, {"export_count": 2, "export_bundle_count": 1, "imported": []})]
+    raw = build_container_header(5, pkgs, "efootball-16")
+    ch = iostore.ContainerHeaderUE4.parse(raw)
+    st = bytearray(ch.store_raw)
+    struct.pack_into("<II", st, 16 + 8, 0, 1234)       # entry 1: empty array with a stray offset
+    ch.store_raw = bytes(st)
+    assert ch.check_layout("efootball-16")["empty_arrays_with_offset"] == 1
+    ch2 = ch.copy()
+    ch2.add_packages("efootball-16", [(30, iostore.StoreEntry(1, 1, [10, 20]))], "append")
+    assert ch2.store_raw[16:32] == ch.store_raw[16:32]                     # untouched, offset not shifted
+    assert struct.unpack_from("<II", ch2.store_raw, 8) == (1, struct.unpack_from("<II", ch.store_raw, 8)[1] + 16)
+    assert [e.imported_packages for e in ch2.entries("efootball-16")] == [[20], [], [10, 20]]
+    with pytest.raises(iostore.IoStoreError, match="canonical"):
+        ch.copy().add_packages("efootball-16", [(30, iostore.StoreEntry(1, 1, []))], "sorted")

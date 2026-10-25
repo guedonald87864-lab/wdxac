@@ -1,0 +1,117 @@
+{
+ "stand": {
+  "R9_Body": {
+   "edge_stretch_p1": 1.0,
+   "edge_stretch_p99": 1.0,
+   "edge_stretch_min": 1.0,
+   "edge_stretch_max": 1.0,
+   "area_ratio_min": 1.0,
+   "area_ratio_max": 1.0,
+   "n_edges_over_1.5x": 0,
+   "n_edges_under_0.5x": 0
+  },
+  "lowest_point_above_ground_cm": 0.0,
+  "R9_Head": {
+   "edge_stretch_p1": 1.0,
+   "edge_stretch_p99": 1.0,
+   "edge_stretch_min": 1.0,
+   "edge_stretch_max": 1.0,
+   "area_ratio_min": 1.0,
+   "area_ratio_max": 1.0,
+   "n_edges_over_1.5x": 0,
+   "n_edges_under_0.5x": 0
+  }
+ },
+ "sprint_stride": {
+  "R9_Body": {
+   "edge_stretch_p1": 0.787999097438692,
+   "edge_stretch_p99": 1.2965122154828848,
+   "edge_stretch_min": 0.2236568896623316,
+   "edge_stretch_max": 5.774624546471987,
+   "area_ratio_min": 0.114037055310989,
+   "area_ratio_max": 3.6872107916672503,
+   "n_edges_over_1.5x": 78,
+   "n_edges_under_0.5x": 30
+  },
+  "lowest_point_above_ground_cm": 25.623440742492676,
+  "R9_Head": {
+   "edge_stretch_p1": 0.999952630815783,
+   "edge_stretch_p99": 1.0000536753045357,
+   "edge_stretch_min": 0.9479068534615155,
+   "edge_stretch_max": 1.0577836119164026,
+   "area_ratio_min": 0.9549763413188737,
+   "area_ratio_max": 1.0522139913286555,
+   "n_edges_over_1.5x": 0,
+   "n_edges_under_0.5x": 0
+  }
+ },
+ "shot_backswing": {
+  "R9_Body": {
+   "edge_stretch_p1": 0.8582765531446918,
+   "edge_stretch_p99": 1.1642808676008847,
+   "edge_stretch_min": 0.14364396650436528,
+   "edge_stretch_max": 3.348395491970579,
+   "area_ratio_min": 0.07645221451159355,
+   "area_ratio_max": 2.394181666860289,
+   "n_edges_over_1.5x": 31,
+   "n_edges_under_0.5x": 8
+  },
+  "lowest_point_above_ground_cm": 1.8040478229522705,
+  "R9_Head": {
+   "edge_stretch_p1": 0.9999577202464897,
+   "edge_stretch_p99": 1.0000678695411909,
+   "edge_stretch_min": 0.9639527944021585,
+   "edge_stretch_max": 1.0275876237346155,
+   "area_ratio_min": 0.9804877544483142,
+   "area_ratio_max": 1.0348173307770385,
+   "n_edges_over_1.5x": 0,
+   "n_edges_under_0.5x": 0
+  }
+ },
+ "low_dribble": {
+  "R9_Body": {
+   "edge_stretch_p1": 0.752745784698179,
+   "edge_stretch_p99": 1.1588544759723598,
+   "edge_stretch_min": 0.31210147203666805,
+   "edge_stretch_max": 4.959495181538395,
+   "area_ratio_min": 0.17083726409296252,
+   "area_ratio_max": 3.138613740031071,
+   "n_edges_over_1.5x": 32,
+   "n_edges_under_0.5x": 24
+  },
+  "lowest_point_above_ground_cm": 4.951077699661255,
+  "R9_Head": {
+   "edge_stretch_p1": 0.9999477041963658,
+   "edge_stretch_p99": 1.0000658378016691,
+   "edge_stretch_min": 0.9752483970041238,
+   "edge_stretch_max": 1.0154446793840122,
+   "area_ratio_min": 0.990502708225436,
+   "area_ratio_max": 1.0205925196746792,
+   "n_edges_over_1.5x": 0,
+   "n_edges_under_0.5x": 0
+  }
+ },
+ "cut_turn": {
+  "R9_Body": {
+   "edge_stretch_p1": 0.8377907357391522,
+   "edge_stretch_p99": 1.1813497913642363,
+   "edge_stretch_min": 0.3377000857077186,
+   "edge_stretch_max": 5.923389361298748,
+   "area_ratio_min": 0.1576529085854318,
+   "area_ratio_max": 5.887710913917146,
+   "n_edges_over_1.5x": 14,
+   "n_edges_under_0.5x": 7
+  },
+  "lowest_point_above_ground_cm": -1.6409993171691895,
+  "R9_Head": {
+   "edge_stretch_p1": 0.9871528589803736,
+   "edge_stretch_p99": 1.0164911591512809,
+   "edge_stretch_min": 0.8697476237421404,
+   "edge_stretch_max": 1.0928192465940991,
+   "area_ratio_min": 0.8999015015834921,
+   "area_ratio_max": 1.125990020692127,
+   "n_edges_over_1.5x": 0,
+   "n_edges_under_0.5x": 0
+  }
+ }
+}

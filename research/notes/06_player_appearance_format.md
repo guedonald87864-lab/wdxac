@@ -107,7 +107,7 @@ value(B, b, w) = (int.from_bytes(payload[B:B+4], 'little') >> b) & ((1 << w) - 1
 | 头 | 0x00 | 球员 ID（u32） | |
 | | 0x04:0–3 | Edited Face / Hairstyle / Physique / Strip Style 标志 | 每项 1 bit |
 | | 0x04:4 | Boots ID，14 bit | |
-| | 0x06:2 | 门将手套 ID | **冲突**：维基写 10 bit，后面 0x07:4 有 4 bit "Unknown A"；4ccEditor 读 14 bit，注释 "Extend to be 14 bits, using Unk A space"（`pes20.cpp` L155） |
+| | 0x06:2 | 门将手套 ID | **冲突**：维基写 10 bit，后面 0x07:4 有 4 bit "Unknown A"；4ccEditor 读 14 bit，注释 "Extend to be 14 bits, using Unk A space"（`pes20.cpp` L155）（复核补充：4ccEditor 写入也是 14 bit（L885），4cc-studio `pes20.rs` `GlovesId bit_offset 1970, bit_width 14`；§7 schema 已按"宽度取 4cc-studio 实测值"的规则改为 14 bit，见核查记录 K28） |
 | | 0x08 | Base Copy Player（u32） | 维基："references itself if the player is defaulted" |
 | 身体 | 0x0C–0x12 | 14 项身体参数 | 见 §2.2 |
 | 穿着 | 0x13 | 护腕颜色左（3 bit）、右（3 bit）、护腕位置（2 bit） | |
@@ -458,7 +458,7 @@ LegLength 的效果单独说明。依据是 A 表第 12 项（a = 0.981，b = 1.
   {"name": "edited_physique_flag", "width": 1, "enc": "bool", "edit72": [4, 2], "conf": "high(edit)", "note": "edit-only"},
   {"name": "edited_strip_flag", "width": 1, "enc": "bool", "edit72": [4, 3], "conf": "high(edit)", "note": "edit-only"},
   {"name": "boots_id", "width": 14, "enc": "id", "edit72": [4, 4], "conf": "high(edit)", "note": "edit-only (DB: BootsList.bin)"},
-  {"name": "gk_gloves_id", "width": 10, "enc": "id", "edit72": [6, 2], "conf": "high(edit)", "note": "edit-only; wiki says 10 bits + 4-bit Unknown A, 4ccEditor reads 14 bits"},
+  {"name": "gk_gloves_id", "width": 14, "enc": "id", "edit72": [6, 2], "conf": "high(edit)", "note": "edit-only; 14 bits as read AND written by 4ccEditor (pes20.cpp L155/L591/L885 'using Unk A space') and 4cc-studio (pes20.rs GlovesId bit_offset 1970, bit_width 14); wiki: 10 bits + 4-bit Unknown A (review K28)"},
   {"name": "base_copy_player_id", "width": 32, "enc": "u32 LE", "edit72": [8, 0], "conf": "high(edit)", "note": "edit-only"},
   {"name": "NeckLength", "width": 4, "enc": "slider: stored 0..14, display=stored-7, neutral 7", "edit72": [12, 0], "pesdb60": [4, 0], "ef64": [8, 0], "ef64_u32": ["0x08", 0], "conf": "high(edit/pesdb60); medium(ef64); UNVERIFIED(iOS 11.1.1)"},
   {"name": "NeckSize", "width": 4, "enc": "slider: stored 0..14, display=stored-7, neutral 7", "edit72": [12, 4], "pesdb60": [4, 4], "ef64": [8, 4], "ef64_u32": ["0x08", 4], "conf": "high(edit/pesdb60); medium(ef64); UNVERIFIED(iOS 11.1.1)"},
@@ -683,3 +683,53 @@ def encode_body(row: bytearray, base: int, vals: dict):
 - `research/notes/04_efootball_systems.md` §1（App 与游戏版本对应）、§8.4（card_id 结构）。
 - `research/notes/05_native_formats.md` §5（社区工具、脸部存储、pc 编号）。
 - 本文计算脚本（不入库）：`/tmp/claude-0/-home-user-wdxac/53d2b8c2-6abb-5fab-91db-f6077147a038/scratchpad/calc/phys.py`、`/tmp/claude-0/-home-user-wdxac/53d2b8c2-6abb-5fab-91db-f6077147a038/scratchpad/calc/gen_schema.py`。
+
+---
+
+## 核查记录
+
+> 核查人：对抗性事实核查（独立复核），日期 2026-10-25。
+> 方法：
+> - 把 §10 列出的 9 个 GitHub 仓库重新浅克隆到独立目录 `/tmp/claude-0/-home-user-wdxac/53d2b8c2-6abb-5fab-91db-f6077147a038/scratchpad/fc06/repos/`，逐行读源码和文档，没有使用原作者留在草稿目录里的克隆。
+> - 用 curl 重新抓取 pesdb、pesmodding、Konami 页面，存到 `/tmp/claude-0/-home-user-wdxac/53d2b8c2-6abb-5fab-91db-f6077147a038/scratchpad/fc06/web/`。
+> - 所有算术（测试向量字节、卡 ID 十六进制、G、体重归一化、每档百分比、LegLength 分解）都重新计算了一遍。
+> - 用脚本把 §7 JSON 中 89 个面部、发型字段的 `edit72` 位置和宽度，逐一对比 4cc-studio `ingame_face.rs` 的 `INGAME_FACE_FIELDS`：0 处不符。只缺 3 个 PES 2015 专用字段，属于预期。
+>
+> 限制：本轮 WebSearch 额度已用完，没有再做搜索引擎检索，只抓取了已知 URL。4cc/Rigged 维基在线页面（implyingrigged.info）对 curl 和 WebFetch 都返回 403，所以维基内容只核对了 4cc-studio 仓库里的副本 `resources/Editfile.wikitext`。
+
+| # | 被核查的说法（位置） | 结果 | 依据（第一来源 + 交叉来源） |
+|---|---|---|---|
+| K1 | PES 2016–2021 EDIT 外观记录 72 B；PES 2015 为 68 B；14 项身体参数是 0x0C–0x12 的 14 个半字节，低半字节在前（§0-1、§2.1、§2.2） | **确认** | 4ccEditor `pes20.cpp` L157（`neck_len = read_data(0,4,…)`）至 L170（`head_dep = read_data(4,4,…)`）；`pes15.cpp` L13（`startByte + 0x44`）。4cc-studio `pes15.rs` `size: 68`、`pes16.rs` `size: 72`，`pes20.rs` NeckLength `bit_offset: 2016`（= 0xF0×8 + 0x0C×8）、HeadDepth `bit_offset: 2068`（= 0x12:4）。维基副本 L10908 "Entry Length: 72 (0x48) bytes"，并有 "0x0C:0 … Neck Length"。GodotFootball physique §1.2 表 |
+| K2 | 存储 0–14，界面 = 存储 − 7，中性 7（§2.2、§3.3） | **确认** | 维基副本：226 处 "In-game value plus seven" 和 "PES: must be in range [0, 14]"，默认值 7。4ccEditor `main.cpp` L2633（`neck_len - 7`）、L3291（`+ 7`）。EvoTool v520 读时 −7、写时 +7。Devil Cold52 Notes 第 5 条 "7 is neutral"（原文已逐字核对，见 §3.3 更正） |
+| K3 | PES 2020/21 球员记录 312 B，外观块在 +0xF0；PES 17–19 记录 188 B，外观块在 +0x74；球员区起点 0x78 / 0x7C；PES 15/16 外观区在 0x2AB9CC（§2.1） | **确认** | 4cc-studio `pes20.rs` `size: 312`、`AppearanceId bit_offset: 1920`；`pes17.rs` `size: 188`、`pes18/19.rs` `bit_offset: 928`。4ccEditor `pes20.cpp` L733 `current_byte += 0xF0+0x48`；`main.cpp` L1697、L1773（0x2AB9CC）、L1830（0x78）、L1886、L1948（0x7C） |
+| K4 | PES 数据库表 `PlayerAppearance.bin` 每行 60 B（u32 PID + 56 B），库表偏移 = EDIT 偏移 − 8；原版 `dt00_x64.cpk` 中有 17,782 条（§0-2、§2.5） | **确认**（并补充 PES 15 模板） | GodotFootball `pes-re-face.md` L312-314 原文一致。4cc-studio `model.md` L228-236（"record bytes 128 to 184 on PES 18/19, 252 to 308 on PES 20/21"）。pes-db-generator 两个模板（_15、_16）都是 60 B |
+| K5 | 模板 `PlayerAppearance_Base_16.bin` = ID 70101（`d5 11 01 00`）+ 7 个 `0x77`（§2.5） | **确认** | 本地 `od` 输出 `d5 11 01 00 77 77 77 77 77 77 77 00 …`，文件长 60 B；`player_appearance.py` 对 16–21 版用 `file_ver = 16` |
+| K6 | eFootball PC 版 `PlayerAppearance.bin` 每行 64 B，u64 PID 在 0–7 且严格递增；文件长 2,410,752 B（= 37,668 × 64）；作者对 53 个 `.bin` 做过结构识别测试；文档自相矛盾，一面说表是"sparse"（§3.2a） | **确认** | Mod Studio `PESDB_DATABASE_FORMAT.md` L288-292、L306-326（原文一致）。EvoTool v520 `BLOCK = 64`（L16）。Player.bin 23,552 条可由 9,420,800 / 400 复算。u64 PID 的旁证：Devil Cold52 V2.5.1.4 "player ids are now read as uint64" |
+| K7 | eF 行中 14 项身体参数在 0x08–0x0E（§0-3、§3.3、§7 `ef64`） | **未核实**（已在 §0-3 加【未核实】） | 只有 EvoTool v520 的注释（`// 0x08 - Cuerpo`）和写入代码支持；其读取代码 L98-99 实际是 `ReadUInt32()` 加上被注释掉的 `cardType`，等于从 0x04 开始读。没有任何真实 eF 文件的解码结果。原文定为"中"置信度，这一点合理 |
+| K8 | EvoTool 的内部矛盾：读取用 `ReadUInt32`；写入先写 `ulong` 再写 `(uint)0`，然后 `Seek(BLOCK + 0x08)`；`AddNewEntry` 追加 60 B；外观解析是 2026-07-18 那次提交加入的（§3.2b） | **确认** | `PlayerAppearanceControllerV520.cs` L98-99、L561-567（`MemoryPlayerAppearance.Seek(BLOCK + 0x08, …)`）、L789-791（`+ 60`）；`Models/v520/PlayerAppearanceV520.cs` L16 `public ulong playerId`；`git show --stat fd8aef2` 新增了这两个文件（+843、+166 行）。Football-Championship `BLOCK_SIZE = 60`，样本文件 16 B（`ff 10 81 'WESYS' 00…`） |
+| K9 | EvoTool 各 u32 字的位定义平移 4 字节后，与 PES 16–21 字段逐位重合（§3.2c 表） | **确认**（代码层面） | 逐行核对 EvoTool L102-259：`skinColor` aux28 bit 8-10、`overallStyle` aux34 bit 0-2、`overallLength` aux38 bit 0-2、`irisColor` aux3C bit 0-3、`fontStyle` aux3C bit 16-17 等，与 4cc-studio 和维基位置一致。这只能证明代码一致，不能证明 eF 数据也一致（见 K7） |
+| K10 | WESYS：16 字节头，0x03 处是魔数 `WESYS`，0x08 是压缩长度，0x0C 是原始长度；密钥种子取自两个长度字段，所以不能原地重新加密（§1.1、§8-2） | **确认** | Mod Studio 文档 §1.1-1.2。Football-Championship 空表实物 `ff 10 81 57 45 53 59 53 …`，魔数确实在 0x03 |
+| K11 | "先异或流加密，再 zlib 压缩"（§1.1 表 ③） | **更正**：先 zlib 压缩，再异或加密 | Mod Studio `ui/core/wesys.py` L82-88：`compressed = zlib.compress(...)` 之后 `crypt_current_payload(compressed, …, len(compressed), len(data))`；解包 L113-127：先解密，再 `zlib.decompress`。同时补充了"加密起始版本"的冲突：5.0.0（Mod Studio）对 6.0.0（RBsGameLab） |
+| K12 | PES 2021 解码器 `v = 2n/14 − 1`，n = 15 时取 0；两项手臂参数在内存中对调，4cc 的标签与引擎一致；"Edited Physique" 标志从不检查；4830 人中 4600 多人全为 7（§2.2） | **确认** | GodotFootball `pes-re-physique.md` §1.2（"n = 15 → 0"，"+0x20 = byte 0x0F >> 4"，live 74008 例）。§7 Killed hypotheses 原文："4ccEditor arm_size/arm_len labels are swapped relative to the engine. Killed"。4ccEditor `pes20.cpp` L163-164 读取顺序 `arm_size` (bit 0) → `arm_len` (bit 4) 与此一致 |
+| K13 | G 公式常数（k_h 0.223/0.277，k_L 0.018/0.019），183 cm → G = 1.0167；"前四个值与运行时样本一致"（§4.1、§4.3） | 常数与数值**确认**；措辞**更正** | physique §0 第 3 条、§3（.rdata 0x142a83530 = {0.018, 0.019, 0.223, 0.277}）。复算：175 → 0.97115，183 → 1.016725，185 → 1.027875，188 → 1.0446。源文的运行时样本只有 175、185、194、199 cm |
+| K14 | 体重归一化：183 cm 时 Wmin 49.9、Wstd 73.25、Wmax 103.4；80 kg → 0.224，82 kg → 0.290；80 kg 时腹、肩、臂 × 1.022，大腿、小腿 × 1.011（§4.3） | **确认** | physique §1.3 的 12 行表：180 (48/71/100) 与 188 (53/77/109) 之间取 t = 3/8 线性插值，得 49.875 / 73.25 / 103.375。(80 − 73.25)/30.125 = 0.2241。A 表第 1 项：腹部、肩、臂正端 1.1，大腿、小腿正端 1.05 |
+| K15 | 每档效果表（ShoulderHeight +7.86% / −2.86%，CalfSize +2.86%，WaistSize 只在 B 表生效，ThighSize y/z 等）与 LegLength 分解（G × 1.018，腹 × 0.882，腿 × 1.020；负端 × 0.981 / 1.124 / 0.979）（§4.2） | **确认** | 按 physique 附录 A 的表 A、B 逐项复算：sk_shoulder z 0.8 → 1.55；sk_leg yz 0.9 → 1.2；B 表第 18 项 sk_belly (0.9, 0.87) → (1.07, 1.11)；A 表第 7 项 waist 为 (1,1,1) → (1,1,1)；A 表第 12 项 a = 0.981、b = 1.018，sk_belly x 1.146 / 0.8665，腿 x 0.9978 / 1.002。锁骨转角符号与源文 2026-10-13 的更正一致（左 −8·s，右 +8·s） |
+| K16 | 根运动 clamp [0.9166, 1.0833]，"约 194 cm 以上"开始滑步（§4.3） | clamp **确认**；阈值**更正**（近似值） | physique §4：clamp 值一致；原文 "Above roughly 193 cm"；按公式 G = 1.0833 时 h ≈ 194.9 cm |
+| K17 | pesdb PES 2017 "RONALDO" id 2137：CF、OVR 92、183 cm / 75 kg、Age 20、Goal Poacher、右脚、BRAZIL • FREE；PES 2016、2018–2021 同一 id 均为 404；PES 2018–2021 和 eFootball 中按名字也找不到 R9（§0-5、§5.1） | **确认** | 2026-10-25 重新抓取 `pesdb.net/pes2017/players/ronaldo-2137`（数值逐项一致）。pes2016、2018、2019、2020、2021 的 `/players/ronaldo-2137` 均为 HTTP 404。按名字 "Ronaldo" 检索 pes2018–2021 和 efootball：普通 "Ronaldo" 条目（各版本中的 102827、104488、109566、110562、123096）逐一打开，分别是 DMF、GK（Vitória，194 cm）、RB（América Mineiro）等其他巴西球员，没有 R9；eFootball 中 "Nazario" 检索无结果。"Age 20 = 1996/97" 是本组推断（T4，出生日 1976-09-18 对得上） |
+| K18 | 对照球员体型值：Hulk 15038（4/13/5/10/9/9/8/1/9/9/10，180/85，Trending 卡 53878485695166 数值相同）、Benzema 16786160（4/10/10/10/7/7/7/7/11/9/7，185/81）、Rivaldo Epic 88044145348046（7/7/6/8/5/2/3/7/3/2/14，186/75）；腿长等效身高 183.00 / 185.00 / 193.00（§5.2） | **确认** | 2026-10-25 重新抓取 4 个 pesdb 页面，11 项逐一一致；页面标题 "Rivaldo - Epic (Brazil 2002)"，"Featured Pack Brazil 2002"；页面确实只显示 11 项，不含头部 3 项 |
+| K19 | 测试向量字节（§7、§8-5）：Hulk `D4 A5 99 18 99` + `A`；Benzema `A4 AA 77 77 9B` + `7`；Rivaldo `77 86 25 73 23` + `E` | **确认**（算术） | 按"低半字节在前"由 K18 的数值重新编码，三组完全一致。但这些字节在 eF 文件中的位置依赖 K7，K7 未核实 |
+| K20 | 卡 ID：88044145348046 = 0x501360_020DCE，53878485695166 = 0x310090_003ABE，都大于 2³²（§3.2a） | **确认**（算术） | Python 复算。低 24 位分别为 134606 和 15038 |
+| K21 | Rivaldo "基础 PID 134606"（§5.2、§7、§8） | **未核实**（已在 3 处加【未核实】） | `pesdb.net/efootball/players/rivaldo-134606` 返回 HTTP 404。pesdb 上 8 张 Rivaldo 卡的低 24 位都是 134606，所以这个数是屏蔽高位得来的。Mod Studio §7 原文："Do not try to recover a base card from a variant by masking off the high bits … only 1,135 of 3,701 variants (30.7%) map back correctly"。Hulk 15038 和 Benzema 16786160 的基础页存在，没有问题 |
+| K22 | RBsGameLab（W5，2026-10-14）："107 customizable parameters"，"Appearance parameter data is distinct from licensed 3D face models and head assets"，可按 PID 整块克隆外观，v6.0.0 加了 WESYS 外壳，"fixed 400 bytes each"（§0-6、§6.1、§6.3） | 引文**确认**；"400 B 是 2026-10-09 更新后" 的归属**更正** | 页面逐字核对（发布日期 `datePublished 2026-10-14`）。400 B 一句针对 "eFootball 2027 changed the record layout"；2026-10-09 一句只说能力、技能等表换了位置。另有 Mod Studio：dt200 为 400 B，dt870（2026-08-17）为 392 B |
+| K23 | Devil Cold52 编辑器各版本（W6、W7、W10）、隐藏编辑模式（W8）、PES 2021 社区体型经验值（W9） | **确认**；W6 版本归属**更正** | pesmodding 6 个页面重新抓取，逐字核对：V2.5.1.2 "Jawline: Writing problem Fixed it"、V2.5.1.3 "Eyebrown Colour…"、V2.5.1.4 "added Export PlayerAppearance Block"、2024 版 "player appearance feature is still disabled (data will be decoded again)"、2025 版 V4.4.0.0 同句、W8 "functions are not yet implemented … nearly useless"、W9 "Weight between 55 and 65 / Shoulder width -4 / Waist thickness between -1 and -3 / Thigh thickness between +1 and -1"（2023-09-14）、W10 "vadim_95 (Player.bin Decoding)"。"7–14 为正" 一句在 Notes 中，不属于 V5.2 |
+| K24 | PES 2021 真人脸由"`face/real/<id>/face.fpk` 资源包是否存在"决定（id 先 `& 0x800bffff`），表中没有真人脸位（1,985 对 15,797）；`face_diff.bin` 960 B，含 33 个面部骨骼偏移；编辑脸用 `facial.fmdl`（1,600 顶点）加 30 骨晶格；编辑发型 896 种（§2.4） | **确认** | GodotFootball `pes-re-face.md` §0 第 1-3 条、L46-54、L63、L68、L99、L312-314、L372、L390 原文一致；1,985 + 15,797 = 17,782 与 K4 的记录数吻合 |
+| K25 | CUE4Parse 中 `GAME_eFootball = GAME_UE4_26 + 29`（§4.4） | **确认** | 2026-10-25 抓取 `raw.githubusercontent.com/FabianFG/CUE4Parse/master/CUE4Parse/UE4/Versions/EGame.cs`，L130 一致 |
+| K26 | 前额发型宽度"维基 3 bit"（§2.3 0x42 行） | **更正** | 维基副本 L10904 起的 PES 2021 表：0x42:0 为 2 bit "Hair Style Front"，0x42:2 为 1 bit "Unknown S"。4cc-studio 实测 3 bit（`bit_offset 352`）。已补进 §9 的宽度冲突列表 |
+| K27 | EvoTool 的 "v5.2.0" 对应 2025-12（§3.1） | **部分确认** | Konami 官网 `versioninfo_v5-20` 页面把 v5.2.0 归在 2025 年，并写 "As the European league season approaches the midway point"，但页面没有写具体日期。`04_efootball_systems.md` 的 App Store 记录为 10.2.0 = 2025-12-04（同组 T3，已经核查过） |
+| K28 | §7 schema 中门将手套 ID（`gk_gloves_id`，0x06:2）宽 10 bit，0x07:4 留 4 bit "Unknown A" | **更正**：改为 14 bit | 4ccEditor `pes20.cpp` L155 读、L885 写都是 `(2, 14)`，注释 "Extend to be 14 bits, using Unk A space"；4cc-studio `pes20.rs` `GlovesId bit_offset 1970, bit_width 14`（1970 − 0xF0×8 = 50 = 0x06:2）。§7 说明里的规则是"宽度取 4cc-studio 的实测值"，原 schema 只有这一项沿用了维基宽度。10 bit 时，ID ≥ 1024 会被解码截断。这是只在存档里出现的头部字段，编解码器默认禁止改它，所以对写入身体参数没有影响。复核时另用逐位移植的 4ccEditor `read_data` 按 `pes20.cpp` L146-201 的读取顺序模拟游标，推出 36 个头部/身体/穿着字段的位置，与 edit72 全部一致（`tools/tests/test_player_appearance_adversarial.py`；复核日期 2026-10-25） |
+
+**结论**：
+- 本文的核心格式结论都经得起复核：PES 72 B / 60 B 布局、身体半字节位置、+7 编码、PES 2021 骨骼缩放机制与数值、eF PC 版 64 B 行长和 u64 PID。原作者引用的源码行号和原文基本准确，没有发现编造的来源、ID 或数值。
+- 共更正 7 处：加密与压缩的顺序、前额发型宽度、"前四个值"、滑步阈值、RBsGameLab 400 B 的归属、Devil Cold52 引文的位置、Mod Studio 提交日期。都属于细节或措辞，不影响写入方案，但"先压缩、后加密"会影响 codec 的实现顺序，必须按更正后的写。
+- 标为【未核实】2 项：eF 身体字段在 0x08–0x0E（真实数据层面），以及 Rivaldo 基础 PID 134606。前者正是 §8 的实机检验要回答的问题。
+- 复核补充（2026-10-25，外观编解码器对抗性复核）：K28，门将手套 ID 宽度由 10 bit 改为 14 bit，edit72 的 72 字节因此全部有归属；身体 14 项、穿着、编辑脸 89 个字段的位置与宽度，再次逐一对照 4cc-studio `pes20.rs`/`ingame_face.rs` 和 4ccEditor 的读取顺序，没有其他差异。这只说明 PES 布局与社区源码一致，**不改变 ef64 对 iOS 11.1.1 未验证的结论**。

@@ -4,7 +4,7 @@
     python3 tools/data/build_r9_2002.py           # 重新生成三个产物
     python3 tools/data/build_r9_2002.py --check   # 只检查产物是否与 JSON 输入一致（不一致时退出码 1）
 
-输入只有 JSON 顶层字段（progression_sim.py 的输入格式）和 notes 中手写的设计记录。
+输入只有 JSON 顶层字段（progression_sim.py 的输入格式，模拟专用的 allocation/manager 在 simulation 下）和 notes 中手写的设计记录。
 本脚本不引入任何新规则：全部计算调用 tools/data/progression_sim.py 和 efootball_rules.py
 （规则出处见 04 号档案；社区逆向的规则和数值均为"待客户端核实"）。
 """
@@ -68,6 +68,40 @@ def _nz(a: Dict[str, int]) -> Dict[str, int]:
     return {k: v for k, v in a.items() if v}
 
 
+def _auto_under_manager(card: S.PlayerCard, rec: Dict[str, int]) -> Dict[str, Any]:
+    """H4：如果自动提升按"比赛计划下（含主教练）"的总评最大化，哪些熟练度会改变加点方案。"""
+    pos, cats = card.registered_position, R.categories_for_position(card.registered_position)
+    out: Dict[str, Any] = {}
+    for model, rng in (("efx", range(40, 100)), ("pesdb", range(70, 91))):
+        diff = {}
+        for p in rng:
+            g, _ = S.greedy_allocation(card.stats, card.height_cm, card.wfa_idx, pos, card.budget, categories=cats,
+                                       manager_p=p, manager_model=model)
+            if _nz(g) != _nz(rec):
+                mx = R.apply_training(card.stats, g)
+                fx = R.apply_boosters(mx, card.booster_bonus(("fixed",)))
+                diff[str(p)] = {"allocation": _nz(g),
+                                "overall_" + pos + "_max": R.overall(mx, card.height_cm, card.wfa_idx, pos),
+                                "overall_" + pos + "_max_fixed": R.overall(fx, card.height_cm, card.wfa_idx, pos)}
+        out[model] = {"proficiency_range": [rng.start, rng.stop - 1], "plan_differs_at": diff}
+    return out
+
+
+def _level_up_drops(card: S.PlayerCard) -> List[Dict[str, Any]]:
+    """L8：每级整体重分配（pesdb 贪心复现）时，升级后下降的能力。"""
+    pos, cats = card.registered_position, R.categories_for_position(card.registered_position)
+    out, prev = [], None
+    for L in range(1, card.max_level + 1):
+        a, _ = S.greedy_allocation(card.stats, card.height_cm, card.wfa_idx, pos, R.progression_points(L), categories=cats)
+        st = R.apply_training(card.stats, a)
+        if prev is not None:
+            drops = {R.STAT_BY_KEY[k].en: [prev[k], st[k]] for k in R.STAT_KEYS if st[k] < prev[k]}
+            if drops:
+                out.append({"level": L, "allocation": _nz(a), "drops": drops})
+        prev = st
+    return out
+
+
 def compute(d: Dict[str, Any]) -> Tuple[Dict[str, Any], List[List[Any]]]:
     rec_name = d["notes"]["boosters"]["slot2_recommendation"]["name"]
     base = _sim(d)                                   # 出厂卡 + JSON 中的推荐加点
@@ -85,6 +119,29 @@ def compute(d: Dict[str, Any]) -> Tuple[Dict[str, Any], List[List[Any]]]:
     }
     overall = {k: R.overall_all_positions(v, h, w) for k, v in st.items()}
     raw = {k: round(R.raw_overall(v, h, w, pos), 3) for k, v in st.items()}
+
+    cats = R.categories_for_position(pos)
+    top = S.top_allocations(card.stats, h, w, pos, card.budget, categories=cats, k=5)
+    fixed_b = card.booster_bonus(("fixed",))
+    full_b = full.card.booster_bonus(("fixed", "craftable"))
+    prof = card.proficiency
+    pen = {
+        "MAX+FIXED": {q: R.overall_in_position(st["MAX"], h, w, q, prof[q], booster_bonus=fixed_b) for q in R.POSITIONS},
+        "MAX+FIXED+CRAFTED": {q: R.overall_in_position(st["MAX"], h, w, q, prof[q], booster_bonus=full_b) for q in R.POSITIONS},
+        "MAX+FIXED+CRAFTED+MANAGER": {q: R.overall_in_position(st["MAX"], h, w, q, prof[q], manager_p=p, booster_bonus=full_b)
+                                      for q in R.POSITIONS},
+    }
+    aim = {}
+    for sname in card.skills:
+        if not R.SKILLS[sname].aim_bonus:
+            continue
+        rows = {"MAX（满级中性）": R.aim_effective(st["MAX"], sname),
+                "MAX+FIXED（无主教练，注册位置）": R.aim_effective(R.match_stats(st["MAX"], booster_bonus=fixed_b), sname)}
+        for q, m in full.match.items():
+            rows[f"比赛中 {q}（完整培养 + 主教练 {p}）"] = R.aim_effective(m, sname)
+        aim[sname] = {"condition": R.SKILLS[sname].aim_condition,
+                      "values": {k: {R.STAT_BY_KEY[s].en: {"stat": a, "effective": e} for s, (a, e) in v.items()}
+                                 for k, v in rows.items()}}
 
     alts = {}
     for alt in [a["name"] for a in d["notes"]["boosters"]["slot2_recommendation"].get("alternatives", [])]:
@@ -109,7 +166,19 @@ def compute(d: Dict[str, Any]) -> Tuple[Dict[str, Any], List[List[Any]]]:
             "budget": card.budget, "recommended": _nz(base.alloc), "recommended_cost": R.allocation_cost(base.alloc),
             "auto_pesdb_greedy": _nz(auto.alloc), "auto_exact_optimal": _nz(opt.alloc),
             "all_identical": _nz(base.alloc) == _nz(auto.alloc) == _nz(opt.alloc),
+            "top_plans": [{"rating_total_" + pos: t, "overall_" + pos: t // 1000, "cost": c, "allocation": _nz(a)} for t, c, a in top],
+            "margin_first_second_per_1000": top[0][0] - top[1][0],
+            "note": "top_plans 是精确搜索的前 5 名（总评分子，÷1000 后取整为总评）。第一名与第二名的差很小时，"
+                    "客户端权重、取整或并列规则的微小差别都可能改变自动提升的结果（社区逆向，待客户端核实）",
         },
+        "auto_plan_under_manager": {
+            "_comment": "如果游戏内自动提升按'比赛计划下（含主教练熟练度）'的总评最大化（v6.0.0 起培养界面显示比赛计划下的能力，T1；"
+                        "是否如此未找到），下列熟练度会得到与推荐方案不同的加点，并列出该方案不含主教练时的卡面总评（满级 / 满级 + 固定增能）。"
+                        "p=" + str(p) + " 时不变。efx=社区逆向公式，pesdb=门槛表；本组复算（T4）",
+            **_auto_under_manager(card, base.alloc)},
+        "level_up_stat_drops": {
+            "_comment": "每次升级重新分配全部点数（v4.0.0 官方，T1）时，按 pesdb 贪心复现，升级后会下降的能力（下降前→后）。属正常现象，总评不降",
+            "levels": _level_up_drops(card)},
         "training_steps": [{"step": s.index, "category": s.category, "nth": s.nth, "cost": s.cost, "points_used": s.used,
                             "overall_" + pos: s.ovr} for s in base.steps],
         "auto_plan_by_level": [{"level": L, "points": b, "allocation": _nz(a), "overall_" + pos: o}
@@ -121,11 +190,20 @@ def compute(d: Dict[str, Any]) -> Tuple[Dict[str, Any], List[List[Any]]]:
             "MAX+FIXED+CRAFTED": st["MAX+FIXED+CRAFTED"][k], "MAX+FIXED+MANAGER": st["MAX+FIXED+MANAGER"][k],
             "MAX+FIXED+CRAFTED+MANAGER": st["MAX+FIXED+CRAFTED+MANAGER"][k]} for k in R.STAT_KEYS},
         "overall": overall,
+        "overall_note": "overall 是 §7 公式值，不含位置适性惩罚（与 pesdb 口径相同）；按位置的比赛角色评价估算见 overall_position_penalised",
+        "overall_position_penalised": {
+            "_comment": "本组估算（T4）：先按 04 §3.6 的位置适性倍率（和主教练倍率）折算卡面值，再加增能，再代入 §7 公式。"
+                        "v4.2.0 官方说比赛中角色适配值计入增能、位置适性和主教练（T1），算法未公布。待客户端核实",
+            **pen},
         "overall_raw_" + pos: raw,
         "overall_alternative_crafted_" + pos: alts,
         "match_stats_full_build": {
             "_comment": "比赛中实际能力：满体力、状态正常、不含技能情境加成；位置适性倍率 + 主教练熟练度 + 两个增能槽（04 §6.6 顺序）",
             **{q: {R.STAT_BY_KEY[k].en: v for k, v in m.items() if k not in R.GK_STAT_KEYS} for q, m in full.match.items()}},
+        "aim_effective": {
+            "_comment": "'按能力 +N 瞄准/计算'型技能的有效值：不改能力值、不受 99 封顶、叠在增能之后（04 §4.2 核查更正 C21；"
+                        "Through Passing 有原文 T3，其余同类技能为推断 T4）。待客户端核实",
+            **aim},
         "count_ge_95": {s: sorted(R.STAT_BY_KEY[k].en for k in R.STAT_KEYS if st[s][k] >= 95)
                         for s in ("MAX", "MAX+FIXED", "MAX+FIXED+CRAFTED")},
     }
@@ -135,8 +213,8 @@ def compute(d: Dict[str, Any]) -> Tuple[Dict[str, Any], List[List[Any]]]:
     ident = n["identity"]
     hdr = ["section", "key", "name_en", "name_en_us", "name_zh", "category", "level1", "training_add", "max_neutral",
            "fixed_booster", "max_fixed", "crafted_booster_rec", "max_fixed_crafted", f"manager{p}_fixed",
-           f"manager{p}_full", "match_CF", "match_SS", "match_LWF", "value", "special", "trainable_as_additional",
-           "client_check", "source"]
+           f"manager{p}_full", "match_CF", "match_SS", "match_LWF", "penalised_max_fixed_T4", f"penalised_manager{p}_full_T4",
+           "value", "special", "trainable_as_additional", "client_check", "source"]
     rows: List[List[Any]] = [hdr]
 
     def row(**kw):
@@ -152,9 +230,9 @@ def compute(d: Dict[str, Any]) -> Tuple[Dict[str, Any], List[List[Any]]]:
         row(section="identity", key=key, value=val, source=src,
             client_check="必须与主项目核对" if key == "card_id" else ("待客户端核实" if key in ("card_type",) else ""))
     of = n["other_fields"]
-    for key in ("stronger_foot", "weak_foot_usage", "weak_foot_accuracy", "form", "injury_resistance"):
+    for key in ("stronger_foot", "weak_foot_usage", "weak_foot_accuracy", "form", "injury_resistance", "live_update_rating"):
         row(section="profile", key=key, value=d[key], client_check="编码待客户端核实", source=of[key]["evidence"])
-    row(section="profile", key="registered_position", value=pos, source="03 §4")
+    row(section="profile", key="registered_position", value=pos, client_check="位置序号与适性编码待客户端核实", source="03 §4")
     row(section="profile", key="max_level", value=d["max_level"], client_check="待客户端核实", source="04 §5.2")
     row(section="profile", key="progression_points", value=card.budget, client_check="待客户端核实",
         source="04 §5.2：2×(最高等级−1)，社区逆向")
@@ -171,14 +249,17 @@ def compute(d: Dict[str, Any]) -> Tuple[Dict[str, Any], List[List[Any]]]:
     for q in R.POSITIONS:
         row(section="overall", key=q, value=card.proficiency[q], level1=overall["L1"][q], max_neutral=overall["MAX"][q],
             max_fixed=overall["MAX+FIXED"][q], max_fixed_crafted=overall["MAX+FIXED+CRAFTED"][q],
-            **{f"manager{p}_fixed": overall["MAX+FIXED+MANAGER"][q], f"manager{p}_full": overall["MAX+FIXED+CRAFTED+MANAGER"][q]},
-            client_check="总评公式待客户端核实", source="04 §7（社区逆向公式）")
+            **{f"manager{p}_fixed": overall["MAX+FIXED+MANAGER"][q], f"manager{p}_full": overall["MAX+FIXED+CRAFTED+MANAGER"][q],
+               "penalised_max_fixed_T4": pen["MAX+FIXED"][q],
+               f"penalised_manager{p}_full_T4": pen["MAX+FIXED+CRAFTED+MANAGER"][q]},
+            client_check="总评公式待客户端核实；penalised 列为本组估算（T4）",
+            source="04 §7（社区逆向公式）；penalised = §3.6 位置倍率折算后再代入公式（T4）")
     for c in R.CATEGORY_KEYS:
         if c in R.categories_for_position(pos):
             tc = R.TRAINING_CATEGORIES[c]
             row(section="allocation", key=c, name_en=tc.en, name_zh=tc.zh, value=base.alloc.get(c, 0),
                 training_add=base.alloc.get(c, 0), category=",".join(tc.stats), client_check="待客户端核实",
-                source="推荐 = 自动提升（pesdb 贪心 = 精确最优）")
+                source=f"推荐 = 自动提升的复现（pesdb 贪心 = 精确最优；第二名只差 {top[0][0] - top[1][0]}/1000）")
     row(section="allocation", key="cost", value=f"{R.allocation_cost(base.alloc)}/{card.budget}", source="04 §5.4")
     for lbl, table, nm in (("attacking", R.ATTACKING_STYLES, card.attacking_style),
                            ("defensive", R.DEFENSIVE_STYLES, card.defensive_style)):
@@ -192,8 +273,12 @@ def compute(d: Dict[str, Any]) -> Tuple[Dict[str, Any], List[List[Any]]]:
     ev = {s["name"]: s["evidence"] for s in n["skills"]["card_skills"]}
     for nm in card.skills:
         sk = R.SKILLS[nm]
+        aim_txt = ("瞄准/计算 " + "、".join(f"{R.STAT_BY_KEY[k].en} +{v}" for k, v in sk.aim_bonus)
+                   + f"（{sk.aim_condition}；不受 99 封顶）") if sk.aim_bonus else ""
         row(section="card_skill", key=nm, name_en=nm, name_en_us=sk.en_us, name_zh=sk.zh, special="yes" if sk.special else "no",
-            trainable_as_additional="no" if sk.special else "yes", client_check="ID/特殊标志待客户端核实", source=ev.get(nm, ""))
+            trainable_as_additional="no" if sk.special else "yes", value=aim_txt,
+            client_check="ID/特殊标志待客户端核实（特殊身份只有 T2/T3 依据）" if sk.special else "ID 待客户端核实",
+            source=ev.get(nm, ""))
     for s in n["skills"]["additional_skills_recommended"]:
         sk = R.SKILLS[R.resolve_skill(s["name"])]
         row(section="additional_skill_recommended", key=sk.name, name_en=sk.name, name_zh=sk.zh, special="no",
@@ -207,7 +292,7 @@ def compute(d: Dict[str, Any]) -> Tuple[Dict[str, Any], List[List[Any]]]:
     row(section="booster", key="slot2_recommended", name_en=b2["name"], value=f"crafted +{b2['value']}（玩家制作）",
         category=",".join(b2["stats"]), source=b2["exists_in"])
     row(section="manager_assumption", key="team_playstyle_proficiency", value=p,
-        source="典型值假设（T4）；倍率公式 04 §6.5 社区逆向")
+        source="典型值假设（T4），只用于模拟（JSON simulation.manager），不属于卡数据；倍率公式 04 §6.5 社区逆向")
     return derived, rows
 
 

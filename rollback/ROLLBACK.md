@@ -2,8 +2,8 @@
 
 ## 原则
 
-1. **原件只读**：任何工具都不覆盖输入文件。`tools/native/iostore.py`、`inplace_patch.py`、`player_appearance.py` 在写入前都会检查输出目录不是输入目录、不是非空目录，否则拒绝执行（有测试覆盖）。
-2. **每次写入都有清单**：输出目录里有 `manifest.json`，记录每个输入/输出文件的 SHA-256、改了哪些 chunk/字段。回退就是"把清单里列出的输出文件换回清单里记录哈希的原件"。
+1. **原件只读**：任何工具都不覆盖输入文件。`tools/native/iostore.py`、`inplace_patch.py` 在写入前都会检查输出目录不是输入目录、不是非空目录，否则拒绝执行（有测试覆盖）。`tools/data/player_appearance.py` 写的是单个文件而不是目录：`--out` 和旁边的 `<out>.patch.json` 都不能是任何输入文件（整表、单条记录、encode 的 JSON、`--set-json`，含符号链接/硬链接），已存在时必须加 `--overwrite`；`decode --out` 同样不能覆盖输入或已有的原始记录备份（有测试覆盖，`tools/tests/test_player_appearance_adversarial.py`）。
+2. **每次写入都有清单**：输出目录里有 `manifest.json`（外观编解码器是 `<out>.patch.json`），记录每个输入/输出文件的 SHA-256、改了哪些 chunk/字段。回退就是"把清单里列出的输出文件换回清单里记录哈希的原件"。
 3. **先备份再安装**：装测试包前，先把下面三类东西完整备份，并核对哈希：
    - 原版 IPA（或已安装 App 的完整导出）；
    - 游戏下载数据目录里被替换的容器文件（`.utoc/.ucas/.pak` 原件）；

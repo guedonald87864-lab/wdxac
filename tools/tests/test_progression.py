@@ -135,7 +135,12 @@ def test_skill_tables():
     for s in R.SKILLS.values():
         if not s.special:
             groups[s.group] = groups.get(s.group, 0) + 1
-    assert groups == {"dribbling": 9, "shooting": 9, "passing": 9, "defending": 6, "goalkeeping": 4, "general": 7}
+    # [S34] 的分组（04 核查记录 C22）：Aerial Superiority 在防守组，防守 7、通用 6
+    assert groups == {"dribbling": 9, "shooting": 9, "passing": 9, "defending": 7, "goalkeeping": 4, "general": 6}
+    # 直接加能力值的技能与"按能力 +N 瞄准"的技能互不重叠（C21：两类的封顶规则不同）
+    assert not [s.name for s in R.SKILLS.values() if s.stat_bonus and s.aim_bonus]
+    assert dict(R.SKILLS["Phenomenal Finishing"].aim_bonus) == {"finishing": 7, "heading": 7}
+    assert dict(R.SKILLS["Through Passing"].aim_bonus) == {"low_pass": 5, "lofted_pass": 5}
     assert sorted(s.no for s in R.SKILLS.values()) == list(range(1, 68))
     assert len(R.DUMMY_SKILLS) == 7
     assert R.resolve_skill("One-time Shot") == "First-time Shot"
@@ -550,3 +555,49 @@ def test_cli_invalid_card_exit_code(tmp_path, capsys):
     p.write_text(json.dumps(d), encoding="utf-8")
     assert S.main([str(p), "--no-levels", "--no-steps"]) == 1
     assert "SKILL_DUP" in capsys.readouterr().out
+
+
+# ---------------------------------------------------------------------------------------------
+# 审查后新增：瞄准型技能、top-k 加点、simulation 子对象、Live Update Rating、技能数提示
+# ---------------------------------------------------------------------------------------------
+
+def test_aim_bonus_not_capped_at_99():
+    m = {k: 99 for k in R.STAT_KEYS}
+    m["finishing"] = 102                                    # 增能后 >99
+    assert R.aim_effective(m, "Phenomenal Finishing")["finishing"] == (102, 109)
+    assert R.RULES["SKILL_AIM_UNCAPPED"].client_check and R.RULES["SKILL_AIM_UNCAPPED"].community
+
+
+def test_top_allocations_agree_with_optimal():
+    base = {k: v for k, v in S.parse_card(EXAMPLE)[0].stats.items()}
+    cats = R.categories_for_position("CF")
+    top = S.top_allocations(base, 189, 1, "CF", 66, categories=cats, k=3)
+    opt = S.optimal_allocation(base, 66, S.objective_weights({"CF": 1}), categories=cats)
+    assert top[0][0] == R.rating_total(R.apply_training(base, opt), 189, 1, "CF")
+    assert top[0][0] >= top[1][0] >= top[2][0] and all(c <= 66 for _, c, _ in top)
+
+
+def test_simulation_subobject_and_duplicates():
+    d = json.loads(json.dumps(EXAMPLE))
+    d["simulation"] = {"allocation": d.pop("allocation"), "manager": d.pop("manager")}
+    card, issues = S.parse_card(d)
+    assert not issues and card.manager.proficiency == 89 and card.allocation == "auto"
+    d["manager"] = {"proficiency": 80}
+    _, issues = S.parse_card(d)
+    assert "SIM_FIELD_DUP" in {i.code for i in issues if i.level == "ERROR"}
+
+
+def test_proficiency_colour_names():
+    d = json.loads(json.dumps(EXAMPLE))
+    d["position_proficiency"] = {"CF": "亮绿", "SS": "淡绿", "LWF": "浅绿"}
+    card, issues = S.parse_card(d)
+    assert not issues and card.proficiency["CF"] == "high" and card.proficiency["SS"] == card.proficiency["LWF"] == "mid"
+
+
+def test_live_update_rating_and_skill_count_infos():
+    infos = _codes(_issues(lambda d: d.update(live_update_rating="A")), "INFO")
+    assert "LIVE_UPDATE_RATING" in infos
+    assert "LIVE_UPDATE_RATING" not in _codes(_issues(lambda d: d.update(live_update_rating="B")), "INFO")
+    assert "SKILL_CARD_COUNT" in _codes(_issues(lambda d: d["skills"].pop()), "INFO")
+    assert "SKILL_CARD_COUNT" not in _codes(_issues(lambda d: None), "INFO")      # 10 个技能
+    assert "LIVE_UPDATE_RATING" in _codes(_issues(lambda d: d.update(live_update_rating="Z")), "ERROR")

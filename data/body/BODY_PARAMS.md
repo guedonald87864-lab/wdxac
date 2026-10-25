@@ -34,7 +34,8 @@
 ## 1. 写入规则：只改 14 个半字节，其余保持原值
 
 - 身高、体重**不在** PlayerAppearance 表里（PES 2016–2021 在球员记录中；eFootball 预计在 `Player.bin`，位置未核实），本编解码器不写它们。数值与 `data/game/r9_2002_player.json` 一致（183/82）。
-- 写入一律**从原记录出发**：先 `decode` 并保存该球员（或供体）的原始整行，再用 `patch` 只改 14 个身体半字节。肤色、发型、编辑脸滑杆、穿着、未分配位、PID 全部逐位保留。输出写到新文件，旁边生成 `<out>.patch.json`（输入/输出 SHA-256、改动字段、逐位差异），原表留作回退。
+- 写入一律**从原记录出发**：先 `decode` 并保存该球员（或供体）的原始整行，再用 `patch` 只改 14 个身体半字节。肤色、发型、编辑脸滑杆、穿着、未分配位、PID 全部逐位保留。输出写到新文件，旁边生成 `<out>.patch.json`（输入/输出 SHA-256、改动字段、逐位差异、写入前结构检验的结果），原表留作回退。
+- 工具强制的保护（复核后补上，有测试）：`--out` 和 `<out>.patch.json` 都不能是任何输入（整表、单条记录、encode 的 JSON、`--set-json`，含符号链接/硬链接），已存在时要 `--overwrite`；`decode --out` 同样不能覆盖输入或已有的备份（例如上一次的 `r9_before.json`）；整表写入前先做 06 §8 第 4 步的结构检验，不通过就拒绝（`--skip-structure-check` 才放行，并记入清单）；`codec_patch` 是存储值，与 `--display` 同用会被拒绝。
 - 原始值要先记录（任务书第五节"取得原始值并保留记录"；06 §8 第 8 步）。
 
 ```
@@ -48,7 +49,7 @@ python3 tools/data/player_appearance.py patch --layout ef64 --table PlayerAppear
 python3 tools/data/player_appearance.py patch ... --display --set ThighSize=+3 --out ...
 ```
 
-`ef64` 是**候选**布局（eFootball PC，中置信），对 iOS 11.1.1 **未验证**。真实数据必须先通过 06 §8 的结构检验和三条测试向量，才能写入（§7）。
+`ef64` 是**候选**布局（eFootball PC，中置信），对 iOS 11.1.1 **未验证**。真实数据必须先通过 06 §8 的结构检验和三条测试向量，才能写入（§7）。工具在整表写入时自动做结构检验，但**测试向量要人工核对**（用 `find`/`decode` 查 15038、16786160、88044145348046 三条记录的 0x08–0x0D）；结构检验通过只说明"像这张表"，不说明字段含义正确。
 
 ## 2. 三类证据和取值方法
 
@@ -152,7 +153,7 @@ PES 2021 骨轴约定：x = 沿骨长度，y = 前后，z = 左右（06 §4.2）
 ### 5.3 为什么候选取 7 / 7 / 7
 
 1. **头部 3 项与我们自己的头部网格耦合。** `tools/wrap/wrap.py` 默认 `--align similarity`：先按特征点做相似变换对齐，结果再用 `sim_inverse_apply` 回到供体坐标。也就是说，R9 头型被缩放到供体的大小，**只保留形状比例**。
-   - S（相似变换 wrap，默认）：形状已在网格里，整体大小靠 3 项参数**同步**表达：k ≈ 供体原值 + 100·(s − 1)/1.43，其中 s 是 wrap 报告里的 `align_scale`（供体→R9），1.43%/档是 PES 2021 刻度（T4）。若逐轴设置，比例会被重复施加。
+   - S（相似变换 wrap，默认）：形状已在网格里，整体大小靠 3 项参数**同步**表达：k ≈ 供体原值 + 100·(s − 1)/1.43，其中 s 是 wrap 报告里的 `alignment.scale`（供体→R9 的相似变换缩放，`tools/wrap/wrap.py` `similarity_from_features`；用 `--guess-features` 时 `feature_guess.align_scale` 是同一个数），1.43%/档是 PES 2021 刻度（T4）。若逐轴设置，比例会被重复施加。
    - R（`--align rigid`）：网格保留 R9 绝对尺寸，3 项应保持供体原值（通常 7）。
    - D（不用本组网格，只用原版/通用头）：这时才逐轴设置。相对常模是 5 / 8 / 12，相对 MakeHuman 中性是 7 / 11 / 8，两套参照差别很大，只能实机定。
 2. **模型头长可疑。** 头指数 74.6（长头型边界），头围 60.8 cm 比男性均值高约 6%。这与 01 §5.1"颅形圆而饱满、不要做成窄长颅"不太一致，可能是 MakeHuman 底模头偏长的残留（底模中性头指数约 71）。头宽和头长主要由正面照片约束，前后深约束较弱。**已列为面部组复核项**，本任务不修改头部网格。
@@ -191,25 +192,26 @@ PES 2021 骨轴约定：x = 沿骨长度，y = 前后，z = 左右（06 §4.2）
 
 | 文件 | 内容 |
 |---|---|
-| `data/body/layouts/edit72.json` | PES 2016–2021 EDIT 存档外观块，72 B。社区实测，高置信。只有 0x07:4 的 4 位"Unknown A"未分配 |
+| `data/body/layouts/edit72.json` | PES 2016–2021 EDIT 存档外观块，72 B。社区实测，高置信。72 字节全部分配（门将手套 ID 按 4ccEditor/4cc-studio 读写的 14 bit，覆盖维基的 0x07:4 "Unknown A"；复核更正，06 核查记录 K28） |
 | `data/body/layouts/pesdb60.json` | PES 2016/2017–2021 `PlayerAppearance.bin` 行，60 B。高置信。56 字节全部分配 |
 | `data/body/layouts/ef64.json` | eFootball PC `PlayerAppearance.bin` 行，64 B。**候选**，中置信；对 iOS 11.1.1 **未验证**。u64 PID 在 0x00（与 EvoTool 读取代码的 u32 冲突，06 §3.2） |
 | `tools/data/gen_appearance_layouts.py` | 从 06 §7 schema 生成上面三个文件（`--check` 检查是否过期） |
 | `tools/data/player_appearance.py` | 编解码器：`decode` / `encode` / `patch` / `find` / `roundtrip-check` / `fields` |
 | `tools/tests/test_player_appearance.py` | 编解码器测试（合成数据） |
+| `tools/tests/test_player_appearance_adversarial.py` | 对抗性复核测试：输出路径/取值解析/结构闸门/守卫误拒/`--count`，以及逐位移植的 4ccEditor 读写函数和读取顺序（第二个独立参考） |
 | `tools/model/body_params_estimate.py`、`tools/tests/test_body_params.py` | 模型估计与本文件 JSON 的一致性测试 |
 
 每个字段都带：字节偏移、位偏移、位宽、半字节位置（低/高）、值变换（身体项：存储 0–14，显示 = 存储 − 7）、置信度，以及宽度/取值冲突标记（维基 vs 4cc-studio 实测，06 §2.3）。
 
 **输入守卫**：只接受解码后的表数据。以下情况一律拒绝（退出码 3），并说明"偏移是表内偏移，不是 IPA/CPK/.utoc/.ucas/加密 .bin 的文件偏移，也不是内存位置（任务书第五节）"：
-- CPK、WESYS、zlib（含"16 字节头 + zlib"）、gzip、zip/IPA、zstd、LZ4、xz、UE `.utoc`、UE 包、Mach-O、ASTC 的特征头；
+- CPK、WESYS、zlib（含"16 字节头 + zlib"）、gzip、zip/IPA、zstd、LZ4、xz、UE `.utoc`、UE 包、Mach-O、ASTC 的特征头。魔数只有 3–4 字节，而表的第 0 条记录开头就是 PID，所以除 zstd 外每个魔数都要再核对一项该格式必有的结构字段（gzip/zlib 要真正解压到流尾或满 4 KiB；zip 的版本号与压缩方法；LZ4 的 FLG/BD；UE 包的 LegacyFileVersion；Mach-O 的 cputype；ASTC 的块尺寸），否则 PID 559903（`1F 8B 08 00`）这类合法的解码表会被误拒，而且这个守卫没有放行开关；
 - 整体熵 > 7.2 bit/byte（≥ 1 KiB）或大半 4 KiB 窗口熵 > 7.6；
 - 长度不是行长整数倍（会提示是否仍带 WESYS 头、哪种行长能整除）。
 
-zlib 头还必须能真正解压出数据才算命中，所以 PID 恰好以 `78 9C` 开头的解码表不会被误拒（有测试）。PES 20/21 存档里嵌在 0x138 字节球员记录中的外观块，用 `--start 0x16C --stride 0x138` 处理。
+PID 恰好以 `78 9C`、`1F 8B 08`、`50 4B 03 04` 等开头的解码表不会被误拒（有测试）。PES 20/21 存档里嵌在 0x138 字节球员记录中的外观块，用 `--start 0x16C --stride 0x138 --count <球员数>` 处理：data.dat 的球员区之后还有其他区段，不给 `--count` 时它们也会被当成"记录"，PID 可能在那里巧合命中。
 
 **测试证明了什么、没证明什么**：
-- 证明了：在三种布局上，解码与独立参考实现（06 §1.2 公式）逐字段一致；记录内每个半字节位置 × 16 个取值的往返逐字节相同；写入只改被列出字段的位；06 §8 三条测试向量（Hulk、Benzema、Rivaldo，期望字节从档案正文解析）在三种布局上都成立；臂围/臂长对调可被检出；用错布局时结构检验失败；各种拒绝情形生效。另做了 3 个变异检查（交换臂参数位、改大端、写入不清旧位），测试分别报出 8、33、20 个失败。
+- 证明了：在三种布局上，解码与独立参考实现（06 §1.2 公式）逐字段一致；记录内每个半字节位置 × 16 个取值的往返逐字节相同；写入只改被列出字段的位；06 §8 三条测试向量（Hulk、Benzema、Rivaldo，期望字节从档案正文解析）在三种布局上都成立；臂围/臂长对调可被检出；用错布局时结构检验失败；各种拒绝情形生效。另做了 3 个变异检查（交换臂参数位、改大端、写入不清旧位），测试分别报出 8、33、20 个失败。复核又加了第二个独立参考：逐位移植 4ccEditor 的 `read_data`/`write_data`（`data_util.cpp`），并按 `pes20.cpp` L146-201 的读取顺序模拟游标推出 36 个头部/身体/穿着字段的位置，与 edit72 逐一相同；复核对 12 个缺陷/回退各做了一次变异检查，每个都被新测试检出。
 - 没证明：iOS 11.1.1 是否有这张表、外壳和密钥、行长、PID 宽度、字段含义。这些只能用真实解码数据按 06 §8 验证。
 
 ## 8. 缺少的输入
@@ -219,12 +221,14 @@ zlib 头还必须能真正解压出数据才算命中，所以 PID 恰好以 `78
 1. iOS 11.1.1 数据中包含 `PlayerAppearance`（或等价表）的容器文件，以及解壳方法（WESYS 密钥/种子是否同 PC，06 §6.4、05 §5.2）。只需这一张表的解码数据（或原始容器 + 解壳工具）。
 2. R9 目标记录的 PID（自定义 2002 大罗卡 `88044146203441` 是否有独立外观行，或沿用哪个供体行）。
 3. 一个隔离的测试客户端，用于方向标定和截图（任务书第八节）。
-4. 面部组对模型头长（头指数 74.6）的复核结果，以及真实供体的 wrap 报告（`align_scale`），用于确定头部 3 项。
+4. 面部组对模型头长（头指数 74.6）的复核结果，以及真实供体的 wrap 报告（`alignment.scale`），用于确定头部 3 项。
 
 ## 9. 复现
 
 ```
 python3 tools/data/gen_appearance_layouts.py --check
 python3 tools/model/body_params_estimate.py --check data/body/r9_body_params.json
-python3 -m pytest tools/tests/test_player_appearance.py tools/tests/test_body_params.py -q
+python3 -m pytest tools/tests/test_player_appearance.py tools/tests/test_player_appearance_adversarial.py tools/tests/test_body_params.py -q
 ```
+
+`--check` 只在 `model/source/r9_params.json` 与生成 `model_estimate_T4` 时的版本（JSON 里记录的 SHA-256）相同时才能通过。面部/身体组改了模型参数之后，它（以及 `test_body_params.py::test_model_estimate_reproducible`）会报"哈希不同"：这时要重新 `--write`，并复核 §3.2、§4、§5 里引用的档数；候选值本身不会自动改变。

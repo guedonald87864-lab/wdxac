@@ -3,13 +3,13 @@
  "hairline_above_brow": 4.0,
  "corner_recession": 1.0,
  "front_width": 13.0,
- "back_width": 11.5,
- "back_arc_sag": 2.0,
+ "back_width": 12.0,
+ "back_arc_sag": 0.5,
  "thickness": 0.7,
  "embed": 0.05,
  "stubble_mm": 1.5,
- "back_edge_front_of_tragus": -1.0,
- "_revision": "r3 2026-10-25: enlarged after photo overlays at fitted cameras (g890017, g891445, g78971169, g923205): dome covering nearly the full top width, side edge dropping along the temples to about the ear top, back edge about the tragus vertical.",
- "temple_drop": 3.5,
- "front_fade": 1.2
+ "back_edge_front_of_tragus": 3.0,
+ "_revision": "r3 2026-10-25: enlarged after photo overlays at fitted cameras (g890017, g891445, g78971169, g923205): dome covering nearly the full top width, side edge dropping along the temples to about the ear top, back edge about the tragus vertical. | r4 2026-10-25 silhouette critic: back edge 3 cm in front of tragus (projected through fitted cameras lands on the photo edge in 4 views), near-vertical side edge, flatter lower edge, shorter front fade (no visor).",
+ "temple_drop": 2.0,
+ "front_fade": 0.4
 }

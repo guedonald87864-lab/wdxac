@@ -283,6 +283,7 @@
 | 13 | — | PackageResource | |
 
 - 来源：CUE4Parse `FIoChunkId.cs`（`EIoChunkType`、`EIoChunkType5`）、retoc `lib.rs: EIoChunkType::new(value, is_new)`。
+- **v4 的归属有分歧（复审补注）**：表头“TOC ≤ v4 用 UE4 枚举”是 retoc 的判定（`is_new = version > PerfectHash`）；CUE4Parse 不看 TOC 版本，按引擎版本（`Game >= GAME_UE5_0`）选枚举，而 retoc `version.rs` 没有任何发行版引擎对应 v4。所以 v4 用哪套编号不能当作事实；`iostore.py` 对 v4 用容器头 chunk 自己的类型（10 或 6）判定，判定不了就拒绝按名字写类型。与 eFootball（推测 v2/v3）无关。
 
 **4.26 包的 chunk 映射** [T3]
 - 一个包的主体是 `(PackageId, 0, ExportBundleData)`。

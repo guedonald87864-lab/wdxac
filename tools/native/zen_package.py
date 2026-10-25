@@ -401,6 +401,31 @@ def format_fname(base: str, number: int) -> str:
     return base if number == 0 else f"{base}_{number - 1}"
 
 
+FNAME_MAX_NUMBER_DIGITS = 10   # an int32 has at most 10 decimal digits
+
+
+def split_fname_number(text: str) -> tuple:
+    """How a string becomes (name-map entry, FName number) when an FName is created from it.
+
+    A trailing ``_<digits>`` becomes the FName number (+1; 0 = no number) and is NOT part of the
+    stored entry, unless the digits have a leading zero (``Rocket_04`` stays whole; ``x_0`` splits).
+    Sources: retoc ``name_map.rs`` ``break_down_name_string`` (used by ``FNameMap::store`` when it
+    writes Zen packages) [T3]; measured on Unreal Engine 5.8's own cooked fixtures (CUE4Parse
+    tests): 558 exports carry FMappedName.Number != 0 (``BodySetup_1`` is stored as
+    ``("BodySetup", 2)``) and none of the 4118 name-map entries ends in ``_<number>``.
+    Numbers that do not fit UE's int32 rule (more than 10 digits, >= 2^31 - 1) raise ValueError
+    instead of guessing which side of the boundary UE puts them on."""
+    head, sep, digits = text.rpartition("_")
+    if not sep or not digits or not digits.isascii() or not digits.isdigit():
+        return text, 0
+    if len(digits) > 1 and digits[0] == "0":
+        return text, 0
+    if len(digits) > FNAME_MAX_NUMBER_DIGITS or int(digits) >= (1 << 31) - 1:
+        raise ValueError(f"{text!r}: trailing number {digits} is outside the int32 FName number range; "
+                         f"whether UE splits it is not verified - choose another name")
+    return head, int(digits) + 1
+
+
 OBJ_INDEX_TYPES = {0: "Export", 1: "ScriptImport", 2: "PackageImport", 3: "Null"}
 NULL_OBJECT_INDEX = MASK64
 
@@ -1313,15 +1338,20 @@ def rename_legacy_package(data: bytes, new_name: str, *, old_name: str | None = 
     Returns ``(new_bytes, report)``. Exactly these things change (everything else is copied byte
     for byte and checked afterwards):
 
-    1. Name map: the entry that ``FPackageSummary.Name`` points at (the package name) becomes
-       ``new_name``; ``SourceName`` too when it points at an entry with the same text. Optional
-       ``name_renames`` {old text: new text} rename further entries (e.g. the main export's object
-       name). The name batch and its CityHash64 hash table are re-encoded, which changes
-       ``NameMapNamesSize`` and ``NameMapHashesSize``.
+    1. Package name: ``new_name`` is stored the way Unreal stores an FName (``split_fname_number``:
+       ``/Game/F/face_r9_2002`` -> entry ``/Game/F/face_r9`` + FName number 2003; retoc
+       ``FNameMap::store`` does the same): an identical existing entry is reused, otherwise ONE
+       entry is appended at the end of the name map. ``FPackageSummary.Name`` (index and number)
+       points at it, and ``SourceName`` too when its text equals the old package name. **No existing
+       name-map entry is modified**: the old package-name entry stays where it is, because FNames
+       inside the serialized export data (which this tool does not parse) may use it - with the
+       donor's number or with another one. Optional ``name_renames`` {old entry text: new text}
+       change the TEXT of further entries (e.g. the main export's object name); that renames every
+       FName using the entry, including any inside export data. The name batch and its CityHash64
+       hash table are re-encoded, which changes ``NameMapNamesSize`` and ``NameMapHashesSize``.
     2. Every section after the name map moves by the same byte delta, so ``NameMapHashesOffset``,
        ``ImportMapOffset``, ``ExportMapOffset``, ``ExportBundlesOffset`` and ``GraphDataOffset`` are
-       shifted. ``PackageFlags``, ``CookedHeaderSize``, ``GraphDataSize``, ``Pad`` and the
-       ``Name``/``SourceName`` FMappedName values are unchanged.
+       shifted. ``PackageFlags``, ``CookedHeaderSize``, ``GraphDataSize`` and ``Pad`` are unchanged.
     3. ``FExportMapEntry.GlobalImportIndex`` of every public export is recomputed from the new
        object path (it is a hash of ``/package/path.Object``; see legacy_public_export_index_map).
        ``CookedSerialOffset``/``CookedSerialSize`` (legacy .uasset+.uexp coordinates) are unchanged:
@@ -1343,13 +1373,18 @@ def rename_legacy_package(data: bytes, new_name: str, *, old_name: str | None = 
     s = pkg.summary
     name_mn = MappedName(*struct.unpack_from("<II", data, 0))
     src_mn = MappedName(*struct.unpack_from("<II", data, 8))
-    if name_mn.kind != "Package" or name_mn.number != 0 or name_mn.index >= len(pkg.names):
-        raise RenameError(f"FPackageSummary.Name is {name_mn} (expected a package-local name, number 0)")
-    old = pkg.names[name_mn.index]
+    if name_mn.kind != "Package" or name_mn.index >= len(pkg.names):
+        raise RenameError(f"FPackageSummary.Name is {name_mn} (expected a package-local name)")
+    old_entry = pkg.names[name_mn.index]
+    old = format_fname(old_entry, name_mn.number)        # full package name, e.g. /Game/F/face_110718
     if old_name is not None and lower_ascii(old) != lower_ascii(old_name):
         raise RenameError(f"package header names {old!r}, not {old_name!r}")
     if not new_name or not new_name.startswith("/") or new_name.endswith("/"):
         raise RenameError(f"new package name {new_name!r} must look like /Root/Path/Name")
+    try:
+        new_base, new_number = split_fname_number(new_name)
+    except ValueError as e:
+        raise RenameError(str(e)) from None
     warnings = list(pkg.warnings)
 
     # --- canonical-layout guards -------------------------------------------------------------
@@ -1366,23 +1401,32 @@ def rename_legacy_package(data: bytes, new_name: str, *, old_name: str | None = 
         raise RenameError("the name map does not re-encode byte-identically (unknown name encoding); refusing")
 
     # --- new name list -----------------------------------------------------------------------
+    # explicit entry renames first (they change entry TEXT in place; indices stay)
     new_names = list(pkg.names)
     changed_names = {}
-    new_names[name_mn.index] = new_name
-    changed_names[name_mn.index] = (old, new_name)
-    if src_mn.kind == "Package" and src_mn.index != name_mn.index and src_mn.index < len(pkg.names):
-        if lower_ascii(pkg.names[src_mn.index]) == lower_ascii(old):
-            new_names[src_mn.index] = new_name
-            changed_names[src_mn.index] = (pkg.names[src_mn.index], new_name)
-        else:
-            warnings.append(f"SourceName ({pkg.names[src_mn.index]!r}) differs from Name (localized package?); "
-                            "left unchanged")
     for o, n in name_renames.items():
         hits = [i for i, x in enumerate(pkg.names) if x == o]
         if not hits:
-            raise RenameError(f"name {o!r} (from --rename-name) is not in the name map of {old}")
+            numbered = sorted({e.object_name for e in pkg.exports if e.object_name == o and e.name_ref[1]})
+            hint = ""
+            if numbered:
+                e0 = next(e for e in pkg.exports if e.object_name == o)
+                hint = (f"; {o!r} is stored as entry {pkg.names[e0.name_ref[0]]!r} with FName number "
+                        f"{e0.name_ref[1]} (renames work on entry text; the number lives in each reference)")
+            raise RenameError(f"name {o!r} (from --rename-name) is not a name-map entry of {old}{hint}")
+        if not n:
+            raise RenameError(f"--rename-name {o!r}: the new text is empty")
+        try:
+            nb_, nn_ = split_fname_number(n)
+        except ValueError as e:
+            raise RenameError(str(e)) from None
+        if nn_:
+            raise RenameError(f"--rename-name {o}={n}: {n!r} ends in _<number>. Unreal never stores such an entry "
+                              f"(it would be entry {nb_!r} + FName number {nn_}), and the number is kept in every "
+                              f"reference (export map, export data), which this tool does not rewrite - choose a "
+                              f"text without a trailing _<number>")
         for i in hits:
-            if i in changed_names:
+            if i == name_mn.index:
                 raise RenameError(f"name {o!r} is the package name entry; use the package rename instead")
             new_names[i] = n
             changed_names[i] = (o, n)
@@ -1390,8 +1434,25 @@ def rename_legacy_package(data: bytes, new_name: str, *, old_name: str | None = 
         dup = sorted({x for x in new_names if new_names.count(x) > 1})
         raise RenameError(f"renaming would create duplicate name map entries {dup[:4]} (the new name is "
                           f"already used inside the package)")
+    # the package name: reuse an identical entry or append one (retoc FNameMap::store); never edit one
+    added_names = []
+    if new_base in new_names:
+        new_name_index = new_names.index(new_base)
+    else:
+        new_name_index = len(new_names)
+        new_names.append(new_base)
+        added_names.append(new_base)
+    new_name_mn = MappedName.make(new_name_index, new_number)
+    new_src_mn = src_mn
+    if src_mn.kind == "Package" and src_mn.index < len(pkg.names):
+        src_full = format_fname(pkg.names[src_mn.index], src_mn.number)
+        if lower_ascii(src_full) == lower_ascii(old):
+            new_src_mn = new_name_mn
+        else:
+            warnings.append(f"SourceName ({src_full!r}) differs from Name (localized package?); left unchanged")
+    own = {name_mn.index} | ({src_mn.index} if new_src_mn == new_name_mn else set())
     mentions = [x for i, x in enumerate(pkg.names)
-                if i not in changed_names and lower_ascii(old) in lower_ascii(x)]
+                if i not in changed_names and i not in own and lower_ascii(old) in lower_ascii(x)]
 
     # --- export GlobalImportIndex ------------------------------------------------------------
     gidx_map = legacy_public_export_index_map(pkg, old, new_name, new_names)
@@ -1426,6 +1487,8 @@ def rename_legacy_package(data: bytes, new_name: str, *, old_name: str | None = 
                                   "new": f"0x{package_id_map[p['package_id']]:016X}"})
         gpos += 12 + 8 * len(p["arcs"])
     summary = bytearray(data[:LEGACY_SUMMARY_SIZE])
+    summary[0:8] = new_name_mn.pack()
+    summary[8:16] = new_src_mn.pack()
     struct.pack_into("<i", summary, _SUM_NAMES_SIZE, len(nb2))
     struct.pack_into("<i", summary, _SUM_HASHES_OFF, new_ho)
     struct.pack_into("<i", summary, _SUM_HASHES_SIZE, len(hb2))
@@ -1441,18 +1504,22 @@ def rename_legacy_package(data: bytes, new_name: str, *, old_name: str | None = 
     problems = []
     if npkg.package_name != new_name:
         problems.append(f"package name reads back as {npkg.package_name!r}")
-    if [x for i, x in enumerate(npkg.names) if i not in changed_names] != \
+    if MappedName(*struct.unpack_from("<II", out, 0)) != new_name_mn:
+        problems.append("FPackageSummary.Name is not the split new name")
+    if len(npkg.names) != len(pkg.names) + len(added_names) or npkg.names[len(pkg.names):] != added_names:
+        problems.append("name map grew by something other than the new package-name entry")
+    if [x for i, x in enumerate(npkg.names[:len(pkg.names)]) if i not in changed_names] != \
             [x for i, x in enumerate(pkg.names) if i not in changed_names]:
-        problems.append("unrenamed names changed")
+        problems.append("existing name-map entries changed (other than --rename-name)")
     if len(npkg.exports) != len(pkg.exports):
         problems.append("export count changed")
     for a, b in zip(pkg.exports, npkg.exports):
         if data[a.abs_start:a.abs_end] != out[b.abs_start:b.abs_end]:
             problems.append(f"export {a.index} data changed")
         if (a.cooked_serial_offset, a.cooked_serial_size, a.class_index, a.outer_index, a.super_index,
-                a.template_index, a.object_flags, a.filter_flags) != \
+                a.template_index, a.object_flags, a.filter_flags, a.name_ref) != \
                 (b.cooked_serial_offset, b.cooked_serial_size, b.class_index, b.outer_index, b.super_index,
-                 b.template_index, b.object_flags, b.filter_flags):
+                 b.template_index, b.object_flags, b.filter_flags, b.name_ref):
             problems.append(f"export {a.index} map entry changed beyond GlobalImportIndex")
     if npkg.export_bundles != pkg.export_bundles or npkg.export_bundle_entries != pkg.export_bundle_entries:
         problems.append("export bundles changed")
@@ -1466,6 +1533,9 @@ def rename_legacy_package(data: bytes, new_name: str, *, old_name: str | None = 
     if problems:
         raise RenameError("internal error after renaming: " + "; ".join(problems))
     summary_changes = {k: {"old": s[k], "new": npkg.summary[k]} for k in s if s[k] != npkg.summary[k]}
+    for label, a, b in (("Name", name_mn, new_name_mn), ("SourceName", src_mn, new_src_mn)):
+        if a != b:
+            summary_changes[label] = {"old": [a.index, a.number], "new": [b.index, b.number]}
     report = {
         "old_package_name": old, "new_package_name": new_name,
         "old_package_id": f"0x{package_id_from_name(old):016X}",
@@ -1473,12 +1543,18 @@ def rename_legacy_package(data: bytes, new_name: str, *, old_name: str | None = 
         "size": {"old": len(data), "new": len(out), "delta": len(out) - len(data)},
         "header_size": {"old": pkg.export_data_offset, "new": npkg.export_data_offset},
         "name_map_changes": [{"index": i, "old": o, "new": n} for i, (o, n) in sorted(changed_names.items())],
+        "name_map_added": [{"index": len(pkg.names) + k, "text": t} for k, t in enumerate(added_names)],
+        "package_name_fname": {"old": {"index": name_mn.index, "entry": old_entry, "number": name_mn.number},
+                               "new": {"index": new_name_mn.index, "entry": new_base, "number": new_number},
+                               "source_name_follows": new_src_mn == new_name_mn,
+                               "note": "the old entry is kept unchanged (export data may reference it)"},
         "summary_changes": summary_changes,
         "export_global_import_index_changes": exports_changed,
         "import_map_changes": imports_changed,
         "graph_imported_package_changes": graph_changed,
-        "unchanged": ["FPackageSummary.Name/SourceName (FMappedName indices)", "PackageFlags", "CookedHeaderSize",
-                      "GraphDataSize", "export map except GlobalImportIndex", "export bundle headers/entries",
+        "unchanged": ["every existing name-map entry except --rename-name ones (index and text)", "PackageFlags",
+                      "CookedHeaderSize", "GraphDataSize", "export map except GlobalImportIndex",
+                      "export bundle headers/entries",
                       "graph data arcs", "serialized export data (byte-identical)"],
         "names_mentioning_old_package": mentions,
         "warnings": warnings + ([f"{len(mentions)} other name(s) contain the old package name (e.g. soft object "
@@ -1513,18 +1589,25 @@ def _names_index(names, text):
 def build_legacy_package(package_name: str, exports: list[ExportSpec], imports: list[int] = (),
                          extra_names: list[str] = (), imported_packages: list[tuple[int, list]] = (),
                          bundles: list[list[int]] | None = None, cooked_header_size: int = 1024,
-                         package_flags: int = 0xA0000000) -> bytes:
+                         package_flags: int = 0xA0000000, split_numbers: bool = False) -> bytes:
     """Build a UE4.26/4.27 Zen package (FPackageSummary layout) around the given export blobs.
 
     ``bundles``: list of lists of export indices; each bundle gets Create+Serialize entries per
     export (default: one bundle with all exports). Export data is laid out in bundle order, as
     the loader expects (CUE4Parse ``PopulateExports``).
+    ``split_numbers``: store the package name and export names the way Unreal does
+    (``split_fname_number``: ``face_110718`` -> entry ``face`` + FName number 110719); the default
+    stores every text whole with number 0 (older fixtures).
     """
-    names = [package_name]
+    def mapped(text):
+        return split_fname_number(text) if split_numbers else (text, 0)
+
+    pkg_base, pkg_num = mapped(package_name)
+    names = [pkg_base]
     for e in exports:
-        _names_index(names, e.name)
+        _names_index(names, mapped(e.name)[0])
     for x in extra_names:
-        _names_index(names, x)
+        _names_index(names, mapped(x)[0])
     names_buf, hashes_buf = write_name_batch_legacy(names)
     if bundles is None:
         bundles = [list(range(len(exports)))]
@@ -1547,7 +1630,8 @@ def build_legacy_package(package_name: str, exports: list[ExportSpec], imports: 
     export_off = len(out)
     for i, e in enumerate(exports):
         out += struct.pack("<QQ", legacy_off[i], len(e.data))
-        out += MappedName.make(names.index(e.name)).pack()
+        base, num = mapped(e.name)
+        out += MappedName.make(names.index(base), num).pack()
         out += struct.pack("<QQQQQIB3x", e.outer_index, e.class_index, e.super_index, e.template_index,
                            e.global_import_index, e.object_flags, e.filter_flags)
     bundles_off = len(out)
@@ -1567,7 +1651,7 @@ def build_legacy_package(package_name: str, exports: list[ExportSpec], imports: 
             out += struct.pack("<ii", a, b)
     graph_size = len(out) - graph_off
     struct.pack_into("<IIIIIIiiiiiiiiii", out, 0,
-                     MappedName.make(0).raw_index, 0, MappedName.make(0).raw_index, 0,
+                     MappedName.make(0).raw_index, pkg_num, MappedName.make(0).raw_index, pkg_num,
                      package_flags, cooked_header_size,
                      names_off, len(names_buf), hashes_off, len(hashes_buf),
                      import_off, export_off, bundles_off, graph_off, graph_size, 0)
@@ -1819,6 +1903,30 @@ def cmd_extract_export(a):
     print(json.dumps({"export": e.object_name, "range": [e.abs_start, e.abs_end], "out": p}))
 
 
+def cmd_rename(a):
+    with open(a.package, "rb") as f:
+        data = f.read()
+    renames = {}
+    for r in a.rename_name or []:
+        if "=" not in r:
+            raise SystemExit(f"--rename-name needs OLD=NEW, got {r!r}")
+        o, n = r.split("=", 1)
+        renames[o] = n
+    try:
+        out, report = rename_legacy_package(data, a.new_name, old_name=a.old_name, name_renames=renames)
+    except RenameError as e:
+        raise SystemExit(f"refusing: {e}")
+    od = prepare_out_dir(a.out_dir, [a.package])
+    name = a.new_name.rsplit("/", 1)[-1] + ".uasset"
+    path = write_output(od, name, out, [a.package])
+    manifest = {"tool": "zen_package.py", "command": "rename", "inputs": {"package": file_record(a.package)},
+                "outputs": {"package": file_record(path)}, "report": report,
+                "note": "only the ExportBundleData chunk is renamed; bulk data chunks must be re-registered under "
+                        "the new FPackageId by iostore.py (clone-package does both)"}
+    write_manifest(od, manifest)
+    print(json.dumps({"out": path, "new_package_id": report["new_package_id"], "warnings": report["warnings"]}))
+
+
 def cmd_hash(a):
     if a.kind == "name":
         print(f"0x{name_hash(a.text):016X}")
@@ -1827,8 +1935,7 @@ def cmd_hash(a):
     elif a.kind == "package-import":
         print(f"0x{legacy_package_import_index(a.text):016X}")
     elif a.kind == "package-id":
-        lower = "".join(c.lower() if "A" <= c <= "Z" else c for c in a.text)
-        print(f"0x{cityhash64(lower.encode('utf-16-le')):016X}")
+        print(f"0x{package_id_from_name(a.text):016X}")
 
 
 def main(argv=None):
@@ -1847,6 +1954,14 @@ def main(argv=None):
     p.add_argument("--verify", action="store_true", help="re-parse and compare after writing")
     _add_script_args(p)
     p.set_defaults(fn=cmd_extract_export)
+    p = sp.add_parser("rename", help="UE4.26/4.27: rename a package chunk (name map, offsets, export "
+                                     "GlobalImportIndex) - see rename_legacy_package for the field list")
+    p.add_argument("package", help="ExportBundleData chunk (.uasset extracted from .ucas)")
+    p.add_argument("--new-name", required=True, help="/Game/... new package name")
+    p.add_argument("--old-name", help="expected current package name (checked)")
+    p.add_argument("--rename-name", action="append", metavar="OLD=NEW", help="also rename this name-map entry")
+    p.add_argument("--out-dir", required=True, help="new (non-existing or empty) output directory")
+    p.set_defaults(fn=cmd_rename)
     p = sp.add_parser("hash", help="compute UE hashes (FName / script import / package id)")
     p.add_argument("kind", choices=["name", "script", "package-import", "package-id"])
     p.add_argument("text")

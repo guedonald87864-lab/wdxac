@@ -79,21 +79,30 @@ def build_patch(V, base, corr, hp):
     return mask, fr
 
 
+def hairline_height(S, fr, hp):
+    """Height of the patch's NATURAL lower edge (forehead hairline, then down along the temples)
+    under each point S (N,3), MakeHuman coords."""
+    cm = 0.1
+    x, z = S[:, 0], S[:, 2]
+    t = np.clip((fr["z_front"] - z) / max(1e-6, fr["z_front"] - fr["z_back_centre"]), 0, 1)
+    side = np.clip(np.abs(x) / (hp["front_width"] * cm / 2), 0, 1) ** 2
+    # front hairline with slightly receded corners; further back the patch's lower edge drops
+    # along the temples towards the top of the ear (seen in the side views of 24-30 June)
+    return fr["hairline_y"] + hp["corner_recession"] * cm * side * (1 - t) - hp.get("temple_drop", 0.0) * cm * side * t
+
+
 def inside_patch(S, fr, hp):
     """Analytic patch predicate for arbitrary surface points S (N,3) in MakeHuman coords."""
     cm = 0.1
     x, y, z = S[:, 0], S[:, 1], S[:, 2]
     t = np.clip((fr["z_front"] - z) / max(1e-6, fr["z_front"] - fr["z_back_centre"]), 0, 1)
-    side = np.clip(np.abs(x) / (hp["front_width"] * cm / 2), 0, 1) ** 2
-    # front hairline with slightly receded corners; further back the patch's lower edge drops
-    # along the temples towards the top of the ear (seen in the side views of 24-30 June)
-    hl_y = fr["hairline_y"] + hp["corner_recession"] * cm * side * (1 - t) - hp.get("temple_drop", 0.0) * cm * side * t
+    hl_y = hairline_height(S, fr, hp)
     half_w = hp["front_width"] * cm / 2 + (hp["back_width"] - hp["front_width"]) * cm / 2 * t
     z_back = fr["z_back_centre"] + hp["back_arc_sag"] * cm * np.clip(np.abs(x) / (hp["back_width"] * cm / 2), 0, 1) ** 2
     return (y >= hl_y) & (np.abs(x) <= half_w) & (z >= z_back)
 
 
-def build_shell_raycast(raycast, centre, fr, hp, step_deg=1.2):
+def build_shell_raycast(raycast, centre, fr, hp, step_deg=0.7):
     """High-density shell independent of head topology.
 
     raycast(origins (N,3), dirs (N,3)) -> (hit points (N,3), normals (N,3), ok (N,)) on the scalp.
@@ -123,11 +132,10 @@ def build_shell_raycast(raycast, centre, fr, hp, step_deg=1.2):
     # The FRONT edge is his natural hairline: hair height fades to ~0 over the first
     # front_fade cm (with a little irregularity); the sides and back are clipper lines and keep
     # a hard step. Distance-from-front is measured along the scalp from the hairline height.
+    # fade along the whole natural hairline (forehead + temples); clipper edges keep the step
     fade = hp.get("front_fade", 1.2) * 0.1
-    above = S[:, 1] - (fr["hairline_y"] + hp["corner_recession"] * 0.1 *
-                       np.clip(np.abs(S[:, 0]) / (hp["front_width"] * 0.05), 0, 1) ** 2)
-    front_zone = S[:, 2] > fr["z_front"] - 0.25 * (fr["z_front"] - fr["z_back_centre"])
-    k = np.where(front_zone, np.clip(above / max(fade, 1e-6), 0.08, 1.0), 1.0)
+    above = S[:, 1] - hairline_height(S, fr, hp)
+    k = np.clip(above / max(fade, 1e-6), 0.15, 1.0)
     outer = S + N * thick * k[:, None]
     inner = S - N * hp.get("embed", 0.05) * 0.1
     n = len(used)

@@ -5,8 +5,8 @@
 
 Outputs RGBA PNGs with transparent background (the card frame/background are separate
 layers, see tools/card/compose_card.py):
-  portrait_34.png      upper body, 3/4 view from the subject's left, 85 mm
-  portrait_front.png   upper body, near-frontal
+  portrait_34.png      head and shoulders, 3/4 view from the subject's left, 85 mm
+  portrait_front.png   head and shoulders, near-frontal
   portrait_full.png    full body, for pack-opening/large detail views
 The portrait is our own 3D model (independent artwork), never a press photo.
 """
@@ -85,17 +85,19 @@ head = bpy.data.objects["R9_Head"]
 hz = max((head.matrix_world @ v.co).z for v in head.data.vertices)
 chest = Vector((0, 0, hz - 0.42))
 face = Vector((0, -0.05, hz - 0.13))
-light("Key", "AREA", (-1.4, -1.6, hz + 0.4), 70, (1.0, 0.94, 0.86), 1.2, face)
+# rims sit at head height and stay weak: from above they bleach the shaved scalp to white
+light("Key", "AREA", (-1.4, -1.6, hz + 0.25), 55, (1.0, 0.94, 0.86), 1.2, face)
 light("Fill", "AREA", (1.6, -1.2, hz - 0.2), 18, (0.80, 0.86, 1.0), 1.5, face)
-light("RimL", "AREA", (-1.2, 1.4, hz + 0.3), 90, (1.0, 0.85, 0.45), 0.6, face)    # warm stadium rim
-light("RimR", "AREA", (1.3, 1.3, hz + 0.2), 80, (0.55, 0.85, 1.0), 0.6, face)
+light("RimL", "AREA", (-1.2, 1.4, hz - 0.15), 30, (1.0, 0.85, 0.45), 0.6, face)    # warm stadium rim
+light("RimR", "AREA", (1.3, 1.3, hz - 0.15), 30, (0.55, 0.85, 1.0), 0.6, face)
 
 cam = bpy.data.objects.new("CardCam", bpy.data.cameras.new("CardCam"))
 sc.collection.objects.link(cam)
 sc.camera = cam
 SHOTS = {
-    "portrait_34": (Vector((-0.55, -1.0, 0.08)), 85, Vector((0, 0, hz - 0.36)), 3.6, (1, 1.25)),
-    "portrait_front": (Vector((-0.12, -1.0, 0.05)), 85, Vector((0, 0, hz - 0.36)), 3.6, (1, 1.25)),
+    # head and shoulders: the face is the deliverable, the kit is only a preview shell
+    "portrait_34": (Vector((-0.55, -1.0, 0.08)), 85, Vector((0, 0, hz - 0.30)), 2.7, (1, 1.25)),
+    "portrait_front": (Vector((-0.12, -1.0, 0.05)), 85, Vector((0, 0, hz - 0.30)), 2.7, (1, 1.25)),
     "portrait_full": (Vector((-0.45, -1.0, 0.05)), 50, Vector((0, 0, hz - 0.92)), 4.6, (1, 1.6)),
 }
 for name, (d, lens, tgt, dist, aspect) in SHOTS.items():
