@@ -25,13 +25,13 @@
    "lod": 0,
    "objects": "R9_Hair",
    "budget_gpu_verts": 1600,
-   "ratio": 0.279296875,
-   "gpu_verts": 1592,
+   "ratio": 0.3359375,
+   "gpu_verts": 1597,
    "per_object": {
     "R9_Hair": {
-     "verts": 6352,
-     "gpu_verts": 1592,
-     "tris": 2946
+     "verts": 5542,
+     "gpu_verts": 1597,
+     "tris": 2969
     }
    },
    "under_budget_kept": false
@@ -60,13 +60,13 @@
    "lod": 1,
    "objects": "R9_Hair",
    "budget_gpu_verts": 400,
-   "ratio": 0.059814453125,
-   "gpu_verts": 400,
+   "ratio": 0.0712890625,
+   "gpu_verts": 399,
    "per_object": {
     "R9_Hair": {
-     "verts": 5160,
-     "gpu_verts": 400,
-     "tris": 631
+     "verts": 4344,
+     "gpu_verts": 399,
+     "tris": 629
     }
    },
    "under_budget_kept": false
@@ -84,9 +84,9 @@
    "tris": 2040
   },
   "R9_Hair": {
-   "verts": 10208,
-   "gpu_verts": 5448,
-   "tris": 10550
+   "verts": 8526,
+   "gpu_verts": 4581,
+   "tris": 8842
   }
  }
 }

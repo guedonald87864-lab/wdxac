@@ -213,6 +213,28 @@
    },
    "not_applied": "nose volume/flaring (same-detector nose width already +2.4%), mouth depth, cheeks, skin hue (single critic, confidence <= 0.4); parted-lips rest pose (bind pose stays neutral for the game rig)",
    "stature": "height macro 0.5392 -> 0.5321: stature 183.00 cm after the crown change (head height 23.42 cm, now inside the dossier 23.8 +/- 0.8)"
+  },
+  "likeness_critique_3": {
+   "date": "2026-10-25",
+   "scores_round_3": {
+    "features": 4.5,
+    "silhouette": 4.5,
+    "gestalt": 4.5
+   },
+   "applied": {
+    "hairline": "r9_hair_params hairline_above_brow 4.0 -> 4.8 (two critics, measured)",
+    "lid_shadow": "texture_build upper-lid shadow 0.30 -> 0.50, sigma 0.45 -> 0.50 cm (features 0.45, gestalt 0.55)"
+   },
+   "not_applied_open_for_user": [
+    "patch narrower / D-shaped back edge (silhouette only)",
+    "lower face narrower: head-fat -0.45, cheek-volume -0.4, chin-width -0.7 (features only; same-detector jaw width +8.6%)",
+    "fuller lips: lower/upper lip volume +0.3/+0.35 (features only)",
+    "straight nose bridge: nose-hump 0 (features only)",
+    "darker nostrils, softer tapered brows (features only)",
+    "olive-grey scalp tint #868068 (gestalt only)",
+    "parted lips at rest (gestalt, all rounds) - bind pose stays neutral for the game rig"
+   ],
+   "note": "these two changes were made after round 3 and have not been re-scored"
   }
  }
 }

@@ -1,6 +1,6 @@
 {
  "_doc": "2002 World Cup final 'Cascao' patch. All values cm, T4 estimates from research/notes/01_appearance_2002.md \u00a71.4 (error >= +/-20%). Iterate by overlaying renders on F1/F2/L34-1/RP-1/B-2/T-1 references. back_edge_front_of_tragus is the primary back-edge constraint (dossier: 4-6 cm in front of the tragus vertical); the dossier's 9-11 cm from the hairline is checked as the reported midline arc length.",
- "hairline_above_brow": 4.0,
+ "hairline_above_brow": 4.8,
  "corner_recession": 1.0,
  "front_width": 13.0,
  "back_width": 12.0,
@@ -9,7 +9,7 @@
  "embed": 0.05,
  "stubble_mm": 1.5,
  "back_edge_front_of_tragus": 3.0,
- "_revision": "r3 2026-10-25: enlarged after photo overlays at fitted cameras (g890017, g891445, g78971169, g923205): dome covering nearly the full top width, side edge dropping along the temples to about the ear top, back edge about the tragus vertical. | r4 2026-10-25 silhouette critic: back edge 3 cm in front of tragus (projected through fitted cameras lands on the photo edge in 4 views), near-vertical side edge, flatter lower edge, shorter front fade (no visor). | 2026-10-25 critique 2: thickness 0.7 -> 0.5; shell grid now covers the whole patch behind the crown",
+ "_revision": "r3 2026-10-25: enlarged after photo overlays at fitted cameras (g890017, g891445, g78971169, g923205): dome covering nearly the full top width, side edge dropping along the temples to about the ear top, back edge about the tragus vertical. | r4 2026-10-25 silhouette critic: back edge 3 cm in front of tragus (projected through fitted cameras lands on the photo edge in 4 views), near-vertical side edge, flatter lower edge, shorter front fade (no visor). | 2026-10-25 critique 2: thickness 0.7 -> 0.5; shell grid now covers the whole patch behind the crown | 2026-10-25 critique 3: hairline_above_brow 4.0 -> 4.8 (silhouette critic measured the front edge 0.4-1.0 cm, mean 0.7 cm, below the photo hairline in all 8 fitted rows; gestalt critic 8-13 px in the frontal rows)",
  "temple_drop": 2.0,
  "front_fade": 0.4
 }

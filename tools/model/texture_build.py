@@ -316,8 +316,8 @@ lash = np.exp(-(np.minimum(dist_to_polyline(POS, EYE_R[:9]), dist_to_polyline(PO
 alb *= (1 - 0.9 * lash[..., None])
 # heavy, hooded upper lid: broad soft shadow between lash line and brow
 lid = np.exp(-(np.minimum(dist_to_polyline(POS, [33, 246, 161, 160, 159, 158, 157, 173, 133]),
-                          dist_to_polyline(POS, [263, 466, 388, 387, 386, 385, 384, 398, 362])) / (0.45 * cm)) ** 2)
-alb *= (1 - 0.30 * lid[..., None])
+                          dist_to_polyline(POS, [263, 466, 388, 387, 386, 385, 384, 398, 362])) / (0.50 * cm)) ** 2)
+alb *= (1 - 0.50 * lid[..., None])
 # scalp: hair-bearing region bounded by a natural hairline that runs round the head:
 # forehead -> temples -> (shaved) sideburns in front of the ear -> behind the ear -> nape.
 # The threshold height is a smooth function of azimuth about the head's vertical axis.

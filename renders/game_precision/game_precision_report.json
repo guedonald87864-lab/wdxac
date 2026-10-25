@@ -45,13 +45,13 @@
     "lod": 0,
     "objects": "R9_Hair",
     "budget_gpu_verts": 1600,
-    "ratio": 0.279296875,
-    "gpu_verts": 1592,
+    "ratio": 0.3359375,
+    "gpu_verts": 1597,
     "per_object": {
      "R9_Hair": {
-      "verts": 6352,
-      "gpu_verts": 1592,
-      "tris": 2946
+      "verts": 5542,
+      "gpu_verts": 1597,
+      "tris": 2969
      }
     },
     "under_budget_kept": false
@@ -80,13 +80,13 @@
     "lod": 1,
     "objects": "R9_Hair",
     "budget_gpu_verts": 400,
-    "ratio": 0.059814453125,
-    "gpu_verts": 400,
+    "ratio": 0.0712890625,
+    "gpu_verts": 399,
     "per_object": {
      "R9_Hair": {
-      "verts": 5160,
-      "gpu_verts": 400,
-      "tris": 631
+      "verts": 4344,
+      "gpu_verts": 399,
+      "tris": 629
      }
     },
     "under_budget_kept": false
@@ -104,9 +104,9 @@
     "tris": 2040
    },
    "R9_Hair": {
-    "verts": 10208,
-    "gpu_verts": 5448,
-    "tris": 10550
+    "verts": 8526,
+    "gpu_verts": 4581,
+    "tris": 8842
    }
   }
  },
@@ -168,8 +168,8 @@
    "game_size": 256,
    "astc_block": "4x4",
    "astc_bytes": 65536,
-   "psnr_astc_vs_256_db": 59.91803032287255,
-   "psnr_game_upsampled_vs_hd_db": 41.697775021210965
+   "psnr_astc_vs_256_db": 59.40333472647674,
+   "psnr_game_upsampled_vs_hd_db": 41.73045224567389
   },
   "r9_head_masks.png": {
    "kind": "data",
@@ -180,8 +180,8 @@
    "game_size": 256,
    "astc_block": "4x4",
    "astc_bytes": 65536,
-   "psnr_astc_vs_256_db": 60.51632383895509,
-   "psnr_game_upsampled_vs_hd_db": 33.63817889061142
+   "psnr_astc_vs_256_db": 59.08353736761755,
+   "psnr_game_upsampled_vs_hd_db": 33.51015041142152
   },
   "r9_head_normal.png": {
    "kind": "normal",
@@ -192,8 +192,8 @@
    "game_size": 256,
    "astc_block": "4x4",
    "astc_bytes": 65536,
-   "psnr_astc_vs_256_db": 54.830513933295954,
-   "psnr_game_upsampled_vs_hd_db": 33.147627869700095
+   "psnr_astc_vs_256_db": 54.83581741323373,
+   "psnr_game_upsampled_vs_hd_db": 33.14792645403149
   },
   "r9_head_rough.png": {
    "kind": "data",
@@ -204,8 +204,8 @@
    "game_size": 256,
    "astc_block": "4x4",
    "astc_bytes": 65536,
-   "psnr_astc_vs_256_db": 72.97313218965746,
-   "psnr_game_upsampled_vs_hd_db": 45.396487804347416
+   "psnr_astc_vs_256_db": 72.54562826599042,
+   "psnr_game_upsampled_vs_hd_db": 45.21201164617083
   }
  },
  "sheet": "renders/game_precision/hd_vs_game_sheet.png",
@@ -246,5 +246,5 @@
    "renders/game_precision/renders/head_top_lod1.png"
   ]
  ],
- "seconds": 346.1
+ "seconds": 441.4
 }
