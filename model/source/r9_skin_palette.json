@@ -2,7 +2,7 @@
  "_doc": "sRGB colours for the procedural R9 textures. Source: research/notes/01_appearance_2002.md \u00a73.3 (T4 photo measurements; starting values, not measured albedo). Re-tune L* once the native shader is available (see dossier).",
  "skin_lit": "#B5845E",
  "skin_warm": "#B8765A",
- "lip": "#8A5850",
+ "lip": "#8E5548",
  "brow": "#1E1B19",
  "scalp_tint": "#8C7864",
  "stubble": "#1E1B19",

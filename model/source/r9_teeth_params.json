@@ -1,0 +1,10 @@
+{
+ "_doc": "R9 2002 dentition. Evidence: research/notes/01_appearance_2002.md §2.1 (upper central incisors large, long, slightly proclined, clear midline gap; laterals smaller; warm ivory, not pure white). Sizes are typical adult crown sizes x the scale factors below (T4 design values, tune against F3/F4/R34-2 smiles).",
+ "midline_gap_mm": 1.8,
+ "central_procline_deg": 14.0,
+ "lateral_procline_deg": 6.0,
+ "upper_forward_mm": 1.5,
+ "arch_width_scale": 1.0,
+ "arch_depth_mm": 26.0,
+ "scale": {"upper_central": 1.08, "upper_central_h": 1.12, "upper_lateral": 0.92}
+}

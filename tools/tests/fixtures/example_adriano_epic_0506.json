@@ -1,0 +1,31 @@
+{
+ "_comment": "输入格式示例：04 号档案 §8.3 的官方参考卡 Adriano Epic Internazionale Milano 05-06（pesdb 数据，T3）。不是 R9 的设计值。SS 的适性档位（深绿/浅绿）页面未区分，这里按 mid 填写。",
+ "name": "Adriano (Epic Internazionale Milano 05-06, 参考卡)",
+ "card_id": "88045755960841",
+ "card_type": "Epic",
+ "registered_position": "CF",
+ "position_proficiency": {"CF": "high", "SS": "mid"},
+ "height_cm": 189, "weight_kg": 90, "age": 23,
+ "stronger_foot": "Left",
+ "weak_foot_usage": "Rarely", "weak_foot_accuracy": "Medium",
+ "form": "Unwavering", "injury_resistance": "High",
+ "max_level": 34,
+ "stats": {
+  "Attacking Awareness": 75, "Ball Control": 72, "Dribbling": 79, "Tight Possession": 75,
+  "Low Pass": 65, "Lofted Pass": 63, "Finishing": 77, "Heading": 76, "Set Piece Taking": 64, "Curl": 76,
+  "Defensive Awareness": 41, "Tackling": 44, "Aggression": 45, "Defensive Engagement": 43,
+  "GK Awareness": 40, "GK Catching": 40, "GK Parrying": 40, "GK Reflexes": 40, "GK Reach": 40,
+  "Speed": 83, "Acceleration": 77, "Kicking Power": 84, "Jumping": 83, "Physical Contact": 83, "Balance": 66, "Stamina": 75
+ },
+ "playing_style": {"attacking": "Goal Poacher", "defensive": "Attack Outlet"},
+ "ai_playing_styles": ["Mazing Run", "Long Ranger"],
+ "skills": ["Marseille Turn", "Heading", "Long-range Curler", "Rising Shot", "Long-range Shooting", "Low Screamer",
+            "Snap Strike", "First-time Shot", "Phenomenal Finishing", "Outside Curler"],
+ "additional_skills": [],
+ "boosters": [
+  {"slot": 1, "kind": "fixed", "name": "Striker's Instinct", "value": 4, "active": true},
+  {"slot": 2, "kind": "fixed", "name": "Kicking Power", "value": 6, "active": false}
+ ],
+ "allocation": "auto",
+ "manager": {"proficiency": 89, "model": "efx", "boosters": {"physical_contact": 1, "stamina": 1}}
+}

@@ -68,9 +68,14 @@ def apply_materials(textures="", kit=False):
                                  normal_tex=tex_path("r9_head_normal.png")), "HeadUV")
     body_tex = tex_path("r9_body_kit_albedo.png") if kit else tex_path("r9_body_albedo.png")
     assign("R9_Body", principled("Skin_Body", SKIN, 0.55, 0.15, body_tex), "UVMap")
-    assign("R9_Eyes", principled("Eyes", (0.9, 0.9, 0.9), 0.15, 0.0,
-                                 tex_path("r9_eye_albedo.png") or "/opt/tools/mh/makehuman/makehuman/data/eyes/materials/brown_eye.png"))
-    assign("R9_Teeth", principled("Teeth", (0.70, 0.66, 0.58), 0.3, 0.05))
+    # the MakeHuman eye texture has a transparent cornea region: honour its alpha, otherwise the
+    # cornea shell renders opaque black over iris and sclera
+    assign("R9_Eyes", principled("Eyes", (0.9, 0.9, 0.9), 0.08, 0.0,
+                                 tex_path("r9_eye_albedo.png") or "/opt/tools/mh/makehuman/makehuman/data/eyes/materials/brown_eye.png",
+                                 alpha_tex=True))
+    teeth_mat = principled("Teeth", (0.70, 0.66, 0.58), 0.3, 0.05)   # warm ivory (dossier: not pure white)
+    for nm in ("R9_Teeth", "R9_Teeth_upper", "R9_Teeth_lower"):
+        assign(nm, teeth_mat)
     assign("R9_Tongue", principled("Tongue", (0.55, 0.22, 0.22), 0.4, 0.1))
     if bpy.data.objects.get("R9_Hair"):
         assign("R9_Hair", principled("Hair", (0.012, 0.010, 0.009), 0.9, 0.0, tex_path("r9_hair_albedo.png"),

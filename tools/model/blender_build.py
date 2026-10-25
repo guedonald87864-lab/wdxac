@@ -128,6 +128,14 @@ def make_mesh(name, face_ids, verts=VB, uv_mode="base"):
     return ob, used
 
 
+def seamless_normals(ob, used):
+    """Head and body are separate meshes; give both the normals of the UNSPLIT body so the
+    neck seam does not show as a shading crease."""
+    me = ob.data
+    nrm = FULL_NORMALS[used]
+    me.normals_split_custom_set_from_vertices([tuple(n) for n in nrm])
+
+
 def add_skin(ob, used, rig):
     used_set = {o: n for n, o in enumerate(used)}
     for bone, pairs in WEIGHTS.items():
@@ -206,18 +214,44 @@ def head_uv(ob):
     return uvl
 
 
+def full_body_normals():
+    faces = [BASE["faces"][fi][0] for fi in BASE["groups"]["body"]]
+    N = np.zeros_like(VB)
+    for f in faces:
+        f = np.asarray(f)
+        for k in range(1, len(f) - 1):
+            a, b, c = VB[f[0]], VB[f[k]], VB[f[k + 1]]
+            n = np.cross(b - a, c - a)
+            N[[f[0], f[k], f[k + 1]]] += n
+    return N / np.maximum(np.linalg.norm(N, axis=1, keepdims=True), 1e-12)
+
+
+FULL_NORMALS = full_body_normals()
+
+
 def main():
     rig = build_armature()
     head_f, body_f = split_head_body()
     body, bused = make_mesh("R9_Body", body_f)
+    seamless_normals(body, bused)
     add_skin(body, bused, rig)
     head, hused = make_mesh("R9_Head", head_f)
     head.data.uv_layers[0].name = "MH_UV"
     head_uv(head)
+    seamless_normals(head, hused)
     add_skin(head, hused, rig)
 
-    teeth, tused = make_mesh("R9_Teeth", faces_of(["helper-upper-teeth", "helper-lower-teeth"]))
-    add_skin(teeth, tused, rig)
+    if PARAMS.get("teeth"):
+        import teeth as T
+        tp = json.load(open(PARAMS["teeth"]))
+        up = VERTS_MH[E.group_vertex_ids(BASE, "helper-upper-teeth")] * 100.0
+        lo = VERTS_MH[E.group_vertex_ids(BASE, "helper-lower-teeth")] * 100.0
+        tobjs = T.build_teeth(tp, up, lo, to_bl, rig)
+        teeth = tobjs[0]
+    else:
+        teeth, tused = make_mesh("R9_Teeth", faces_of(["helper-upper-teeth", "helper-lower-teeth"]))
+        add_skin(teeth, tused, rig)
+        tobjs = [teeth]
     tongue, tgused = make_mesh("R9_Tongue", faces_of(["helper-tongue"]))
     add_skin(tongue, tgused, rig)
 
@@ -294,7 +328,7 @@ def main():
         "params": PARAMS,
         "height_cm": float(E.height_cm(VERTS_MH, BASE)),
         "counts": {o.name: [len(o.data.vertices), len(o.data.polygons)] for o in
-                   (body, head, teeth, tongue, eyes, hair) if o},
+                   [body, head] + tobjs + [tongue, eyes, hair] if o},
         "bones": len(rig.data.bones),
     }
     scene["r9_build_meta"] = json.dumps(meta)

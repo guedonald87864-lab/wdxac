@@ -292,7 +292,20 @@ knots_z = np.array([hairline_z, hairline_z - 0.6 * cm, hairline_z - 2.0 * cm, tr
                     lobe_z + 1.5 * cm, lobe_z - 1.0 * cm, lobe_z - 3.0 * cm])
 thr = np.interp(az, knots_az, knots_z)
 scalp = smooth(z_up - thr, -0.15 * cm, 0.25 * cm).astype(np.float32)
-patch = smooth(HAIR, 0.3, 0.7)
+# hair patch mask: the SAME analytic predicate as the hair shell (tools/model/hair.py), evaluated
+# per texel in MakeHuman coordinates, so the dark scalp under the curls matches the shell exactly
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import hair as HAIRMOD
+frame = json.loads(bpy.context.scene.get("r9_hair_frame", "{}") or "{}")
+hp_path = json.loads(bpy.context.scene.get("r9_build_meta", "{}")).get("params", {}).get("hair")
+if frame and hp_path and os.path.exists(hp_path):
+    hp = json.load(open(hp_path))
+    mh = np.stack([POS[..., 0], POS[..., 2], -POS[..., 1]], -1) * 10.0      # Blender m -> MH dm
+    # the predicate's front edge is the hairline: allow a 3 mm margin under the shell
+    patch = HAIRMOD.inside_patch(mh.reshape(-1, 3) + np.array([0, 0.03, 0]), frame, hp).reshape(POS.shape[:-1])
+    patch = patch.astype(np.float32)
+else:
+    patch = smooth(HAIR, 0.3, 0.7)
 shaved = scalp * (1 - patch)
 # ears: never stubble (vertex set from the MakeHuman ear morph targets)
 ear_ids = set()
@@ -344,6 +357,28 @@ save(os.path.join(a.out, "r9_head_albedo.png"), alb)
 save(os.path.join(a.out, "r9_head_normal.png"), dilate(nmap, cov), srgb=False)
 save(os.path.join(a.out, "r9_head_rough.png"), np.repeat(dilate(rough, cov), 3, 2), srgb=False)
 save(os.path.join(a.out, "r9_head_masks.png"), masks, srgb=False)
+
+# ----------------------------------------------------------------------------- body albedo
+# Same palette and the same 3D noise as the face, rasterised on the body's MakeHuman UV, so the
+# neck seam between the two meshes has no colour step.
+body = bpy.data.objects.get("R9_Body")
+if body:
+    bme = body.data
+    buv = bme.uv_layers["UVMap"]
+    bco = np.array([v.co[:] for v in bme.vertices])
+    btri_uv, btri_attr = [], []
+    for p_ in bme.polygons:
+        li = list(p_.loop_indices)
+        for k in range(1, len(li) - 1):
+            ls = (li[0], li[k], li[k + 1])
+            btri_uv.append([buv.data[l].uv[:] for l in ls])
+            btri_attr.append([bco[bme.loops[l].vertex_index] for l in ls])
+    BM = 1024
+    bmap, bcov = rasterise(np.array(btri_uv), np.array(btri_attr, np.float32), BM)
+    bnz = noise3(bmap, 12.0, a.seed, 4)[..., None] * 0.16 + 0.92
+    bnz *= noise3(bmap, 90.0, a.seed + 1, 3)[..., None] * 0.06 + 0.97
+    balb = (np.broadcast_to(skin, (BM, BM, 3)) * bnz).astype(np.float32)
+    save(os.path.join(a.out, "r9_body_albedo.png"), dilate(balb, bcov))
 
 # ----------------------------------------------------------------------------- hair shell texture
 M = 1024
