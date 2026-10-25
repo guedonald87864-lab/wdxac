@@ -185,6 +185,19 @@ if hair_vg:
             if g.group == hair_vg.index:
                 hair_w[v.index] = g.weight
 
+# ear surface weight per vertex from the MakeHuman ear morph targets: ~1 on the auricle, falling
+# to 0 at the ear root (displacement magnitude of the wing target), so the stubble mask can run up
+# to the root without leaking onto the ear (a distance-to-ear-vertex falloff narrower than the
+# vertex spacing leaves dots of skin on a grey ear)
+ear_w = np.zeros(len(co))
+for side in ("l", "r"):
+    tf = os.path.join(os.environ.get("MH_DATA", "/opt/tools/mh/makehuman/makehuman/data"), "targets", "ears", f"{side}-ear-wing-incr.target")
+    rows = [ln.split() for ln in open(tf) if ln.strip() and not ln.startswith("#")]
+    mag = np.array([np.linalg.norm([float(x) for x in r[1:4]]) for r in rows])
+    for r, m_ in zip(rows, mag):
+        if int(r[0]) in inv:
+            ear_w[inv[int(r[0])]] = min(1.0, m_ / (0.3 * mag.max()))
+
 tri_uv, tri_attr = [], []
 nrm = np.array([v.normal[:] for v in me.vertices])
 for p in me.polygons:
@@ -193,11 +206,11 @@ for p in me.polygons:
         ls = (li[0], li[k], li[k + 1])
         vs = [me.loops[l].vertex_index for l in ls]
         tri_uv.append([uvl.data[l].uv[:] for l in ls])
-        tri_attr.append([list(co[v]) + list(nrm[v]) + [hair_w[v]] for v in vs])
+        tri_attr.append([list(co[v]) + list(nrm[v]) + [hair_w[v], ear_w[v]] for v in vs])
 tri_uv = np.array(tri_uv)
 tri_attr = np.array(tri_attr, np.float32)
 amap, cov = rasterise(tri_uv, tri_attr, N)
-POS, NRM, HAIR = amap[..., 0:3], amap[..., 3:6], amap[..., 6]
+POS, NRM, HAIR, EAR = amap[..., 0:3], amap[..., 3:6], amap[..., 6], amap[..., 7]
 
 # landmarks in Blender object space
 corr = json.load(open(a.corr))
@@ -293,18 +306,18 @@ def brow_mask(up, low):
         best = np.where(closer, d, best)
         tcoord = np.where(closer, cum[i] + t * (cum[i + 1] - cum[i]), tcoord)
     taper = 0.55 + 0.45 * smooth(tcoord, 0.0, 0.3)   # MediaPipe brow lists run tail -> head
-    return 1 - smooth(dc, 0.40 * width * taper, 0.78 * width * taper)
+    return 1 - smooth(dc, 0.46 * width * taper, 0.86 * width * taper)
 brows = np.maximum(brow_mask(BROW_R, BROW_R_LOW), brow_mask(BROW_L, BROW_L_LOW))
 hair_strands = noise3(POS * np.array([1.0, 1.0, 3.0]), 900.0, a.seed + 2, 2)
 brows = brows * (0.82 + 0.18 * smooth(hair_strands, 0.3, 0.6))
 alb = alb * (1 - 0.98 * brows[..., None]) + hexc(PAL["brow"]) * 0.98 * brows[..., None]
 # lash line / upper lid shadow
-lash = np.exp(-(np.minimum(dist_to_polyline(POS, EYE_R[:9]), dist_to_polyline(POS, EYE_L[:9])) / (0.12 * cm)) ** 2)
-alb *= (1 - 0.7 * lash[..., None])
+lash = np.exp(-(np.minimum(dist_to_polyline(POS, EYE_R[:9]), dist_to_polyline(POS, EYE_L[:9])) / (0.18 * cm)) ** 2)
+alb *= (1 - 0.9 * lash[..., None])
 # heavy, hooded upper lid: broad soft shadow between lash line and brow
 lid = np.exp(-(np.minimum(dist_to_polyline(POS, [33, 246, 161, 160, 159, 158, 157, 173, 133]),
                           dist_to_polyline(POS, [263, 466, 388, 387, 386, 385, 384, 398, 362])) / (0.45 * cm)) ** 2)
-alb *= (1 - 0.22 * lid[..., None])
+alb *= (1 - 0.30 * lid[..., None])
 # scalp: hair-bearing region bounded by a natural hairline that runs round the head:
 # forehead -> temples -> (shaved) sideburns in front of the ear -> behind the ear -> nape.
 # The threshold height is a smooth function of azimuth about the head's vertical axis.
@@ -346,22 +359,8 @@ if frame and hp_path and os.path.exists(hp_path):
 else:
     patch = smooth(HAIR, 0.3, 0.7)
 shaved = scalp * (1 - patch)
-# ears: never stubble (vertex set from the MakeHuman ear morph targets)
-ear_ids = set()
-for side in ("l", "r"):
-    tf = os.path.join(os.environ.get("MH_DATA", "/opt/tools/mh/makehuman/makehuman/data"), "targets", "ears", f"{side}-ear-wing-incr.target")
-    for line in open(tf):
-        if line.strip() and not line.startswith("#"):
-            ear_ids.add(int(line.split()[0]))
-ear_pts = np.array([co[inv[i]] for i in ear_ids if i in inv])
-from mathutils.kdtree import KDTree
-kd = KDTree(len(ear_pts))
-for i, p_ in enumerate(ear_pts):
-    kd.insert(p_, i)
-kd.balance()
-flatP = POS.reshape(-1, 3)
-ear_d = np.array([kd.find(p_)[2] for p_ in flatP], np.float32).reshape(POS.shape[:-1])
-shaved *= smooth(ear_d, 0.4 * cm, 1.0 * cm)
+# ears: never stubble; stubble runs right up to the ear root
+shaved *= 1 - smooth(EAR, 0.3, 0.7)
 # sub-millimetre stubble cannot be resolved by a 1-2 mm texel (and certainly not at the game's
 # 256 px), so it is rendered as an averaged tone plus a little ~2 mm noise, not as dots
 stub_cov = PAL["stubble_coverage"]

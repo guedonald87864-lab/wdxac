@@ -1,0 +1,250 @@
+{
+ "inputs": {
+  "blend": "model/source/r9_2002.blend",
+  "textures": "model/textures",
+  "out_dir": "renders/game_precision",
+  "parts": "R9_Head,R9_Eyes",
+  "lod0_verts": 5376,
+  "lod1_verts": 1338,
+  "hair": "R9_Hair",
+  "hair_lod0": 1600,
+  "hair_lod1": 400,
+  "tex_size": 256,
+  "block": "4x4",
+  "quality": "-medium",
+  "views": "head_front,head_l45,head_r45,head_lprof,head_rprof,head_back,head_top",
+  "res": 800,
+  "samples": 32,
+  "no_render": false,
+  "target_npz": null
+ },
+ "lods": {
+  "source_blend": "/home/user/wdxac/model/source/r9_2002.blend",
+  "groups": [
+   {
+    "lod": 0,
+    "objects": "R9_Head,R9_Eyes",
+    "budget_gpu_verts": 5376,
+    "ratio": 1.0,
+    "gpu_verts": 5330,
+    "per_object": {
+     "R9_Head": {
+      "verts": 4225,
+      "gpu_verts": 4254,
+      "tris": 8400
+     },
+     "R9_Eyes": {
+      "verts": 1064,
+      "gpu_verts": 1076,
+      "tris": 2040
+     }
+    },
+    "under_budget_kept": true
+   },
+   {
+    "lod": 0,
+    "objects": "R9_Hair",
+    "budget_gpu_verts": 1600,
+    "ratio": 0.279296875,
+    "gpu_verts": 1592,
+    "per_object": {
+     "R9_Hair": {
+      "verts": 6352,
+      "gpu_verts": 1592,
+      "tris": 2946
+     }
+    },
+    "under_budget_kept": false
+   },
+   {
+    "lod": 1,
+    "objects": "R9_Head,R9_Eyes",
+    "budget_gpu_verts": 1338,
+    "ratio": 0.2392578125,
+    "gpu_verts": 1336,
+    "per_object": {
+     "R9_Head": {
+      "verts": 1023,
+      "gpu_verts": 1046,
+      "tris": 2006
+     },
+     "R9_Eyes": {
+      "verts": 287,
+      "gpu_verts": 290,
+      "tris": 488
+     }
+    },
+    "under_budget_kept": false
+   },
+   {
+    "lod": 1,
+    "objects": "R9_Hair",
+    "budget_gpu_verts": 400,
+    "ratio": 0.059814453125,
+    "gpu_verts": 400,
+    "per_object": {
+     "R9_Hair": {
+      "verts": 5160,
+      "gpu_verts": 400,
+      "tris": 631
+     }
+    },
+    "under_budget_kept": false
+   }
+  ],
+  "hd": {
+   "R9_Head": {
+    "verts": 4225,
+    "gpu_verts": 4254,
+    "tris": 8400
+   },
+   "R9_Eyes": {
+    "verts": 1064,
+    "gpu_verts": 1076,
+    "tris": 2040
+   },
+   "R9_Hair": {
+    "verts": 10208,
+    "gpu_verts": 5448,
+    "tris": 10550
+   }
+  }
+ },
+ "textures": {
+  "r9_body_albedo.png": {
+   "kind": "color",
+   "hd_size": [
+    1024,
+    1024
+   ],
+   "game_size": 256,
+   "astc_block": "4x4",
+   "astc_bytes": 65536,
+   "psnr_astc_vs_256_db": 61.2405974170195,
+   "psnr_game_upsampled_vs_hd_db": 57.11089807762336
+  },
+  "r9_eye_albedo.png": {
+   "kind": "color",
+   "hd_size": [
+    1024,
+    1024
+   ],
+   "game_size": 256,
+   "astc_block": "4x4",
+   "astc_bytes": 65536,
+   "psnr_astc_vs_256_db": 53.07995746109835,
+   "psnr_game_upsampled_vs_hd_db": 20.835903527154773
+  },
+  "r9_hair_albedo.png": {
+   "kind": "color",
+   "hd_size": [
+    1024,
+    1024
+   ],
+   "game_size": 256,
+   "astc_block": "4x4",
+   "astc_bytes": 65536,
+   "psnr_astc_vs_256_db": 58.2198493238866,
+   "psnr_game_upsampled_vs_hd_db": 41.56775420212212
+  },
+  "r9_hair_normal.png": {
+   "kind": "normal",
+   "hd_size": [
+    1024,
+    1024
+   ],
+   "game_size": 256,
+   "astc_block": "4x4",
+   "astc_bytes": 65536,
+   "psnr_astc_vs_256_db": 37.64792008411159,
+   "psnr_game_upsampled_vs_hd_db": 13.313481865536383
+  },
+  "r9_head_albedo.png": {
+   "kind": "color",
+   "hd_size": [
+    2048,
+    2048
+   ],
+   "game_size": 256,
+   "astc_block": "4x4",
+   "astc_bytes": 65536,
+   "psnr_astc_vs_256_db": 59.91803032287255,
+   "psnr_game_upsampled_vs_hd_db": 41.697775021210965
+  },
+  "r9_head_masks.png": {
+   "kind": "data",
+   "hd_size": [
+    2048,
+    2048
+   ],
+   "game_size": 256,
+   "astc_block": "4x4",
+   "astc_bytes": 65536,
+   "psnr_astc_vs_256_db": 60.51632383895509,
+   "psnr_game_upsampled_vs_hd_db": 33.63817889061142
+  },
+  "r9_head_normal.png": {
+   "kind": "normal",
+   "hd_size": [
+    2048,
+    2048
+   ],
+   "game_size": 256,
+   "astc_block": "4x4",
+   "astc_bytes": 65536,
+   "psnr_astc_vs_256_db": 54.830513933295954,
+   "psnr_game_upsampled_vs_hd_db": 33.147627869700095
+  },
+  "r9_head_rough.png": {
+   "kind": "data",
+   "hd_size": [
+    2048,
+    2048
+   ],
+   "game_size": 256,
+   "astc_block": "4x4",
+   "astc_bytes": 65536,
+   "psnr_astc_vs_256_db": 72.97313218965746,
+   "psnr_game_upsampled_vs_hd_db": 45.396487804347416
+  }
+ },
+ "sheet": "renders/game_precision/hd_vs_game_sheet.png",
+ "renders": [
+  [
+   "renders/game_precision/renders/head_front_hd.png",
+   "renders/game_precision/renders/head_front_lod0.png",
+   "renders/game_precision/renders/head_front_lod1.png"
+  ],
+  [
+   "renders/game_precision/renders/head_l45_hd.png",
+   "renders/game_precision/renders/head_l45_lod0.png",
+   "renders/game_precision/renders/head_l45_lod1.png"
+  ],
+  [
+   "renders/game_precision/renders/head_r45_hd.png",
+   "renders/game_precision/renders/head_r45_lod0.png",
+   "renders/game_precision/renders/head_r45_lod1.png"
+  ],
+  [
+   "renders/game_precision/renders/head_lprof_hd.png",
+   "renders/game_precision/renders/head_lprof_lod0.png",
+   "renders/game_precision/renders/head_lprof_lod1.png"
+  ],
+  [
+   "renders/game_precision/renders/head_rprof_hd.png",
+   "renders/game_precision/renders/head_rprof_lod0.png",
+   "renders/game_precision/renders/head_rprof_lod1.png"
+  ],
+  [
+   "renders/game_precision/renders/head_back_hd.png",
+   "renders/game_precision/renders/head_back_lod0.png",
+   "renders/game_precision/renders/head_back_lod1.png"
+  ],
+  [
+   "renders/game_precision/renders/head_top_hd.png",
+   "renders/game_precision/renders/head_top_lod0.png",
+   "renders/game_precision/renders/head_top_lod1.png"
+  ]
+ ],
+ "seconds": 346.1
+}

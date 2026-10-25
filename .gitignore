@@ -6,3 +6,5 @@ tools/native/cue4parse_check/bin/
 tools/native/cue4parse_check/obj/
 # private reference photos (copyrighted) must never be committed
 research/refs/private/
+# reproducible intermediates of tools/wrap/game_precision.py (large)
+renders/game_precision/lod*.blend

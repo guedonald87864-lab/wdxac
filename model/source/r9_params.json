@@ -7,7 +7,7 @@
   "asian": 0.1,
   "muscle": 0.85,
   "weight": 0.4997525088894397,
-  "height": 0.5391753807203137,
+  "height": 0.5320883580302114,
   "proportions": 0.6773818895024944
  },
  "modifiers": {
@@ -64,7 +64,6 @@
   "mouth/mouth-scale-vert-decr|incr": 0.35,
   "mouth/mouth-trans-backward|forward": 0.0015,
   "mouth/mouth-trans-down|up": -0.4849,
-  "mouth/mouth-trans-in|out": -0.2783,
   "mouth/mouth-upperlip-width-decr|incr": 0.3735,
   "nose/nose-base-down|up": -0.2257,
   "nose/nose-curve-concave|convex": 0.055,
@@ -77,7 +76,6 @@
   "nose/nose-scale-vert-decr|incr": -0.2,
   "nose/nose-trans-backward|forward": 1.0,
   "nose/nose-trans-down|up": -0.4418,
-  "nose/nose-trans-in|out": 0.1188,
   "nose/nose-volume-decr|incr": -0.2629,
   "nose/nose-width1-decr|incr": 0.3938,
   "nose/nose-width2-decr|incr": 0.2922,
@@ -89,7 +87,7 @@
   "head/head-oval": 0.05924580989967096,
   "head/head-square": 0.17255083924756295,
   "forehead/forehead-scale-vert-decr|incr": -0.4,
-  "forehead/forehead-trans-backward|forward": 0.1618771958430954,
+  "forehead/forehead-trans-backward|forward": -0.15,
   "forehead/forehead-temple-decr|incr": 0.018750037293205804,
   "ears/r-ear-scale-decr|incr": 0.25,
   "ears/r-ear-wing-decr|incr": 0.1,
@@ -98,10 +96,12 @@
   "neck/neck-scale-horiz-decr|incr": 0.3,
   "neck/neck-scale-depth-decr|incr": 0.2,
   "nose/nose-point-width-decr|incr": 0.6,
-  "eyes/l-eye-eyefold-down|up": -0.6,
-  "eyes/r-eye-eyefold-down|up": -0.6,
+  "eyes/l-eye-eyefold-down|up": -0.85,
+  "eyes/r-eye-eyefold-down|up": -0.85,
   "ears/r-ear-trans-down|up": -0.2,
-  "ears/l-ear-trans-down|up": -0.2
+  "ears/l-ear-trans-down|up": -0.2,
+  "forehead/forehead-nubian-decr|incr": 0.3,
+  "neck/neck-back-scale-depth-decr|incr": 0.6
  },
  "hair": "model/source/r9_hair_params.json",
  "face_corr": "model/source/face_corr_mediapipe478.json",
@@ -187,6 +187,32 @@
    }
   },
   "lips_v3": "closed-mouth photo g891940 still lip_h/mouth_w +18% after critique round -> lowerlip-height 0.15->-0.15, scale-vert 0.5->0.35",
-  "normalize_head": "uniform head scale +0.1064 on head-scale vert/horiz/depth -> crown-chin 22.44 cm (target 22.4); height macro 0.5357 -> 0.5392 -> stature 183.00 cm | target 22.4 chosen as compromise: 23.0 gave head breadth 16.6 / length 21.3 (dossier 15.5-16.0 / 19.5-20.5); 22.4 gives 16.0 / 20.8 with crown-chin 1.4 cm under the 23.8 photo estimate (2005 ratio, T4)"
+  "normalize_head": "uniform head scale +0.1064 on head-scale vert/horiz/depth -> crown-chin 22.44 cm (target 22.4); height macro 0.5357 -> 0.5392 -> stature 183.00 cm | target 22.4 chosen as compromise: 23.0 gave head breadth 16.6 / length 21.3 (dossier 15.5-16.0 / 19.5-20.5); 22.4 gives 16.0 / 20.8 with crown-chin 1.4 cm under the 23.8 photo estimate (2005 ratio, T4)",
+  "likeness_critique_2": {
+   "date": "2026-10-25",
+   "scores_round_2": {
+    "features": 4.5,
+    "silhouette": 4.5,
+    "gestalt": 4.0
+   },
+   "applied": {
+    "symmetry_fix": "nose-trans-in|out 0.1188 and mouth-trans-in|out -0.2783 are pure sideways (X) shifts (verified on the targets: 4.4 mm/unit mouth, 2.1 mm/unit nose); removed, and tools/face/fit_face.py no longer offers them in symmetric fits",
+    "eyefold": "l/r-eye-eyefold-down|up -0.6 -> -0.85 (features + gestalt: crease exposed, lid too bright)",
+    "forehead_slope": "forehead-trans-backward|forward +0.162 -> -0.15 (silhouette + features: forehead ~5 mm in front of the photo silhouettes above the brow)",
+    "crown": "forehead-nubian-decr|incr 0 -> 0.3 (silhouette: flat top / boxy upper-back corner; photo crown 0.6-1.5 cm above the render at fitted cameras; dossier 01 \u00a72.1 'high and round')",
+    "nape": "neck-back-scale-depth-decr|incr 0 -> 0.6 (silhouette: 1.3-1.9 cm concave strip behind/below the ear)"
+   },
+   "previous_values": {
+    "nose/nose-trans-in|out": 0.1188,
+    "mouth/mouth-trans-in|out": -0.2783,
+    "eyes/l-eye-eyefold-down|up": -0.6,
+    "eyes/r-eye-eyefold-down|up": -0.6,
+    "forehead/forehead-trans-backward|forward": 0.1618771958430954,
+    "forehead/forehead-nubian-decr|incr": null,
+    "neck/neck-back-scale-depth-decr|incr": null
+   },
+   "not_applied": "nose volume/flaring (same-detector nose width already +2.4%), mouth depth, cheeks, skin hue (single critic, confidence <= 0.4); parted-lips rest pose (bind pose stays neutral for the game rig)",
+   "stature": "height macro 0.5392 -> 0.5321: stature 183.00 cm after the crown change (head height 23.42 cm, now inside the dossier 23.8 +/- 0.8)"
+  }
  }
 }

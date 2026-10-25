@@ -336,47 +336,47 @@
      "per_measure": [
       {
        "measure": "neck_length",
-       "r9": 10.46,
+       "r9": 10.418,
        "ref": 10.702,
-       "rel_pct": -2.27,
+       "rel_pct": -2.65,
        "pct_per_step": -2.86,
-       "steps": -0.79
+       "steps": -0.93
       }
      ],
-     "steps": -0.79,
+     "steps": -0.93,
      "stored": 6
     },
     "variant_A": {
      "per_measure": [
       {
        "measure": "neck_length",
-       "r9": 10.46,
+       "r9": 10.418,
        "ref": 10.702,
-       "rel_pct": -2.27,
+       "rel_pct": -2.65,
        "pct_per_step": -2.86,
-       "steps": -0.79
+       "steps": -0.93
       }
      ],
-     "steps": -0.79,
+     "steps": -0.93,
      "stored": 6
     },
     "variant_G": {
      "per_measure": [
       {
        "measure": "neck_length",
-       "r9": 10.46,
+       "r9": 10.418,
        "ref": 10.702,
-       "rel_pct": -2.27,
+       "rel_pct": -2.65,
        "pct_per_step": -2.86,
-       "steps": -0.79
+       "steps": -0.93
       }
      ],
-     "steps": -0.79,
+     "steps": -0.93,
      "stored": 6
     },
     "steps_span": [
-     -0.79,
-     -0.79
+     -0.93,
+     -0.93
     ],
     "stored_span": [
      6,
@@ -424,71 +424,71 @@
      "per_measure": [
       {
        "measure": "neck_depth",
-       "r9": 11.454,
-       "ref": 10.762,
-       "rel_pct": 6.43,
+       "r9": 12.084,
+       "ref": 10.753,
+       "rel_pct": 12.37,
        "pct_per_step": 0.36,
-       "steps": 17.87
+       "steps": 34.37
       },
       {
        "measure": "neck_breadth",
-       "r9": 13.756,
+       "r9": 13.712,
        "ref": 12.68,
-       "rel_pct": 8.49,
+       "rel_pct": 8.14,
        "pct_per_step": 1.43,
-       "steps": 5.94
+       "steps": 5.69
       }
      ],
-     "steps": 11.91,
+     "steps": 20.03,
      "stored": 14
     },
     "variant_A": {
      "per_measure": [
       {
        "measure": "neck_depth",
-       "r9": 11.454,
+       "r9": 12.084,
        "ref": 10.696,
-       "rel_pct": 7.09,
+       "rel_pct": 12.97,
        "pct_per_step": 0.36,
-       "steps": 19.69
+       "steps": 36.03
       },
       {
        "measure": "neck_breadth",
-       "r9": 13.756,
+       "r9": 13.712,
        "ref": 12.679,
-       "rel_pct": 8.49,
+       "rel_pct": 8.15,
        "pct_per_step": 1.43,
-       "steps": 5.94
+       "steps": 5.7
       }
      ],
-     "steps": 12.82,
+     "steps": 20.87,
      "stored": 14
     },
     "variant_G": {
      "per_measure": [
       {
        "measure": "neck_depth",
-       "r9": 11.454,
+       "r9": 12.084,
        "ref": 10.381,
-       "rel_pct": 10.34,
+       "rel_pct": 16.41,
        "pct_per_step": 0.36,
-       "steps": 28.73
+       "steps": 45.57
       },
       {
        "measure": "neck_breadth",
-       "r9": 13.756,
+       "r9": 13.712,
        "ref": 12.209,
-       "rel_pct": 12.67,
+       "rel_pct": 12.32,
        "pct_per_step": 1.43,
-       "steps": 8.86
+       "steps": 8.61
       }
      ],
-     "steps": 18.8,
+     "steps": 27.09,
      "stored": 14
     },
     "steps_span": [
-     11.91,
-     18.8
+     20.03,
+     27.09
     ],
     "stored_span": [
      14,
@@ -536,44 +536,44 @@
      "per_measure": [
       {
        "measure": "clavicle_elevation_deg",
-       "r9": -8.026,
+       "r9": -8.035,
        "ref": -10.147,
-       "diff_deg": 2.12,
-       "steps": 1.86
+       "diff_deg": 2.111,
+       "steps": 1.85
       }
      ],
-     "steps": 1.86,
+     "steps": 1.85,
      "stored": 9
     },
     "variant_A": {
      "per_measure": [
       {
        "measure": "clavicle_elevation_deg",
-       "r9": -8.026,
+       "r9": -8.035,
        "ref": -10.147,
-       "diff_deg": 2.12,
-       "steps": 1.86
+       "diff_deg": 2.111,
+       "steps": 1.85
       }
      ],
-     "steps": 1.86,
+     "steps": 1.85,
      "stored": 9
     },
     "variant_G": {
      "per_measure": [
       {
        "measure": "clavicle_elevation_deg",
-       "r9": -8.026,
+       "r9": -8.035,
        "ref": -10.147,
-       "diff_deg": 2.12,
-       "steps": 1.86
+       "diff_deg": 2.111,
+       "steps": 1.85
       }
      ],
-     "steps": 1.86,
+     "steps": 1.85,
      "stored": 9
     },
     "steps_span": [
-     1.86,
-     1.86
+     1.85,
+     1.85
     ],
     "stored_span": [
      9,
@@ -622,47 +622,47 @@
      "per_measure": [
       {
        "measure": "clavicle_length",
-       "r9": 18.855,
+       "r9": 18.792,
        "ref": 17.367,
-       "rel_pct": 8.57,
+       "rel_pct": 8.21,
        "pct_per_step": 2.86,
-       "steps": 3.0
+       "steps": 2.87
       }
      ],
-     "steps": 3.0,
+     "steps": 2.87,
      "stored": 10
     },
     "variant_A": {
      "per_measure": [
       {
        "measure": "clavicle_length",
-       "r9": 18.855,
+       "r9": 18.792,
        "ref": 17.367,
-       "rel_pct": 8.57,
+       "rel_pct": 8.21,
        "pct_per_step": 2.86,
-       "steps": 3.0
+       "steps": 2.87
       }
      ],
-     "steps": 3.0,
+     "steps": 2.87,
      "stored": 10
     },
     "variant_G": {
      "per_measure": [
       {
        "measure": "clavicle_length",
-       "r9": 18.855,
+       "r9": 18.792,
        "ref": 17.367,
-       "rel_pct": 8.57,
+       "rel_pct": 8.21,
        "pct_per_step": 2.86,
-       "steps": 3.0
+       "steps": 2.87
       }
      ],
-     "steps": 3.0,
+     "steps": 2.87,
      "stored": 10
     },
     "steps_span": [
-     3.0,
-     3.0
+     2.87,
+     2.87
     ],
     "stored_span": [
      10,
@@ -710,47 +710,47 @@
      "per_measure": [
       {
        "measure": "chest_depth",
-       "r9": 24.28,
-       "ref": 23.473,
-       "rel_pct": 3.44,
+       "r9": 24.195,
+       "ref": 23.457,
+       "rel_pct": 3.15,
        "pct_per_step": 1.43,
-       "steps": 2.4
+       "steps": 2.2
       }
      ],
-     "steps": 2.4,
+     "steps": 2.2,
      "stored": 9
     },
     "variant_A": {
      "per_measure": [
       {
        "measure": "chest_depth",
-       "r9": 24.28,
+       "r9": 24.195,
        "ref": 23.43,
-       "rel_pct": 3.63,
+       "rel_pct": 3.26,
        "pct_per_step": 1.43,
-       "steps": 2.54
+       "steps": 2.28
       }
      ],
-     "steps": 2.54,
-     "stored": 10
+     "steps": 2.28,
+     "stored": 9
     },
     "variant_G": {
      "per_measure": [
       {
        "measure": "chest_depth",
-       "r9": 24.28,
+       "r9": 24.195,
        "ref": 22.881,
-       "rel_pct": 6.12,
+       "rel_pct": 5.74,
        "pct_per_step": 1.43,
-       "steps": 4.28
+       "steps": 4.01
       }
      ],
-     "steps": 4.28,
+     "steps": 4.01,
      "stored": 11
     },
     "steps_span": [
-     2.4,
-     4.28
+     2.2,
+     4.01
     ],
     "stored_span": [
      9,
@@ -798,74 +798,74 @@
      "per_measure": [
       {
        "measure": "waist_depth",
-       "r9": 19.617,
-       "ref": 21.689,
-       "rel_pct": -9.55,
+       "r9": 19.543,
+       "ref": 21.405,
+       "rel_pct": -8.7,
        "pct_per_step": -1.43,
-       "steps": -6.68
+       "steps": -6.08
       },
       {
        "measure": "waist_breadth",
-       "r9": 30.199,
-       "ref": 31.859,
-       "rel_pct": -5.21,
+       "r9": 30.087,
+       "ref": 31.428,
+       "rel_pct": -4.26,
        "pct_per_step": -1.86,
-       "steps": -2.8
+       "steps": -2.29
       }
      ],
-     "steps": -4.74,
-     "stored": 2
+     "steps": -4.19,
+     "stored": 3
     },
     "variant_A": {
      "per_measure": [
       {
        "measure": "waist_depth",
-       "r9": 19.617,
+       "r9": 19.543,
        "ref": 19.613,
-       "rel_pct": 0.02,
-       "pct_per_step": 1.0,
-       "steps": 0.02
+       "rel_pct": -0.36,
+       "pct_per_step": -1.43,
+       "steps": -0.25
       },
       {
        "measure": "waist_breadth",
-       "r9": 30.199,
+       "r9": 30.087,
        "ref": 28.708,
-       "rel_pct": 5.19,
+       "rel_pct": 4.8,
        "pct_per_step": 1.57,
-       "steps": 3.31
+       "steps": 3.06
       }
      ],
-     "steps": 1.67,
-     "stored": 9
+     "steps": 1.41,
+     "stored": 8
     },
     "variant_G": {
      "per_measure": [
       {
        "measure": "waist_depth",
-       "r9": 19.617,
-       "ref": 19.178,
-       "rel_pct": 2.29,
+       "r9": 19.543,
+       "ref": 19.127,
+       "rel_pct": 2.17,
        "pct_per_step": 1.0,
-       "steps": 2.29
+       "steps": 2.17
       },
       {
        "measure": "waist_breadth",
-       "r9": 30.199,
-       "ref": 28.399,
-       "rel_pct": 6.34,
+       "r9": 30.087,
+       "ref": 28.325,
+       "rel_pct": 6.22,
        "pct_per_step": 1.57,
-       "steps": 4.04
+       "steps": 3.96
       }
      ],
-     "steps": 3.17,
+     "steps": 3.06,
      "stored": 10
     },
     "steps_span": [
-     -4.74,
-     3.17
+     -4.19,
+     3.06
     ],
     "stored_span": [
-     2,
+     3,
      10
     ]
    },
@@ -910,50 +910,50 @@
      "per_measure": [
       {
        "measure": "upperarm_circ",
-       "r9": 31.075,
-       "ref": 30.774,
-       "rel_pct": 0.98,
+       "r9": 30.97,
+       "ref": 30.423,
+       "rel_pct": 1.8,
        "pct_per_step": 1.14,
-       "steps": 0.86
+       "steps": 1.58
       }
      ],
-     "steps": 0.86,
-     "stored": 8
+     "steps": 1.58,
+     "stored": 9
     },
     "variant_A": {
      "per_measure": [
       {
        "measure": "upperarm_circ",
-       "r9": 31.075,
+       "r9": 30.97,
        "ref": 28.334,
-       "rel_pct": 9.67,
+       "rel_pct": 9.31,
        "pct_per_step": 1.14,
-       "steps": 8.49
+       "steps": 8.16
       }
      ],
-     "steps": 8.49,
+     "steps": 8.16,
      "stored": 14
     },
     "variant_G": {
      "per_measure": [
       {
        "measure": "upperarm_circ",
-       "r9": 31.075,
-       "ref": 27.257,
-       "rel_pct": 14.01,
+       "r9": 30.97,
+       "ref": 27.185,
+       "rel_pct": 13.92,
        "pct_per_step": 1.14,
-       "steps": 12.29
+       "steps": 12.21
       }
      ],
-     "steps": 12.29,
+     "steps": 12.21,
      "stored": 14
     },
     "steps_span": [
-     0.86,
-     12.29
+     1.58,
+     12.21
     ],
     "stored_span": [
-     8,
+     9,
      14
     ]
    },
@@ -998,51 +998,51 @@
      "per_measure": [
       {
        "measure": "arm_length",
-       "r9": 55.263,
+       "r9": 54.928,
        "ref": 55.366,
-       "rel_pct": -0.19,
+       "rel_pct": -0.79,
        "pct_per_step": -0.71,
-       "steps": -0.26
+       "steps": -1.11
       }
      ],
-     "steps": -0.26,
-     "stored": 7
+     "steps": -1.11,
+     "stored": 6
     },
     "variant_A": {
      "per_measure": [
       {
        "measure": "arm_length",
-       "r9": 55.263,
+       "r9": 54.928,
        "ref": 55.366,
-       "rel_pct": -0.19,
+       "rel_pct": -0.79,
        "pct_per_step": -0.71,
-       "steps": -0.26
+       "steps": -1.11
       }
      ],
-     "steps": -0.26,
-     "stored": 7
+     "steps": -1.11,
+     "stored": 6
     },
     "variant_G": {
      "per_measure": [
       {
        "measure": "arm_length",
-       "r9": 55.263,
+       "r9": 54.928,
        "ref": 55.366,
-       "rel_pct": -0.19,
+       "rel_pct": -0.79,
        "pct_per_step": -0.71,
-       "steps": -0.26
+       "steps": -1.11
       }
      ],
-     "steps": -0.26,
-     "stored": 7
+     "steps": -1.11,
+     "stored": 6
     },
     "steps_span": [
-     -0.26,
-     -0.26
+     -1.11,
+     -1.11
     ],
     "stored_span": [
-     7,
-     7
+     6,
+     6
     ]
    },
    "comparators": {
@@ -1086,71 +1086,71 @@
      "per_measure": [
       {
        "measure": "thigh_depth",
-       "r9": 18.895,
-       "ref": 19.169,
-       "rel_pct": -1.43,
+       "r9": 18.825,
+       "ref": 19.111,
+       "rel_pct": -1.5,
        "pct_per_step": -1.43,
-       "steps": -1.0
+       "steps": -1.05
       },
       {
        "measure": "thigh_breadth",
-       "r9": 18.815,
-       "ref": 17.517,
-       "rel_pct": 7.41,
+       "r9": 18.752,
+       "ref": 17.438,
+       "rel_pct": 7.54,
        "pct_per_step": 1.07,
-       "steps": 6.93
+       "steps": 7.04
       }
      ],
-     "steps": 2.96,
+     "steps": 3.0,
      "stored": 10
     },
     "variant_A": {
      "per_measure": [
       {
        "measure": "thigh_depth",
-       "r9": 18.895,
+       "r9": 18.825,
        "ref": 18.742,
-       "rel_pct": 0.81,
+       "rel_pct": 0.44,
        "pct_per_step": 1.43,
-       "steps": 0.57
+       "steps": 0.31
       },
       {
        "measure": "thigh_breadth",
-       "r9": 18.815,
+       "r9": 18.752,
        "ref": 16.978,
-       "rel_pct": 10.82,
+       "rel_pct": 10.45,
        "pct_per_step": 1.07,
-       "steps": 10.11
+       "steps": 9.77
       }
      ],
-     "steps": 5.34,
+     "steps": 5.04,
      "stored": 12
     },
     "variant_G": {
      "per_measure": [
       {
        "measure": "thigh_depth",
-       "r9": 18.895,
-       "ref": 18.5,
-       "rel_pct": 2.13,
+       "r9": 18.825,
+       "ref": 18.476,
+       "rel_pct": 1.89,
        "pct_per_step": 1.43,
-       "steps": 1.49
+       "steps": 1.32
       },
       {
        "measure": "thigh_breadth",
-       "r9": 18.815,
-       "ref": 15.651,
-       "rel_pct": 20.22,
+       "r9": 18.752,
+       "ref": 15.63,
+       "rel_pct": 19.97,
        "pct_per_step": 1.07,
-       "steps": 18.9
+       "steps": 18.67
       }
      ],
-     "steps": 10.19,
+     "steps": 10.0,
      "stored": 14
     },
     "steps_span": [
-     2.96,
-     10.19
+     3.0,
+     10.0
     ],
     "stored_span": [
      10,
@@ -1198,50 +1198,50 @@
      "per_measure": [
       {
        "measure": "calf_circ",
-       "r9": 38.85,
-       "ref": 40.16,
-       "rel_pct": -3.26,
+       "r9": 38.711,
+       "ref": 40.155,
+       "rel_pct": -3.59,
        "pct_per_step": -1.43,
-       "steps": -2.28
+       "steps": -2.51
       }
      ],
-     "steps": -2.28,
-     "stored": 5
+     "steps": -2.51,
+     "stored": 4
     },
     "variant_A": {
      "per_measure": [
       {
        "measure": "calf_circ",
-       "r9": 38.85,
+       "r9": 38.711,
        "ref": 40.122,
-       "rel_pct": -3.17,
+       "rel_pct": -3.52,
        "pct_per_step": -1.43,
-       "steps": -2.22
+       "steps": -2.46
       }
      ],
-     "steps": -2.22,
+     "steps": -2.46,
      "stored": 5
     },
     "variant_G": {
      "per_measure": [
       {
        "measure": "calf_circ",
-       "r9": 38.85,
-       "ref": 40.174,
-       "rel_pct": -3.3,
+       "r9": 38.711,
+       "ref": 40.12,
+       "rel_pct": -3.51,
        "pct_per_step": -1.43,
-       "steps": -2.31
+       "steps": -2.46
       }
      ],
-     "steps": -2.31,
+     "steps": -2.46,
      "stored": 5
     },
     "steps_span": [
-     -2.31,
-     -2.22
+     -2.51,
+     -2.46
     ],
     "stored_span": [
-     5,
+     4,
      5
     ]
    },
@@ -1286,56 +1286,56 @@
      "per_measure": [
       {
        "measure": "hip_joint_height",
-       "r9": 96.964,
+       "r9": 96.327,
        "ref": 98.163,
-       "rel_pct": -1.22,
+       "rel_pct": -1.87,
        "pct_per_step": -0.2714285714285714,
-       "steps": -4.5
+       "steps": -6.89
       }
      ],
-     "steps": -4.5,
-     "stored": 2
+     "steps": -6.89,
+     "stored": 0
     },
     "variant_A": {
      "per_measure": [
       {
        "measure": "hip_joint_height",
-       "r9": 96.964,
+       "r9": 96.327,
        "ref": 98.163,
-       "rel_pct": -1.22,
+       "rel_pct": -1.87,
        "pct_per_step": -0.2714285714285714,
-       "steps": -4.5
+       "steps": -6.89
       }
      ],
-     "steps": -4.5,
-     "stored": 2
+     "steps": -6.89,
+     "stored": 0
     },
     "variant_G": {
      "per_measure": [
       {
        "measure": "hip_joint_height",
-       "r9": 96.964,
+       "r9": 96.327,
        "ref": 98.163,
-       "rel_pct": -1.22,
+       "rel_pct": -1.87,
        "pct_per_step": -0.2714285714285714,
-       "steps": -4.5
+       "steps": -6.89
       }
      ],
-     "steps": -4.5,
-     "stored": 2
+     "steps": -6.89,
+     "stored": 0
     },
     "steps_span": [
-     -4.5,
-     -4.5
+     -6.89,
+     -6.89
     ],
     "stored_span": [
-     2,
-     2
+     0,
+     0
     ],
     "note": "PES 2021：+7 档髋高 +1.8%（G×1.018），−7 档 −1.9%（G×0.981），每档约 0.27 cm；且 LegLength 改变整体缩放 G，游戏里的渲染身高会随之变化",
     "pesdb_alt": {
      "rule": "pesdb 派生指标 'Leg-length Equivalent Height = Height + (LL−7) cm'（06 §4.2，T3）；把髋高相对差折成等效身高差，每 1 cm 一档（T4 换算）",
-     "steps_B": -2.23
+     "steps_B": -3.42
     }
    },
    "comparators": {
@@ -1379,51 +1379,51 @@
      "per_measure": [
       {
        "measure": "head_height",
-       "r9": 22.444,
+       "r9": 23.423,
        "ref": 22.966,
-       "rel_pct": -2.27,
-       "pct_per_step": -1.43,
-       "steps": -1.59
+       "rel_pct": 1.99,
+       "pct_per_step": 1.43,
+       "steps": 1.39
       }
      ],
-     "steps": -1.59,
-     "stored": 5
+     "steps": 1.39,
+     "stored": 8
     },
     "variant_A": {
      "per_measure": [
       {
        "measure": "head_height",
-       "r9": 22.444,
+       "r9": 23.423,
        "ref": 22.966,
-       "rel_pct": -2.27,
-       "pct_per_step": -1.43,
-       "steps": -1.59
+       "rel_pct": 1.99,
+       "pct_per_step": 1.43,
+       "steps": 1.39
       }
      ],
-     "steps": -1.59,
-     "stored": 5
+     "steps": 1.39,
+     "stored": 8
     },
     "variant_G": {
      "per_measure": [
       {
        "measure": "head_height",
-       "r9": 22.444,
+       "r9": 23.423,
        "ref": 23.019,
-       "rel_pct": -2.5,
-       "pct_per_step": -1.43,
-       "steps": -1.75
+       "rel_pct": 1.75,
+       "pct_per_step": 1.43,
+       "steps": 1.22
       }
      ],
-     "steps": -1.75,
-     "stored": 5
+     "steps": 1.22,
+     "stored": 8
     },
     "steps_span": [
-     -1.75,
-     -1.59
+     1.22,
+     1.39
     ],
     "stored_span": [
-     5,
-     5
+     8,
+     8
     ]
    }
   },
@@ -1449,47 +1449,47 @@
      "per_measure": [
       {
        "measure": "head_breadth",
-       "r9": 16.032,
+       "r9": 15.973,
        "ref": 14.766,
-       "rel_pct": 8.57,
+       "rel_pct": 8.17,
        "pct_per_step": 1.43,
-       "steps": 5.99
+       "steps": 5.72
       }
      ],
-     "steps": 5.99,
+     "steps": 5.72,
      "stored": 13
     },
     "variant_A": {
      "per_measure": [
       {
        "measure": "head_breadth",
-       "r9": 16.032,
+       "r9": 15.973,
        "ref": 14.766,
-       "rel_pct": 8.57,
+       "rel_pct": 8.17,
        "pct_per_step": 1.43,
-       "steps": 5.99
+       "steps": 5.72
       }
      ],
-     "steps": 5.99,
+     "steps": 5.72,
      "stored": 13
     },
     "variant_G": {
      "per_measure": [
       {
        "measure": "head_breadth",
-       "r9": 16.032,
+       "r9": 15.973,
        "ref": 14.766,
-       "rel_pct": 8.57,
+       "rel_pct": 8.17,
        "pct_per_step": 1.43,
-       "steps": 5.99
+       "steps": 5.72
       }
      ],
-     "steps": 5.99,
+     "steps": 5.72,
      "stored": 13
     },
     "steps_span": [
-     5.99,
-     5.99
+     5.72,
+     5.72
     ],
     "stored_span": [
      13,
@@ -1519,47 +1519,47 @@
      "per_measure": [
       {
        "measure": "head_length",
-       "r9": 20.804,
+       "r9": 20.817,
        "ref": 20.678,
-       "rel_pct": 0.61,
+       "rel_pct": 0.67,
        "pct_per_step": 1.43,
-       "steps": 0.42
+       "steps": 0.47
       }
      ],
-     "steps": 0.42,
+     "steps": 0.47,
      "stored": 7
     },
     "variant_A": {
      "per_measure": [
       {
        "measure": "head_length",
-       "r9": 20.804,
+       "r9": 20.817,
        "ref": 20.678,
-       "rel_pct": 0.61,
+       "rel_pct": 0.67,
        "pct_per_step": 1.43,
-       "steps": 0.42
+       "steps": 0.47
       }
      ],
-     "steps": 0.42,
+     "steps": 0.47,
      "stored": 7
     },
     "variant_G": {
      "per_measure": [
       {
        "measure": "head_length",
-       "r9": 20.804,
+       "r9": 20.817,
        "ref": 20.678,
-       "rel_pct": 0.61,
+       "rel_pct": 0.67,
        "pct_per_step": 1.43,
-       "steps": 0.42
+       "steps": 0.47
       }
      ],
-     "steps": 0.42,
+     "steps": 0.47,
      "stored": 7
     },
     "steps_span": [
-     0.42,
-     0.42
+     0.47,
+     0.47
     ],
     "stored_span": [
      7,
@@ -1593,7 +1593,7 @@
   "warning": "PES 2021 的骨骼缩放表不能直接套用到 eFootball（UE4 引擎，实现未找到，06 §4.4）；这里只给方向和量级。",
   "input_model": {
    "file": "model/source/r9_params.json",
-   "sha256": "d4c5effd58df16b2c1e19c212107e80b0c4cd4879c020fbf6b54ed850e2d9a01",
+   "sha256": "c37371d819cdf3fa59677d34e0afc84ed621bd05931e9530124250ebf64bf50e",
    "version": "v3 2026-10-25"
   },
   "variants": {
@@ -1604,12 +1604,12 @@
      "caucasian": 0.4,
      "asian": 0.1,
      "muscle": 0.5,
-     "weight": 0.9101,
+     "weight": 0.8539,
      "height": 0.5418,
      "proportions": 0.5
     },
     "height_cm": 183.0,
-    "mass_kg": 83.23
+    "mass_kg": 82.41
    },
    "A": {
     "macro": {
@@ -1639,237 +1639,237 @@
     "height_cm": 183.0,
     "mass_kg": 73.25,
     "mass_kg_before_pes_weight": 73.25,
-    "pes_normalized_weight": 0.331
+    "pes_normalized_weight": 0.3039
    }
   },
   "r9": {
    "height_cm": 183.0,
-   "mass_kg": 83.23
+   "mass_kg": 82.41
   },
   "measures_cm": {
    "arm_length": {
-    "R9": 55.26,
+    "R9": 54.93,
     "B": 55.37,
     "A": 55.37,
     "G": 55.37
    },
    "biacromial": {
-    "R9": 42.1,
+    "R9": 41.96,
     "B": 38.96,
     "A": 38.96,
     "G": 38.96
    },
    "calf_circ": {
-    "R9": 38.85,
-    "B": 40.16,
+    "R9": 38.71,
+    "B": 40.15,
     "A": 40.12,
-    "G": 40.17
+    "G": 40.12
    },
    "chest_breadth": {
-    "R9": 33.74,
-    "B": 33.66,
+    "R9": 33.62,
+    "B": 33.36,
     "A": 31.73,
     "G": 32.16
    },
    "chest_circ": {
-    "R9": 102.25,
-    "B": 102.93,
+    "R9": 101.9,
+    "B": 102.52,
     "A": 100.32,
     "G": 100.17
    },
    "chest_depth": {
-    "R9": 24.28,
-    "B": 23.47,
+    "R9": 24.19,
+    "B": 23.46,
     "A": 23.43,
     "G": 22.88
    },
    "clavicle_elevation_deg": {
-    "R9": -8.03,
+    "R9": -8.04,
     "B": -10.15,
     "A": -10.15,
     "G": -10.15
    },
    "clavicle_length": {
-    "R9": 18.86,
+    "R9": 18.79,
     "B": 17.37,
     "A": 17.37,
     "G": 17.37
    },
    "head_breadth": {
-    "R9": 16.03,
+    "R9": 15.97,
     "B": 14.77,
     "A": 14.77,
     "G": 14.77
    },
    "head_circumference": {
-    "R9": 59.4,
+    "R9": 59.3,
     "B": 57.33,
     "A": 57.33,
     "G": 57.33
    },
    "head_height": {
-    "R9": 22.44,
+    "R9": 23.42,
     "B": 22.97,
     "A": 22.97,
     "G": 23.02
    },
    "head_length": {
-    "R9": 20.8,
+    "R9": 20.82,
     "B": 20.68,
     "A": 20.68,
     "G": 20.68
    },
    "hip_joint_height": {
-    "R9": 96.96,
+    "R9": 96.33,
     "B": 98.16,
     "A": 98.16,
     "G": 98.16
    },
    "hips_circ": {
-    "R9": 99.78,
-    "B": 103.01,
+    "R9": 99.4,
+    "B": 102.27,
     "A": 97.87,
     "G": 95.11
    },
    "knee_circ": {
-    "R9": 36.72,
-    "B": 39.35,
+    "R9": 36.58,
+    "B": 39.14,
     "A": 37.95,
     "G": 36.21
    },
    "knee_height": {
-    "R9": 51.74,
+    "R9": 51.41,
     "B": 54.31,
     "A": 54.31,
     "G": 54.31
    },
    "neck_breadth": {
-    "R9": 13.76,
+    "R9": 13.71,
     "B": 12.68,
     "A": 12.68,
     "G": 12.21
    },
    "neck_circ": {
-    "R9": 41.76,
-    "B": 39.03,
+    "R9": 42.42,
+    "B": 39.02,
     "A": 38.96,
     "G": 37.8
    },
    "neck_depth": {
-    "R9": 11.45,
-    "B": 10.76,
+    "R9": 12.08,
+    "B": 10.75,
     "A": 10.7,
     "G": 10.38
    },
    "neck_length": {
-    "R9": 10.46,
+    "R9": 10.42,
     "B": 10.7,
     "A": 10.7,
     "G": 10.7
    },
    "thigh_breadth": {
-    "R9": 18.82,
-    "B": 17.52,
+    "R9": 18.75,
+    "B": 17.44,
     "A": 16.98,
-    "G": 15.65
+    "G": 15.63
    },
    "thigh_circ": {
-    "R9": 60.14,
-    "B": 58.79,
+    "R9": 59.94,
+    "B": 58.51,
     "A": 56.83,
     "G": 53.88
    },
    "thigh_depth": {
-    "R9": 18.9,
-    "B": 19.17,
+    "R9": 18.82,
+    "B": 19.11,
     "A": 18.74,
-    "G": 18.5
+    "G": 18.48
    },
    "upperarm_circ": {
-    "R9": 31.07,
-    "B": 30.77,
+    "R9": 30.97,
+    "B": 30.42,
     "A": 28.33,
-    "G": 27.26
+    "G": 27.19
    },
    "waist_breadth": {
-    "R9": 30.2,
-    "B": 31.86,
+    "R9": 30.09,
+    "B": 31.43,
     "A": 28.71,
-    "G": 28.4
+    "G": 28.32
    },
    "waist_circ": {
-    "R9": 82.72,
-    "B": 89.18,
+    "R9": 82.41,
+    "B": 87.93,
     "A": 80.35,
     "G": 76.58
    },
    "waist_depth": {
-    "R9": 19.62,
-    "B": 21.69,
+    "R9": 19.54,
+    "B": 21.4,
     "A": 19.61,
-    "G": 19.18
+    "G": 19.13
    }
   },
   "head_vs_norms": {
    "HeadLength": {
     "measure": "head_height",
-    "r9_cm": 22.44,
+    "r9_cm": 23.42,
     "norm_range_cm": [
      23.0,
      24.4
     ],
     "norm_mid_cm": 23.7,
-    "rel_pct_vs_mid": -5.3,
-    "steps_vs_mid": -3.7,
+    "rel_pct_vs_mid": -1.17,
+    "steps_vs_mid": -0.82,
     "steps_range": [
-     -5.6,
-     -1.69
+     -2.8,
+     1.28
     ],
-    "stored_per_axis": 3,
+    "stored_per_axis": 6,
     "norm_verified": false
    },
    "HeadWidth": {
     "measure": "head_breadth",
-    "r9_cm": 16.03,
+    "r9_cm": 15.97,
     "norm_range_cm": [
      15.2,
      15.6
     ],
     "norm_mid_cm": 15.399999999999999,
-    "rel_pct_vs_mid": 4.1,
-    "steps_vs_mid": 2.87,
+    "rel_pct_vs_mid": 3.72,
+    "steps_vs_mid": 2.6,
     "steps_range": [
-     1.94,
-     3.83
+     1.67,
+     3.56
     ],
     "stored_per_axis": 10,
     "norm_verified": false
    },
    "HeadDepth": {
     "measure": "head_length",
-    "r9_cm": 20.8,
+    "r9_cm": 20.82,
     "norm_range_cm": [
      19.5,
      20.0
     ],
     "norm_mid_cm": 19.75,
-    "rel_pct_vs_mid": 5.34,
-    "steps_vs_mid": 3.73,
+    "rel_pct_vs_mid": 5.4,
+    "steps_vs_mid": 3.78,
     "steps_range": [
-     2.81,
-     4.68
+     2.86,
+     4.72
     ],
     "stored_per_axis": 11,
     "norm_verified": false
    },
    "uniform": {
-    "geometric_mean_ratio": 1.0127,
-    "steps": 0.89,
-    "stored": 8,
+    "geometric_mean_ratio": 1.0261,
+    "steps": 1.83,
+    "stored": 9,
     "meaning": "整体头部大小相对常模（三轴几何平均）；用于'网格只保留形状、大小靠参数'的情形（wrap.py 默认 --align similarity）"
    },
-   "cephalic_index_r9": 77.1,
-   "head_circumference_r9_cm": 59.4,
+   "cephalic_index_r9": 76.7,
+   "head_circumference_r9_cm": 59.3,
    "head_circumference_norm_cm": 57.2
   },
   "head_norms": {
@@ -1923,12 +1923,12 @@
    }
   },
   "head_vs_mh_neutral_B": {
-   "HeadLength": -1.59,
-   "HeadWidth": 5.99,
-   "HeadDepth": 0.42,
+   "HeadLength": 1.39,
+   "HeadWidth": 5.72,
+   "HeadDepth": 0.47,
    "uniform": {
-    "geometric_mean_ratio": 1.022,
-    "steps": 1.54,
+    "geometric_mean_ratio": 1.0356,
+    "steps": 2.49,
     "neutral_head_circumference_cm": 57.3,
     "note": "MakeHuman 中性头围与 Bushby 1992 男性均值 57.2 cm 几乎相同，可作'平均大小'的交叉参照"
    }

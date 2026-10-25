@@ -106,13 +106,16 @@ def build_shell_raycast(raycast, centre, fr, hp, step_deg=0.7):
     """High-density shell independent of head topology.
 
     raycast(origins (N,3), dirs (N,3)) -> (hit points (N,3), normals (N,3), ok (N,)) on the scalp.
-    Rays are cast from far outside towards the head centre on a (azimuth, elevation) grid;
+    Rays are cast from far outside towards the head centre on a (lateral, sagittal) angle grid
+    whose poles point at the ears, so it sweeps from below the forehead over the crown to the
+    back of the head without a singular point inside the patch (an azimuth/elevation grid with
+    its pole straight up stops at the vertical and cuts off the back of the patch);
     grid quads whose four corners satisfy inside_patch() become hair, and the boundary is
     closed by a vertical wall (the clipper step)."""
-    az = np.radians(np.arange(-80, 80 + 1e-6, step_deg))
-    el = np.radians(np.arange(-10, 89 + 1e-6, step_deg))
-    A, Ee = np.meshgrid(az, el, indexing="ij")
-    d = np.stack([np.cos(Ee) * np.sin(A), np.sin(Ee), np.cos(Ee) * np.cos(A)], -1).reshape(-1, 3)
+    lat = np.radians(np.arange(-80, 80 + 1e-6, step_deg))      # towards +X (the subject's left)
+    sag = np.radians(np.arange(-10, 200 + 1e-6, step_deg))     # front (+Z) -> top (+Y) -> back (-Z)
+    A, Ee = np.meshgrid(lat, sag, indexing="ij")
+    d = np.stack([np.sin(A), np.cos(A) * np.sin(Ee), np.cos(A) * np.cos(Ee)], -1).reshape(-1, 3)
     origins = centre + d * 3.0
     hit, nrm, ok = raycast(origins, -d)
     ins = ok & inside_patch(hit, fr, hp)

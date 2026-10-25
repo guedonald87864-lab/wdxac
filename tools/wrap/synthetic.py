@@ -46,6 +46,8 @@ CRITERIA = {
     "lod1_surface_to_lod0_p95_mm": 1.5, "landmark_dE00_p95_2048": 5.0, "landmark_dE00_p90_256_astc": 5.0,
     "face_surface_psnr_2048_db": 30.0, "face_surface_psnr_256_astc_db": 30.0,
     "corr_face_mean_mm": 3.0, "corr_face_p95_mm": 6.0,
+    "render_front_face_psnr_2048_db": 30.0, "render_front_face_dE00_mean_2048": 2.0,
+    "render_front_face_psnr_256_astc_db": 30.0,
 }
 
 
@@ -111,6 +113,58 @@ def semantic_error(target_npz, wrap_npz, gt_npz):
     return out
 
 
+def render_space_check(target_npz, wrap_npz, target_tex, donor_texs, out_dir, log_path=None, res=640):
+    """Render HD head and wrapped donor with Blender (tools/wrap/render_compare.py) and compare the
+    images pixel by pixel where both are covered (alpha == 255, 2 px eroded): PSNR and CIEDE2000,
+    over the whole overlap and inside the projected MediaPipe face oval box."""
+    from scipy.ndimage import binary_erosion
+    from PIL import Image
+    cmd = ["blender", "-b", "--factory-startup", "--python", os.path.join(HERE, "render_compare.py"), "--",
+           "--target", target_npz, "--wrap", wrap_npz, "--target-tex", target_tex, "--out-dir", out_dir,
+           "--res", str(res)]
+    for t in donor_texs:
+        cmd += ["--donor-tex", t]
+    sh(cmd, log_path)
+    info = json.load(open(os.path.join(out_dir, "render_compare.json")))
+    out = {}
+    for v, vi in info["views"].items():
+        A = np.asarray(Image.open(os.path.join(out_dir, f"{v}_target.png")), np.float64) / 255
+        for k in range(len(donor_texs)):
+            B = np.asarray(Image.open(os.path.join(out_dir, f"{v}_donor{k}.png")), np.float64) / 255
+            m = binary_erosion((A[..., 3] > 0.999) & (B[..., 3] > 0.999), iterations=2)
+            x0, y0, x1, y1 = (int(round(c)) for c in vi["face_box"])
+            fb = np.zeros_like(m)
+            fb[max(0, y0):y1, max(0, x0):x1] = True
+            for reg, mm in (("overlap", m), ("face_box", m & fb)):
+                a, b = A[..., :3][mm], B[..., :3][mm]
+                de = TT.delta_e2000(TT.srgb_to_lab(a), TT.srgb_to_lab(b))
+                out[f"{v}/{os.path.basename(donor_texs[k])}/{reg}"] = {
+                    "pixels": int(mm.sum()), "psnr_db": TT.psnr(a, b), "dE00_mean": float(de.mean()),
+                    "dE00_p95": float(np.percentile(de, 95)), "frac_dE00_lt5": float((de < 5).mean())}
+    return out
+
+
+def donor_npz_to_glb(npz, glb_path):
+    """Re-express a donor NPZ as a GLB (glTF frame, metres, top-left UVs), one mesh per LOD, same
+    vertex order - to exercise wrap.py's GLB reader / patch writer."""
+    D, m = MD.load_npz(npz)
+    gl = MD.frame_def("gltf")
+    meshes = []
+    for tag, pre in (("lod0", ""), ("lod1", "lod1.")):
+        if pre + "positions" not in D:
+            continue
+        Pb = MD.frame_to_blender(D[pre + "positions"], m["frame"])
+        Nb = MD.dir_frame_to_blender(D[pre + "normals"], m["frame"])
+        F = D[pre + "faces"]
+        if m["frame"]["det"] * gl["det"] < 0:
+            F = F[:, ::-1]
+        uv = MD.uv_from_bottom_left(MD.uv_to_bottom_left(D[pre + "uv0"], m["uv_origin"]), "top-left")
+        meshes.append({"name": tag, "positions": MD.blender_to_frame(Pb, gl), "normals": MD.dir_blender_to_frame(Nb, gl),
+                       "faces": F, "uv0": uv, "joints": D[pre + "joints"], "weights": D[pre + "weights"]})
+    GLB.write_glb(glb_path, meshes)
+    return glb_path
+
+
 def buffer_checks(donor_npz, wrap_npz, report):
     D, dm = MD.load_npz(donor_npz)
     R, rm = MD.load_npz(wrap_npz)
@@ -167,9 +221,17 @@ def run_pipeline(work, blend=None, textures=None, guess=True, glb_check=True, lo
                  "tangents": rep["lod0_buffers"]["tangents"], "nicp_iterations": rep["nicp"]["iterations"],
                  "flip_guarded": rep["nicp"]["flip_guarded_vertices"]}
     S["buffers"] = buffer_checks(donor, wnpz, rep)
+    S["post_write_verification"] = rep["post_write_verification"]
     S["semantic_correspondence_mm"] = semantic_error(tnpz, wnpz, gt_npz)
     cc = trep["consistency_check"]
     S["texture"] = {"bake": trep["bake"], "sizes": trep["sizes"], "check": cc}
+    tex_dir = os.path.join(work, "tex")
+    t = time.time()
+    S["render_space"] = render_space_check(
+        tnpz, wnpz, json.loads(str(np.load(tnpz)["meta"]))["textures"]["r9_head_albedo"],
+        [os.path.join(tex_dir, "donor_albedo_2048.png"), os.path.join(tex_dir, "donor_albedo_256_astc4x4_decoded.png")],
+        os.path.join(work, "render_compare"), logf)
+    S["timings_s"]["render_compare_s"] = round(time.time() - t, 1)
     if glb_check:
         g = GLB.read_glb(rep["outputs"]["glb"])
         S["glb_out"] = {m["name"]: sum(len(p["attributes"]["POSITION"]) for p in m["primitives"]) for m in g["meshes"]}
@@ -186,6 +248,10 @@ def run_pipeline(work, blend=None, textures=None, guess=True, glb_check=True, lo
             "landmark_dE00_p90_256_astc": cc["landmarks_face/albedo_256_astc"]["dE00_p90"],
             "face_surface_psnr_2048_db": cc["face_surface/albedo_2048"]["psnr_db"],
             "face_surface_psnr_256_astc_db": cc["face_surface/albedo_256_astc"]["psnr_db"],
+            "render_front_face_psnr_2048_db": S["render_space"]["front/donor_albedo_2048.png/face_box"]["psnr_db"],
+            "render_front_face_dE00_mean_2048": S["render_space"]["front/donor_albedo_2048.png/face_box"]["dE00_mean"],
+            "render_front_face_psnr_256_astc_db":
+                S["render_space"]["front/donor_albedo_256_astc4x4_decoded.png/face_box"]["psnr_db"],
             "corr_face_mean_mm": S["semantic_correspondence_mm"]["face"]["mean"],
             "corr_face_p95_mm": S["semantic_correspondence_mm"]["face"]["p95"]}
     for k, lim in CRITERIA.items():

@@ -14,9 +14,10 @@ Per donor texel (pixel centre (i+0.5)/N; README §5):
      using the HD head's own UV ("HeadUV");
   5. islands are dilated (--dilate px, push-pull average of covered neighbours), the rest of the
      image is filled with the mean colour so mip-maps never pick up black;
-  6. smaller sizes (256 = game size) come from the full-size bake by coverage-weighted box
-     filtering in linear light (exact integer factors), then their own dilation - never by
-     re-baking at low resolution (which would alias);
+  6. smaller sizes (256 = game size) come from the full-size bake (the LARGEST requested size)
+     by coverage-weighted box filtering in linear light for integer factors (Lanczos on the
+     dilated image otherwise), then their own dilation - never by re-baking at low resolution
+     (which would alias);
   7. every size is pushed through ASTC (tools/native/astc_tool.py, ARM astcenc) and decoded back:
      the decoded PNG is the preview of what the game would show; PSNR vs. the uncompressed bake.
 Normal maps (optional): the HD map (tangent space of our HeadUV, OpenGL +Y) is decoded to object
@@ -123,8 +124,9 @@ def bilinear(img, uv):
             + (img[yb, xa] * (1 - fx) + img[yb, xb] * fx) * fy)
 
 
-def rasterise(uv_tris, size):
-    """uv_tris (T,3,2) bottom-left. Returns pixel ids (k,) flat, tri (k,), bary (k,3)."""
+def rasterise(uv_tris, size, keep_all=False):
+    """uv_tris (T,3,2) bottom-left. Returns pixel ids (k,) flat, tri (k,), bary (k,3); one entry per
+    texel (last writer wins) unless keep_all (then every (texel, triangle) hit, for overlap checks)."""
     P = np.stack([uv_tris[..., 0] * size - 0.5, (1 - uv_tris[..., 1]) * size - 0.5], -1)   # pixel coords
     lo = np.clip(np.floor(P.min(1)).astype(int), 0, size - 1)
     hi = np.clip(np.ceil(P.max(1)).astype(int), 0, size - 1)
@@ -147,6 +149,8 @@ def rasterise(uv_tris, size):
     pix = np.concatenate(pix)
     tri = np.concatenate(tri)
     bary = np.concatenate(bary)
+    if keep_all:
+        return pix, tri, bary
     # overlapping islands: keep the last writer (deterministic)
     _, last = np.unique(pix[::-1], return_index=True)
     keep = len(pix) - 1 - last
@@ -273,10 +277,35 @@ class HDSource:
         return (self.uv[tri] * bary[:, :, None]).sum(1)
 
 
+def uv_overlap(pix, tri, bary, Vw, F, overlap_mm=2.0):
+    """Texels written by triangles whose 3D points are more than overlap_mm apart = overlapping UV
+    islands (mirrored / shared UVs, or a sub-mesh laid over the skin's texture space): such a
+    texel can hold only one of the surface points. Returns (stats, last-writer selection)."""
+    order = np.argsort(pix, kind="stable")
+    p, t, b = pix[order], tri[order], bary[order]
+    P = (Vw[F[t]] * b[:, :, None]).sum(1)
+    start = np.r_[True, p[1:] != p[:-1]]
+    gid = np.cumsum(start) - 1
+    n = int(gid[-1]) + 1 if len(gid) else 0
+    lo = np.full((n, 3), np.inf)
+    hi = np.full((n, 3), -np.inf)
+    np.minimum.at(lo, gid, P)
+    np.maximum.at(hi, gid, P)
+    spread = np.linalg.norm(hi - lo, axis=1)
+    bad = spread > overlap_mm / 1000
+    last = np.r_[start[1:], True]                     # last entry of every texel group = last writer
+    stats = {"texels": n, "conflicting_texels": int(bad.sum()), "conflict_fraction": float(bad.mean()) if n else 0.0,
+             "threshold_mm": overlap_mm}
+    return stats, order[last], bad
+
+
 def bake(src, Vw, Nw, F, uv_bl, size, ray_m, albedo_lin=None, normal_map=None, Tw=None, chunk=400000):
     """Returns dict(cov, albedo_lin (size,size,3), normal (size,size,3) or None, stats)."""
     t0 = time.time()
-    pix, tri, bary = rasterise(uv_bl[F] if uv_bl.ndim == 2 else uv_bl, size)
+    uv_tris = uv_bl[F] if uv_bl.ndim == 2 else uv_bl
+    pa, ta, ba = rasterise(uv_tris, size, keep_all=True)
+    ov, sel, conflict = uv_overlap(pa, ta, ba, Vw, F)
+    pix, tri, bary = pa[sel], ta[sel], ba[sel]
     out_a = np.zeros((size * size, 3))
     out_n = np.zeros((size * size, 3)) if normal_map is not None else None
     hits, dists = np.zeros(len(pix), bool), np.zeros(len(pix))
@@ -311,7 +340,7 @@ def bake(src, Vw, Nw, F, uv_bl, size, ray_m, albedo_lin=None, normal_map=None, T
             out_n[pix[s:s + chunk]] = enc * 0.5 + 0.5
     cov = np.zeros(size * size, bool)
     cov[pix] = True
-    st = {"size": size, "covered_texels": int(len(pix)), "coverage": float(len(pix) / size ** 2),
+    st = {"size": size, "covered_texels": int(len(pix)), "coverage": float(len(pix) / size ** 2), "uv_overlap": ov,
           "ray_hit_fraction": float(hits.mean()), "closest_point_fallback_fraction": float((~hits).mean()),
           "source_distance_mm": G.stats_mm(dists), "seconds": round(time.time() - t0, 2)}
     return {"cov": cov.reshape(size, size), "albedo": out_a.reshape(size, size, 3),
@@ -374,6 +403,13 @@ def run(a):
         uv_bl = MD.uv_to_bottom_left(R[f"{tag}.uv0"], rmeta["uv_origin"])
     else:
         uv_bl = MD.uv_to_bottom_left(R[f"{tag}.uv_corner"], rmeta["uv_origin"])
+    sub = R.get(f"{tag}.submesh")
+    keep_t = np.ones(len(F), bool)
+    if sub is not None and sub.any() and not a.bake_submeshes:
+        keep_t = ~sub[F].any(1)             # eyeballs / teeth / cards use their own textures: never baked
+        log(f"skipping {int((~keep_t).sum())} sub-mesh triangles (--bake-submeshes to include them)")
+    bake_F = F[keep_t]
+    uv_b = uv_bl if uv_bl.ndim == 2 else uv_bl[keep_t]
     src = HDSource(a.target)
     tex = src.meta.get("textures", {})
     alb_path = a.albedo or tex.get("r9_head_albedo")
@@ -393,27 +429,43 @@ def run(a):
     sizes = [int(s) for s in a.sizes.split(",")]
     big = max(sizes)
     log(f"baking {big}px from {alb_path}" + (f" + normal {nrm_path}" if nrm_map is not None else ""))
-    b = bake(src, Vw, Nw, F, uv_bl, big, a.ray_mm / 1000, alb, nrm_map, Tw)
+    b = bake(src, Vw, Nw, bake_F, uv_b, big, a.ray_mm / 1000, alb, nrm_map, Tw)
+    if b["stats"]["uv_overlap"]["conflict_fraction"] > 0.001:
+        log("WARNING: overlapping UV islands:", json.dumps(b["stats"]["uv_overlap"]))
     log("bake stats", json.dumps(b["stats"]))
     rep = {"inputs": {"wrap": os.path.abspath(a.wrap), "target": os.path.abspath(a.target), "albedo": alb_path,
-                      "normal": nrm_path if nrm_map is not None else None, "lod": tag},
+                      "normal": nrm_path if nrm_map is not None else None, "lod": tag,
+                      "skipped_submesh_triangles": int((~keep_t).sum())},
            "bake": b["stats"], "sizes": {}}
     maps_for_check = {}
     for size in sorted(sizes, reverse=True):
         f = big // size
+        cp = b["cov"]
         if size == big:
-            lin, cov = b["albedo"], b["cov"]
-            nrm, ncov = b["normal"], b["cov"]
+            lin, cov = b["albedo"], cp
+            nrm, ncov = b["normal"], cp
         elif big % size == 0:
-            lin, cov = box_down(b["albedo"], b["cov"], f)
+            lin, cov = box_down(b["albedo"], cp, f)
             nrm = None
             if b["normal"] is not None:
-                nl, _ = box_down(b["normal"] * 2 - 1, b["cov"], f)
+                nl, _ = box_down(b["normal"] * 2 - 1, cp, f)
                 nl /= np.maximum(np.linalg.norm(nl, axis=2, keepdims=True), 1e-30)
                 nrm = nl * 0.5 + 0.5
             ncov = cov
-        else:
-            raise SystemExit(f"size {size} must divide {big}")
+        else:                                         # non-integer factor: Lanczos in linear light
+            def lanczos(img, sz):
+                return np.stack([np.asarray(Image.fromarray(img[..., c].astype(np.float32), "F").resize(
+                    (sz, sz), Image.Resampling.LANCZOS)) for c in range(img.shape[2])], 2).astype(np.float64)
+            full = dilate(b["albedo"], cp, max(2, a.dilate))
+            lin = np.clip(lanczos(full, size), 0, None)
+            cov = np.asarray(Image.fromarray(cp.astype(np.float32), "F").resize(
+                (size, size), Image.Resampling.BOX)) > 0.5
+            nrm = None
+            if b["normal"] is not None:
+                nl = lanczos(dilate(b["normal"], cp, max(2, a.dilate)) * 2 - 1, size)
+                nl /= np.maximum(np.linalg.norm(nl, axis=2, keepdims=True), 1e-30)
+                nrm = nl * 0.5 + 0.5
+            ncov = cov
         dil = max(2, int(round(a.dilate * size / 2048)))
         lin_d = dilate(lin, cov, dil)
         srgb = lin_to_srgb(lin_d)
@@ -437,7 +489,7 @@ def run(a):
         rep["sizes"][str(size)] = entry
         log(f"{size}px: astc {a.block} psnr {ainfo['psnr_db_vs_uncompressed']:.2f} dB -> {p}")
     if a.check:
-        rep["consistency_check"] = consistency_check(src, Vw, F, uv_bl, maps_for_check, alb)
+        rep["consistency_check"] = consistency_check(src, Vw, bake_F, uv_b, maps_for_check, alb)
         for k, v in rep["consistency_check"].items():
             log(f"check {k}: PSNR {v['psnr_db']:.2f} dB, dE00 mean {v['dE00_mean']:.2f} p95 {v['dE00_p95']:.2f}")
     rep["seconds"] = round(time.time() - t0, 1)
@@ -459,6 +511,8 @@ def build_argparser():
     ap.add_argument("--ray-mm", type=float, default=3.0)
     ap.add_argument("--dilate", type=int, default=16, help="edge-extension passes at 2048 px (scaled with size); push-pull fills the rest")
     ap.add_argument("--no-check", dest="check", action="store_false")
+    ap.add_argument("--bake-submeshes", action="store_true",
+                    help="also bake the donor's sub-mesh triangles (eyeballs, teeth ...) - normally they use other textures")
     ap.add_argument("--prefix", default="donor")
     ap.add_argument("--out-dir", required=True)
     return ap

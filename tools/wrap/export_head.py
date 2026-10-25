@@ -2,7 +2,7 @@
 
   blender -b <r9>.blend --python tools/wrap/export_head.py -- --out head.npz [--glb head.glb] \
       [--frame blender|gltf|ue|ue_yfwd | --axes '-y,-x,z' --scale 100] \
-      [--parts R9_Head,R9_Eyes,R9_Teeth,R9_Hair] [--textures <dir with r9_head_albedo.png ...>] \
+      [--parts R9_Head,R9_Eyes,R9_Hair] [--textures <dir with r9_head_albedo.png ...>] \
       [--corr model/source/face_corr_mediapipe478.json]
 
 NPZ layout (all positions in the requested frame, see tools/wrap/meshdata.py; README.md §2):
@@ -47,7 +47,7 @@ ap.add_argument("--glb")
 ap.add_argument("--frame", default="blender")
 ap.add_argument("--axes")
 ap.add_argument("--scale", type=float)
-ap.add_argument("--parts", default="R9_Head,R9_Eyes,R9_Teeth,R9_Hair")
+ap.add_argument("--parts", default="R9_Head,R9_Eyes,R9_Hair")   # missing objects are skipped
 ap.add_argument("--head", default="R9_Head")
 ap.add_argument("--head-uv", default="HeadUV")
 ap.add_argument("--textures", default="")

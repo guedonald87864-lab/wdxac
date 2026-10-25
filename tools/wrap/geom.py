@@ -85,6 +85,27 @@ def loop_length(V, loop):
     return float(np.linalg.norm(V[loop] - V[np.roll(loop, -1)], axis=1).sum())
 
 
+def drop_duplicate_triangles(F):
+    """Remove triangles that repeat the vertex set of an earlier one (double-sided cards / decals
+    of a GPU buffer collapse to such pairs after welding: same 3 positions, opposite winding).
+    Returns (F without duplicates, number removed)."""
+    key = np.sort(F, axis=1)
+    _, first = np.unique(key, axis=0, return_index=True)
+    keep = np.zeros(len(F), bool)
+    keep[first] = True
+    return F[keep], int((~keep).sum())
+
+
+def components(F, n):
+    """Connected components of a triangle mesh over its n vertices -> (count, label (n,))."""
+    A, _ = vertex_adjacency(F, n)
+    return connected_components(A, directed=False)
+
+
+def triangle_areas(V, F):
+    return 0.5 * np.linalg.norm(np.cross(V[F[:, 1]] - V[F[:, 0]], V[F[:, 2]] - V[F[:, 0]]), axis=1)
+
+
 def vertex_adjacency(F, n):
     ue, _ = edges_with_count(F)
     A = sparse.coo_matrix((np.ones(len(ue)), (ue[:, 0], ue[:, 1])), shape=(n, n))
@@ -355,8 +376,22 @@ def stats_mm(d, scale=1000.0):
             "p95": float(np.percentile(d, 95)), "max": float(d.max())}
 
 
-def umeyama(src, dst, w=None, scale=True):
-    """Weighted similarity (s, R, t) minimising sum w |s R src + t - dst|^2 (no reflection)."""
+def axis_rotations():
+    """The 24 proper rotations that map coordinate axes onto signed coordinate axes."""
+    import itertools
+    out = []
+    for perm in itertools.permutations(range(3)):
+        for sg in itertools.product((1, -1), repeat=3):
+            R = np.zeros((3, 3))
+            R[range(3), perm] = sg
+            if np.linalg.det(R) > 0:
+                out.append(R)
+    return out
+
+
+def umeyama(src, dst, w=None, scale=True, allow_reflection=False):
+    """Weighted similarity (s, R, t) minimising sum w |s R src + t - dst|^2. R is a proper
+    rotation unless allow_reflection (then det R may be -1: used only to DIAGNOSE a mirrored donor)."""
     src, dst = np.asarray(src, float), np.asarray(dst, float)
     w = np.ones(len(src)) if w is None else np.asarray(w, float)
     w = w / w.sum()
@@ -364,7 +399,7 @@ def umeyama(src, dst, w=None, scale=True):
     xs, xd = src - ms, dst - md
     S = (xd * w[:, None]).T @ xs
     U, sig, Vt = np.linalg.svd(S)
-    d = np.sign(np.linalg.det(U @ Vt))
+    d = 1.0 if allow_reflection else np.sign(np.linalg.det(U @ Vt))
     Dm = np.diag([1, 1, d])
     R = U @ Dm @ Vt
     var = (w * (xs ** 2).sum(1)).sum()

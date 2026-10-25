@@ -3,9 +3,9 @@
 vertex budgets + 256 px ASTC textures, rendered with the same views/lights as the HD model.
 
   python3 tools/wrap/game_precision.py --blend r9.blend --textures TEXDIR --out-dir OUT \
-      [--lod0-verts 5376 --lod1-verts 1338] [--parts R9_Head,R9_Eyes,R9_Teeth] \
+      [--lod0-verts 5376 --lod1-verts 1338] [--parts R9_Head,R9_Eyes] \
       [--hair-lod0 1600 --hair-lod1 400] [--tex-size 256] [--block 4x4|6x6] \
-      [--views head_front,head_l45,head_lprof,head_back] [--res 600] [--samples 24] [--no-render]
+      [--views <blender_render.py views>] [--res 600] [--samples 24] [--no-render] [--target-npz head.npz]
 
 Defaults mimic the Henry donor (LOD0 5,376 / LOD1 1,338 GPU vertices, 256 px ASTC face texture).
 The budget counts GPU vertices (split at UV seams) summed over --parts; the hair shell has its own
@@ -25,7 +25,6 @@ production asset with a re-baked normal map would.
 import argparse
 import json
 import os
-import shutil
 import subprocess
 import sys
 import time
@@ -108,7 +107,9 @@ def main():
     ap.add_argument("--blend", required=True)
     ap.add_argument("--textures", required=True)
     ap.add_argument("--out-dir", required=True)
-    ap.add_argument("--parts", default="R9_Head,R9_Eyes,R9_Teeth")
+    # teeth/tongue are left out: the HD procedural teeth (2 x 6,832 verts) would eat the head's budget,
+    # and in game the mouth interior comes from the donor head
+    ap.add_argument("--parts", default="R9_Head,R9_Eyes")
     ap.add_argument("--lod0-verts", type=int, default=5376)
     ap.add_argument("--lod1-verts", type=int, default=1338)
     ap.add_argument("--hair", default="R9_Hair")
@@ -117,10 +118,11 @@ def main():
     ap.add_argument("--tex-size", type=int, default=256)
     ap.add_argument("--block", default="4x4")
     ap.add_argument("--quality", default="-medium")
-    ap.add_argument("--views", default="head_front,head_l45,head_lprof,head_back")
+    ap.add_argument("--views", default="head_front,head_l45,head_r45,head_lprof,head_rprof,head_back,head_top")
     ap.add_argument("--res", type=int, default=600)
     ap.add_argument("--samples", type=int, default=24)
     ap.add_argument("--no-render", action="store_true")
+    ap.add_argument("--target-npz", help="export_head.py NPZ of the same head: adds face-crop PSNR for the head maps")
     a = ap.parse_args()
     t0 = time.time()
     os.makedirs(a.out_dir, exist_ok=True)
@@ -143,6 +145,16 @@ def main():
     os.makedirs(tex_plain, exist_ok=True)
     rep["textures"] = {}
     bx, by = (int(x) for x in a.block.split("x"))
+    face_box = None
+    if a.target_npz:                    # UV bounding box of the 'face' region of the head (HeadUV)
+        import features as FT
+        import meshdata as MD
+        A, meta = MD.load_npz(a.target_npz)
+        face = A["head.region"] == FT.REGION_ID["face"]
+        tri = face[A["head.faces"]].all(1)
+        uv = A[f"head.uv.{meta.get('head_uv', 'HeadUV')}"][tri].reshape(-1, 2)
+        face_box = (uv.min(0), uv.max(0))
+        rep["face_uv_box"] = [float(x) for x in np.concatenate(face_box)]
     for fn in sorted(os.listdir(a.textures)):
         if not fn.endswith(".png"):
             continue
@@ -163,6 +175,15 @@ def main():
                                "astc_block": a.block, "astc_bytes": len(raw),
                                "psnr_astc_vs_256_db": psnr(da[..., :nc], small[..., :nc]),
                                "psnr_game_upsampled_vs_hd_db": psnr(up[..., :nc], full[..., :nc])}
+        if face_box is not None and fn.startswith("r9_head"):
+            Hh, Wh = full.shape[:2]
+            (u0, v0), (u1, v1) = face_box
+            ys = slice(int((1 - v1) * Hh), int(np.ceil((1 - v0) * Hh)))
+            xs = slice(int(u0 * Wh), int(np.ceil(u1 * Wh)))
+            rep["textures"][fn]["psnr_game_upsampled_vs_hd_face_crop_db"] = psnr(up[ys, xs, :nc], full[ys, xs, :nc])
+            rep["textures"][fn]["face_crop_px_hd"] = [xs.stop - xs.start, ys.stop - ys.start]
+            rep["textures"][fn]["face_crop_px_game"] = [int((xs.stop - xs.start) * a.tex_size / Wh),
+                                                        int((ys.stop - ys.start) * a.tex_size / Hh)]
         log(f"{fn}: {k}, ASTC {a.block} PSNR {rep['textures'][fn]['psnr_astc_vs_256_db']:.2f} dB, "
             f"256->HD PSNR {rep['textures'][fn]['psnr_game_upsampled_vs_hd_db']:.2f} dB")
     # eye texture: materials.py falls back to MakeHuman's brown_eye.png (RGBA: the cornea region is

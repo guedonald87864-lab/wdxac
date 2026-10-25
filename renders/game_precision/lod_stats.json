@@ -1,0 +1,92 @@
+{
+ "source_blend": "/home/user/wdxac/model/source/r9_2002.blend",
+ "groups": [
+  {
+   "lod": 0,
+   "objects": "R9_Head,R9_Eyes",
+   "budget_gpu_verts": 5376,
+   "ratio": 1.0,
+   "gpu_verts": 5330,
+   "per_object": {
+    "R9_Head": {
+     "verts": 4225,
+     "gpu_verts": 4254,
+     "tris": 8400
+    },
+    "R9_Eyes": {
+     "verts": 1064,
+     "gpu_verts": 1076,
+     "tris": 2040
+    }
+   },
+   "under_budget_kept": true
+  },
+  {
+   "lod": 0,
+   "objects": "R9_Hair",
+   "budget_gpu_verts": 1600,
+   "ratio": 0.279296875,
+   "gpu_verts": 1592,
+   "per_object": {
+    "R9_Hair": {
+     "verts": 6352,
+     "gpu_verts": 1592,
+     "tris": 2946
+    }
+   },
+   "under_budget_kept": false
+  },
+  {
+   "lod": 1,
+   "objects": "R9_Head,R9_Eyes",
+   "budget_gpu_verts": 1338,
+   "ratio": 0.2392578125,
+   "gpu_verts": 1336,
+   "per_object": {
+    "R9_Head": {
+     "verts": 1023,
+     "gpu_verts": 1046,
+     "tris": 2006
+    },
+    "R9_Eyes": {
+     "verts": 287,
+     "gpu_verts": 290,
+     "tris": 488
+    }
+   },
+   "under_budget_kept": false
+  },
+  {
+   "lod": 1,
+   "objects": "R9_Hair",
+   "budget_gpu_verts": 400,
+   "ratio": 0.059814453125,
+   "gpu_verts": 400,
+   "per_object": {
+    "R9_Hair": {
+     "verts": 5160,
+     "gpu_verts": 400,
+     "tris": 631
+    }
+   },
+   "under_budget_kept": false
+  }
+ ],
+ "hd": {
+  "R9_Head": {
+   "verts": 4225,
+   "gpu_verts": 4254,
+   "tris": 8400
+  },
+  "R9_Eyes": {
+   "verts": 1064,
+   "gpu_verts": 1076,
+   "tris": 2040
+  },
+  "R9_Hair": {
+   "verts": 10208,
+   "gpu_verts": 5448,
+   "tris": 10550
+  }
+ }
+}

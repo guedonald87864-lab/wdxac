@@ -56,12 +56,19 @@ IDENTITY = ["nose-scale", "nose-nostrils-width", "nose-point-width", "nose-width
             "head-fat", "head-angle"]
 
 
+# Sideways shifts of midline features (pure X translations). A symmetric fit must not use them:
+# they absorb detector/pose asymmetry and leave the nose or mouth off the face's midline.
+LATERAL_MIDLINE = ("nose/nose-trans-in|out", "mouth/mouth-trans-in|out")
+
+
 def variables(asym=False, groups=FACE_GROUPS, exclude=(), include=None):
     """List of (var_name, [(modifier_name, sign)]) — sign=+1 incr side, -1 decr side, 0 single target."""
     tab = E.modifier_table()
     out, seen = [], set()
     for name, (group, target, lo, hi) in sorted(tab.items()):
         if group not in groups or any(x in name for x in exclude):
+            continue
+        if not asym and name in LATERAL_MIDLINE:
             continue
         if include is not None and not any(x in name for x in include):
             continue

@@ -366,6 +366,7 @@ meta = {"format": "wrapmesh-donor/1", "frame": FD, "uv_origin": "top-left", "bon
         "decimate_ratio": [r0, r1]}
 MD.save_npz(os.path.join(args.out, "donor.npz"), arrays, meta)
 json.dump({"features": {k: feat_ids[k] for k in FT.BASIC + list(FT.EXTRA_MP)},
+           "feature_points": {k: place(np.asarray(pts[k])[None])[0].tolist() for k in FT.BASIC + list(FT.EXTRA_MP)},
            "snap_error_mm": feat_err_mm, "note": "ground truth from the MakeHuman source surface; ids index donor.npz LOD0"},
           open(os.path.join(args.out, "donor_features_gt.json"), "w"), indent=1)
 src.data.calc_loop_triangles()
