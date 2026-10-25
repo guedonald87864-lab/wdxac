@@ -31,6 +31,9 @@ EXTRA_MP = {
     "mp:172": "jaw angle R", "mp:397": "jaw angle L",
 }
 
+# extras the geometric guesser (wrap.guess_features) finds reliably on the synthetic test
+GUESS_EXTRA = ["mp:13", "mp:14", "mp:2", "mp:168", "mp:10", "mp:98", "mp:327"]
+
 # MediaPipe FaceMesh contours (same lists as tools/model/texture_build.py)
 EYE_R = [33, 246, 161, 160, 159, 158, 157, 173, 133, 155, 154, 153, 145, 144, 163, 7]
 EYE_L = [263, 466, 388, 387, 386, 385, 384, 398, 362, 382, 381, 380, 374, 373, 390, 249]

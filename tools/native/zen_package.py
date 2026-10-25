@@ -608,6 +608,7 @@ class ExportInfo:
     abs_end: int = -1
     bundle: int = -1
     legacy_offset: int = -1   # offset of this export in the legacy .uasset+.uexp coordinate system
+    name_ref: tuple = (-1, 0)  # ObjectName FMappedName (index into the package name map, number)
 
     @property
     def legacy_to_chunk_delta(self):
@@ -875,7 +876,8 @@ def _build_exports(raw_exports, names, script_objects, layout, imported_pkg_name
             class_name=_resolve_class(cls, export_names, script_objects, imported_pkg_names, imported_hashes, layout),
             outer_index=outer, super_index=sup, template_index=tmpl,
             global_import_index_or_hash=gidx, object_flags=flags, filter_flags=filt,
-            cooked_serial_offset=off, cooked_serial_size=size))
+            cooked_serial_offset=off, cooked_serial_size=size,
+            name_ref=(name.index, name.number) if name.kind == "Package" else (-1, 0)))
     return out
 
 
@@ -1207,6 +1209,283 @@ def parse_package(data: bytes, script_objects: ScriptObjects | None = None, layo
         best.warnings.append("other layouts also parsed: " + ", ".join(p.layout for p in ok[1:]))
     best.evidence.append(f"rejected layouts: {len(errors)}")
     return best
+
+
+# --------------------------------------------------------------------------------------------
+# Renaming a UE4.26/4.27 package (used by ``iostore.py clone-package``)
+# --------------------------------------------------------------------------------------------
+# FPackageSummary field offsets (CUE4Parse FPackageSummary.cs; see parse_legacy).
+_SUM_NAMES_SIZE = 28
+_SUM_HASHES_OFF = 32
+_SUM_HASHES_SIZE = 36
+_SUM_SHIFTED = (40, 44, 48, 52)   # ImportMapOffset, ExportMapOffset, ExportBundlesOffset, GraphDataOffset
+_EXPORT_GLOBAL_IMPORT_OFF = 56    # FExportMapEntry: 8+8+8 + Outer/Class/Super/Template (4 x 8) -> GlobalImportIndex
+_SUMMARY_FIELD_NAMES = ["Name", "SourceName", "PackageFlags", "CookedHeaderSize", "NameMapNamesOffset",
+                        "NameMapNamesSize", "NameMapHashesOffset", "NameMapHashesSize", "ImportMapOffset",
+                        "ExportMapOffset", "ExportBundlesOffset", "GraphDataOffset", "GraphDataSize", "Pad"]
+
+
+class RenameError(ValueError):
+    """The package cannot be renamed safely (layout not understood, formula not confirmed, ...)."""
+
+
+def lower_ascii(text: str) -> str:
+    """UE4 FChar::ToLower / CUE4Parse FPackageId.ToLower / retoc to_ascii_lowercase: only A-Z."""
+    return "".join(c.lower() if "A" <= c <= "Z" else c for c in text)
+
+
+def package_id_from_name(package_name: str) -> int:
+    """FPackageId::FromName: CityHash64 of the UTF-16LE bytes of the name with ASCII letters
+    lower-cased (CUE4Parse ``FPackageId.FromName``, retoc ``lib.rs`` ``FPackageId::from_name``).
+    The same rule is used by every UE version CUE4Parse supports, UE4.26 included."""
+    return cityhash64(lower_ascii(package_name).encode("utf-16-le"))
+
+
+def legacy_export_object_paths(pkg: ZenPackage, package_name: str, names: list | None = None) -> list:
+    """Full object path of every export of a 4.26/4.27 package, e.g. ``/Game/P.Asset`` or
+    ``/Game/P.Asset:Sub``; ``None`` when the outer chain leaves the package (outer is an import).
+    ``names`` overrides the name map used for the object names (to compute paths after renames).
+    Only the segment boundaries matter for ``object_path_hash`` ('.' and ':' both become '/')."""
+    names = pkg.names if names is None else names
+    n = len(pkg.exports)
+    obj_names = []
+    for e in pkg.exports:
+        idx, number = e.name_ref
+        obj_names.append(format_fname(names[idx], number) if 0 <= idx < len(names) else None)
+    paths: list = [None] * n
+
+    def path_of(i, depth=0):
+        if paths[i] is not None:
+            return paths[i]
+        if depth > n or obj_names[i] is None:
+            return None
+        e = pkg.exports[i]
+        kind = obj_index_kind(e.outer_index)
+        if kind == "Null":
+            paths[i] = f"{package_name}.{obj_names[i]}"
+        elif kind == "Export":
+            parent = e.outer_index & 0xFFFFFFFF
+            if parent >= n or parent == i:
+                return None
+            pp = path_of(parent, depth + 1)
+            if pp is None:
+                return None
+            # UE GetPathName: ':' after a top-level object, '.' elsewhere (irrelevant for the hash)
+            paths[i] = f"{pp}:{obj_names[i]}" if ":" not in pp else f"{pp}.{obj_names[i]}"
+        return paths[i]
+
+    for i in range(n):
+        path_of(i)
+    return paths
+
+
+def legacy_public_export_index_map(pkg: ZenPackage, old_name: str, new_name: str, new_names: list | None = None) -> dict:
+    """{old GlobalImportIndex: new GlobalImportIndex} for the public exports of ``pkg`` when the
+    package ``old_name`` becomes ``new_name``. Raises RenameError unless every stored non-null
+    GlobalImportIndex equals the recomputed hash of its old object path (the formula is taken from
+    retoc ``zen_asset_conversion.rs`` build_zen_export_map: PackageImport(hash(full export path)))."""
+    old_paths = legacy_export_object_paths(pkg, old_name)
+    new_paths = legacy_export_object_paths(pkg, new_name, new_names if new_names is not None else pkg.names)
+    out, bad = {}, []
+    for e in pkg.exports:
+        g = e.global_import_index_or_hash
+        if g == NULL_OBJECT_INDEX:
+            continue
+        op, np_ = old_paths[e.index], new_paths[e.index]
+        if op is None or np_ is None or legacy_package_import_index(op) != g:
+            bad.append({"export": e.index, "name": e.object_name, "stored": f"0x{g:016X}",
+                        "recomputed_from": op,
+                        "recomputed": f"0x{legacy_package_import_index(op):016X}" if op else None})
+            continue
+        out[g] = legacy_package_import_index(np_)
+    if bad:
+        raise RenameError("GlobalImportIndex of public exports does not equal PackageImport(CityHash64(lower "
+                          "object path)) for this package, so the new values cannot be derived safely: "
+                          + json.dumps(bad[:4]))
+    return out
+
+
+def rename_legacy_package(data: bytes, new_name: str, *, old_name: str | None = None,
+                          import_index_map: dict | None = None, package_id_map: dict | None = None,
+                          name_renames: dict | None = None) -> tuple:
+    """Rename a UE4.26/4.27 Zen package (the ExportBundleData chunk) to ``new_name``.
+
+    Returns ``(new_bytes, report)``. Exactly these things change (everything else is copied byte
+    for byte and checked afterwards):
+
+    1. Name map: the entry that ``FPackageSummary.Name`` points at (the package name) becomes
+       ``new_name``; ``SourceName`` too when it points at an entry with the same text. Optional
+       ``name_renames`` {old text: new text} rename further entries (e.g. the main export's object
+       name). The name batch and its CityHash64 hash table are re-encoded, which changes
+       ``NameMapNamesSize`` and ``NameMapHashesSize``.
+    2. Every section after the name map moves by the same byte delta, so ``NameMapHashesOffset``,
+       ``ImportMapOffset``, ``ExportMapOffset``, ``ExportBundlesOffset`` and ``GraphDataOffset`` are
+       shifted. ``PackageFlags``, ``CookedHeaderSize``, ``GraphDataSize``, ``Pad`` and the
+       ``Name``/``SourceName`` FMappedName values are unchanged.
+    3. ``FExportMapEntry.GlobalImportIndex`` of every public export is recomputed from the new
+       object path (it is a hash of ``/package/path.Object``; see legacy_public_export_index_map).
+       ``CookedSerialOffset``/``CookedSerialSize`` (legacy .uasset+.uexp coordinates) are unchanged:
+       the export bytes do not move relative to each other, so offsets inside exports stay valid.
+    4. Import map entries found in ``import_index_map`` (GlobalImportIndex of exports of other
+       packages that are renamed together with this one) are replaced.
+    5. Graph data: imported FPackageIds found in ``package_id_map`` are replaced (arcs unchanged).
+
+    The serialized export data is not modified. Refuses (RenameError) when the package is not in
+    the canonical layout this function understands (name map at offset 64, hashes 8-aligned right
+    after it, import map right after the hashes, name batch re-encodes byte-identically)."""
+    try:
+        pkg = parse_legacy(data)
+    except ZenFormatError as e:
+        raise RenameError(f"not a UE4.26/4.27 Zen package this tool can parse: {e}") from None
+    import_index_map = dict(import_index_map or {})
+    package_id_map = dict(package_id_map or {})
+    name_renames = dict(name_renames or {})
+    s = pkg.summary
+    name_mn = MappedName(*struct.unpack_from("<II", data, 0))
+    src_mn = MappedName(*struct.unpack_from("<II", data, 8))
+    if name_mn.kind != "Package" or name_mn.number != 0 or name_mn.index >= len(pkg.names):
+        raise RenameError(f"FPackageSummary.Name is {name_mn} (expected a package-local name, number 0)")
+    old = pkg.names[name_mn.index]
+    if old_name is not None and lower_ascii(old) != lower_ascii(old_name):
+        raise RenameError(f"package header names {old!r}, not {old_name!r}")
+    if not new_name or not new_name.startswith("/") or new_name.endswith("/"):
+        raise RenameError(f"new package name {new_name!r} must look like /Root/Path/Name")
+    warnings = list(pkg.warnings)
+
+    # --- canonical-layout guards -------------------------------------------------------------
+    no, ns = s["NameMapNamesOffset"], s["NameMapNamesSize"]
+    ho, hs = s["NameMapHashesOffset"], s["NameMapHashesSize"]
+    if no != LEGACY_SUMMARY_SIZE:
+        raise RenameError(f"NameMapNamesOffset {no} != {LEGACY_SUMMARY_SIZE}")
+    if ho != no + ns + ((-(no + ns)) % 8) or any(data[no + ns:ho]):
+        raise RenameError("name hashes do not follow the names at the next 8-byte boundary with zero padding")
+    if s["ImportMapOffset"] != ho + hs:
+        raise RenameError("import map does not directly follow the name hashes")
+    nb, hb = write_name_batch_legacy(pkg.names)
+    if nb != data[no:no + ns] or hb != data[ho:ho + hs]:
+        raise RenameError("the name map does not re-encode byte-identically (unknown name encoding); refusing")
+
+    # --- new name list -----------------------------------------------------------------------
+    new_names = list(pkg.names)
+    changed_names = {}
+    new_names[name_mn.index] = new_name
+    changed_names[name_mn.index] = (old, new_name)
+    if src_mn.kind == "Package" and src_mn.index != name_mn.index and src_mn.index < len(pkg.names):
+        if lower_ascii(pkg.names[src_mn.index]) == lower_ascii(old):
+            new_names[src_mn.index] = new_name
+            changed_names[src_mn.index] = (pkg.names[src_mn.index], new_name)
+        else:
+            warnings.append(f"SourceName ({pkg.names[src_mn.index]!r}) differs from Name (localized package?); "
+                            "left unchanged")
+    for o, n in name_renames.items():
+        hits = [i for i, x in enumerate(pkg.names) if x == o]
+        if not hits:
+            raise RenameError(f"name {o!r} (from --rename-name) is not in the name map of {old}")
+        for i in hits:
+            if i in changed_names:
+                raise RenameError(f"name {o!r} is the package name entry; use the package rename instead")
+            new_names[i] = n
+            changed_names[i] = (o, n)
+    if len(set(new_names)) != len(new_names):
+        dup = sorted({x for x in new_names if new_names.count(x) > 1})
+        raise RenameError(f"renaming would create duplicate name map entries {dup[:4]} (the new name is "
+                          f"already used inside the package)")
+    mentions = [x for i, x in enumerate(pkg.names)
+                if i not in changed_names and lower_ascii(old) in lower_ascii(x)]
+
+    # --- export GlobalImportIndex ------------------------------------------------------------
+    gidx_map = legacy_public_export_index_map(pkg, old, new_name, new_names)
+
+    # --- assemble ------------------------------------------------------------------------------
+    nb2, hb2 = write_name_batch_legacy(new_names)
+    hb2 = data[ho:ho + 8] + hb2[8:]  # keep the stored algorithm id (parse_legacy checked it)
+    new_ho = no + len(nb2) + ((-(no + len(nb2))) % 8)
+    new_io = new_ho + len(hb2)
+    shift = new_io - s["ImportMapOffset"]
+    body = bytearray(data[s["ImportMapOffset"]:])
+    rel = lambda absolute: absolute - s["ImportMapOffset"]  # noqa: E731
+    imports_changed = []
+    for k, imp in enumerate(pkg.imports):
+        if imp in import_index_map:
+            struct.pack_into("<Q", body, k * 8, import_index_map[imp])
+            imports_changed.append({"import": k, "old": f"0x{imp:016X}", "new": f"0x{import_index_map[imp]:016X}"})
+    exports_changed = []
+    for e in pkg.exports:
+        g = e.global_import_index_or_hash
+        if g in gidx_map:
+            pos = rel(s["ExportMapOffset"]) + e.index * EXPORT_MAP_ENTRY_SIZE + _EXPORT_GLOBAL_IMPORT_OFF
+            struct.pack_into("<Q", body, pos, gidx_map[g])
+            exports_changed.append({"export": e.index, "name": e.object_name, "old": f"0x{g:016X}",
+                                    "new": f"0x{gidx_map[g]:016X}"})
+    graph_changed = []
+    gpos = rel(s["GraphDataOffset"]) + 4
+    for p in pkg.imported_packages:
+        if p["package_id"] in package_id_map:
+            struct.pack_into("<Q", body, gpos, package_id_map[p["package_id"]])
+            graph_changed.append({"old": f"0x{p['package_id']:016X}",
+                                  "new": f"0x{package_id_map[p['package_id']]:016X}"})
+        gpos += 12 + 8 * len(p["arcs"])
+    summary = bytearray(data[:LEGACY_SUMMARY_SIZE])
+    struct.pack_into("<i", summary, _SUM_NAMES_SIZE, len(nb2))
+    struct.pack_into("<i", summary, _SUM_HASHES_OFF, new_ho)
+    struct.pack_into("<i", summary, _SUM_HASHES_SIZE, len(hb2))
+    for off in _SUM_SHIFTED:
+        struct.pack_into("<i", summary, off, struct.unpack_from("<i", summary, off)[0] + shift)
+    out = bytes(summary) + nb2 + b"\0" * (new_ho - no - len(nb2)) + hb2 + bytes(body)
+
+    # --- self-check: everything not listed above is unchanged ------------------------------------
+    try:
+        npkg = parse_legacy(out)
+    except ZenFormatError as e:
+        raise RenameError(f"internal error: renamed package does not parse: {e}") from None
+    problems = []
+    if npkg.package_name != new_name:
+        problems.append(f"package name reads back as {npkg.package_name!r}")
+    if [x for i, x in enumerate(npkg.names) if i not in changed_names] != \
+            [x for i, x in enumerate(pkg.names) if i not in changed_names]:
+        problems.append("unrenamed names changed")
+    if len(npkg.exports) != len(pkg.exports):
+        problems.append("export count changed")
+    for a, b in zip(pkg.exports, npkg.exports):
+        if data[a.abs_start:a.abs_end] != out[b.abs_start:b.abs_end]:
+            problems.append(f"export {a.index} data changed")
+        if (a.cooked_serial_offset, a.cooked_serial_size, a.class_index, a.outer_index, a.super_index,
+                a.template_index, a.object_flags, a.filter_flags) != \
+                (b.cooked_serial_offset, b.cooked_serial_size, b.class_index, b.outer_index, b.super_index,
+                 b.template_index, b.object_flags, b.filter_flags):
+            problems.append(f"export {a.index} map entry changed beyond GlobalImportIndex")
+    if npkg.export_bundles != pkg.export_bundles or npkg.export_bundle_entries != pkg.export_bundle_entries:
+        problems.append("export bundles changed")
+    if [p["arcs"] for p in npkg.imported_packages] != [p["arcs"] for p in pkg.imported_packages]:
+        problems.append("graph arcs changed")
+    if out[npkg.export_data_offset:] != data[pkg.export_data_offset:]:
+        problems.append("export data region changed")
+    keep = ("PackageFlags", "CookedHeaderSize", "GraphDataSize", "Pad", "NameMapNamesOffset")
+    if any(npkg.summary[k] != s[k] for k in keep):
+        problems.append("summary fields that must not change did")
+    if problems:
+        raise RenameError("internal error after renaming: " + "; ".join(problems))
+    summary_changes = {k: {"old": s[k], "new": npkg.summary[k]} for k in s if s[k] != npkg.summary[k]}
+    report = {
+        "old_package_name": old, "new_package_name": new_name,
+        "old_package_id": f"0x{package_id_from_name(old):016X}",
+        "new_package_id": f"0x{package_id_from_name(new_name):016X}",
+        "size": {"old": len(data), "new": len(out), "delta": len(out) - len(data)},
+        "header_size": {"old": pkg.export_data_offset, "new": npkg.export_data_offset},
+        "name_map_changes": [{"index": i, "old": o, "new": n} for i, (o, n) in sorted(changed_names.items())],
+        "summary_changes": summary_changes,
+        "export_global_import_index_changes": exports_changed,
+        "import_map_changes": imports_changed,
+        "graph_imported_package_changes": graph_changed,
+        "unchanged": ["FPackageSummary.Name/SourceName (FMappedName indices)", "PackageFlags", "CookedHeaderSize",
+                      "GraphDataSize", "export map except GlobalImportIndex", "export bundle headers/entries",
+                      "graph data arcs", "serialized export data (byte-identical)"],
+        "names_mentioning_old_package": mentions,
+        "warnings": warnings + ([f"{len(mentions)} other name(s) contain the old package name (e.g. soft object "
+                                 f"paths); they were NOT changed: {mentions[:4]}"] if mentions else []),
+        "global_import_index_map": {f"0x{k:016X}": f"0x{v:016X}" for k, v in gidx_map.items()},
+    }
+    return out, report
 
 
 # --------------------------------------------------------------------------------------------

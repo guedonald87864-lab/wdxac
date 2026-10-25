@@ -1,12 +1,12 @@
 {
- "neck_circ": 41.74,
+ "neck_circ": 41.58,
  "upperarm_circ": 31.02,
  "upperarm_length": 30.44,
  "lowerarm_length": 26.59,
  "chest_circ": 102.05,
  "waist_circ": 82.54,
  "nape_to_waist": 42.0,
- "shoulder_dist": 15.11,
+ "shoulder_dist": 15.12,
  "hips_circ": 99.56,
  "upperleg_height": 39.84,
  "thigh_circ": 60.03,
@@ -19,8 +19,8 @@
  "biacromial": 42.02,
  "head_breadth": 15.7,
  "head_length": 21.05,
- "head_height": 23.01,
- "volume_L": 77.95,
- "mass_kg": 82.63,
+ "head_height": 22.89,
+ "volume_L": 77.94,
+ "mass_kg": 82.62,
  "bmi": 24.67
 }

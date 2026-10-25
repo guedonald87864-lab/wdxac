@@ -1,0 +1,1655 @@
+{
+ "schema": "wdxac/r9-player-card/1",
+ "_comment": "Ronaldo Nazário，2002 世界杯决赛版（2002-06-30，25 岁，9 号，CF）的完整卡数据。顶层字段 = tools/data/progression_sim.py 的输入格式，可直接校验（python3 tools/data/progression_sim.py data/game/r9_2002_player.json）。顶层 boosters 是出厂状态：slot 2 为空的可制作槽；推荐的制作增能写在 notes.boosters，模拟结果写在 notes.derived。manager 是模拟用的典型主教练假设，不属于卡数据。notes.derived 由 tools/data/build_r9_2002.py 生成，不要手改。设计依据见 data/game/DESIGN.md。本文件只描述这一名球员；不涉及卡池、经济、奖励或 T0 资格（任务书 §14）。所有键名和取值写法都来自 pesdb 和社区资料，不是客户端字段名或编码，写入客户端前必须逐项核对（待客户端核实）。",
+ "name": "Ronaldo Nazário",
+ "card_id": "88044146203441",
+ "card_type": "Epic",
+ "registered_position": "CF",
+ "position_proficiency": {
+  "CF": "high",
+  "SS": "mid",
+  "LWF": "mid"
+ },
+ "height_cm": 183,
+ "weight_kg": 82,
+ "age": 25,
+ "stronger_foot": "Right",
+ "weak_foot_usage": "Regularly",
+ "weak_foot_accuracy": "High",
+ "form": "Standard",
+ "injury_resistance": "Low",
+ "max_level": 32,
+ "stats": {
+  "Attacking Awareness": 81,
+  "Ball Control": 84,
+  "Dribbling": 82,
+  "Tight Possession": 82,
+  "Low Pass": 72,
+  "Lofted Pass": 67,
+  "Finishing": 82,
+  "Heading": 64,
+  "Set Piece Taking": 58,
+  "Curl": 67,
+  "Defensive Awareness": 42,
+  "Tackling": 45,
+  "Aggression": 50,
+  "Defensive Engagement": 42,
+  "GK Awareness": 40,
+  "GK Catching": 40,
+  "GK Parrying": 40,
+  "GK Reflexes": 40,
+  "GK Reach": 40,
+  "Speed": 79,
+  "Acceleration": 79,
+  "Kicking Power": 77,
+  "Jumping": 64,
+  "Physical Contact": 81,
+  "Balance": 74,
+  "Stamina": 58
+ },
+ "playing_style": {
+  "attacking": "Goal Poacher",
+  "defensive": "Attack Outlet"
+ },
+ "ai_playing_styles": [
+  "Trickster"
+ ],
+ "skills": [
+  "Scissors Feint",
+  "Cut Behind & Turn",
+  "Acceleration Burst",
+  "Acrobatic Finishing",
+  "First-time Shot",
+  "Phenomenal Finishing",
+  "Gamesmanship"
+ ],
+ "additional_skills": [],
+ "boosters": [
+  {
+   "slot": 1,
+   "kind": "fixed",
+   "name": "Striker's Instinct",
+   "value": 3,
+   "active": true
+  },
+  {
+   "slot": 2,
+   "kind": "craftable",
+   "name": null
+  }
+ ],
+ "allocation": {
+  "shooting": 10,
+  "dribbling": 4,
+  "dexterity": 12,
+  "aerial_strength": 4,
+  "lower_body_strength": 8
+ },
+ "manager": {
+  "proficiency": 89,
+  "model": "efx",
+  "boosters": {}
+ },
+ "notes": {
+  "identity": {
+   "full_name": "Ronaldo Luís Nazário de Lima",
+   "display_name": "Ronaldo Nazário",
+   "shirt_name": "RONALDO",
+   "nationality": "Brazil",
+   "nationality_zh": "巴西",
+   "date_of_birth": "1976-09-18",
+   "age_on_card": 25,
+   "shirt_number": 9,
+   "card_moment": "2002 FIFA World Cup Final, Germany 0–2 Brazil, Yokohama, 2002-06-30",
+   "card_moment_zh": "2002 世界杯决赛，德国 0–2 巴西，横滨，2002-06-30",
+   "height_cm": {
+    "value": 183,
+    "status": "工作基线（02 号档案交叉核对），不是 2002 年体测值"
+   },
+   "weight_kg": {
+    "value": 82,
+    "acceptable_range": [
+     80,
+     84
+    ],
+    "status": "02 号档案 §3：82 kg 为中值候选（Capello 两次转述 82/84，±2 kg），不是 2002 年体测值；社区逆向称比赛逻辑不读取体重（04 §2.3），只影响 3D 体型"
+   },
+   "card_id": {
+    "candidate": "88044146203441",
+    "hex": "0x5013600F1B31",
+    "base_player_id_low24": 990001,
+    "status": "must be checked against the master project before use / 接入前必须与主项目核对，不得重复建实例",
+    "evidence": "04 §8.4（本组推断 T4）：高位 0x501360 与官方 Epic Brazil 2002/1994 批次相同；低 24 位 990001 是自造基础球员 ID；pesdb 查询 404（不是官方卡）。待客户端核实。"
+   },
+   "card_type_note": "card_type=Epic 只用于套用 Epic 卡的培养规格（最高等级、增能槽结构）并与官方 Epic Brazil 2002 批次对照。稀有度、卡池、获取方式由主控决定，本文件不涉及（任务书 §14）。"
+  },
+  "progression": {
+   "max_level": 32,
+   "progression_points": 62,
+   "points_rule": "2 × (最高等级 − 1)（04 §5.2，社区逆向 T3，待客户端核实）",
+   "step_cost_rule": "同一类别第 n 次加点花费 ⌈n/4⌉（04 §5.4，社区逆向 T3，待客户端核实）",
+   "level_cap_reason": "Epic 抽样最高等级 31–34（04 §5.2）；32 级与 Epic Brazil 1994 Romário 相同。在 62 点时，pesdb 贪心与精确最优算出同一个且唯一的加点方案，所以无论游戏内'自动提升'用哪种最大化算法（04 §10 U10 未知），结果都相同。64 点（33 级）时两种算法的结果不同（shooting 10/dribbling 5/lower 8 与 shooting 12/dribbling 4/lower 6），见 DESIGN.md §3。",
+   "recommended_allocation": {
+    "shooting": 10,
+    "dribbling": 4,
+    "dexterity": 12,
+    "aerial_strength": 4,
+    "lower_body_strength": 8
+   },
+   "recommended_allocation_cost": 62,
+   "recommended_equals_auto": true,
+   "manual_alternative": {
+    "allocation": {
+     "shooting": 10,
+     "dribbling": 6,
+     "dexterity": 12,
+     "aerial_strength": 4,
+     "lower_body_strength": 6
+    },
+    "cost": 62,
+    "effect": "lower_body_strength 8→6（省 4 点）换 dribbling 4→6（花 4 点）：满级 Ball Control/Dribbling/Tight Possession 88/86/86 → 90/88/88，Speed/Kicking Power/Stamina 87/85/66 → 85/83/64；CF raw 100.441 → 100.367，显示总评仍为 100，加固定增能仍为 102",
+    "status": "可选，不是推荐。游戏内自动提升不会选它（总评略低）；手动加点后再按自动提升会被改回推荐方案（04 §5.5）。见 DESIGN.md §3.3"
+   }
+  },
+  "boosters": {
+   "slot1_fixed": {
+    "name": "Striker's Instinct",
+    "name_zh": "射手本能",
+    "value": 3,
+    "stats": [
+     "Attacking Awareness",
+     "Ball Control",
+     "Finishing",
+     "Acceleration"
+    ],
+    "exists_in": "04 §6.2 常规增能列表（pesdb id 64，官网简中'射手本能'）",
+    "why": "这四项正是 03 号档案 §3.3 认定 2002 年'保留得最好'的能力：无球跑位/门前嗅觉、控球、终结和短距离启动。数值取 +3，与官方 Epic Brazil 2002 批次的固定增能一致（Rivaldo、Kaká 都是 +3；Romário Epic 1994 是 +3），不取 Adriano 05-06 的 +4。",
+    "client_check": "增能 ID、在客户端卡数据中的写法 待客户端核实（pesdb id 不是客户端 ID）"
+   },
+   "slot2_shipped": "空的可制作槽（Empty Booster Slot +1），与官方 Epic Brazil 2002 批次相同（04 §6.4、§8.3）",
+   "slot2_recommendation": {
+    "name": "Ball Protection",
+    "value": 1,
+    "stats": [
+     "Ball Control",
+     "Tight Possession",
+     "Physical Contact",
+     "Balance"
+    ],
+    "exists_in": "04 §6.2 常规增能列表（pesdb id 176，v5.2.0 新增的 12 种可制作增能之一）",
+    "why": "补的是 slot 1 没有覆盖的 2002 年特点：背身护球、小范围转身、对抗后保持平衡（03 §3.2 护球/对抗、短距离变向）。它不再叠加 Finishing，避免把终结能力推得过高。",
+    "alternatives": [
+     {
+      "name": "Shooting",
+      "value": 1,
+      "stats": [
+       "Ball Control",
+       "Finishing",
+       "Kicking Power",
+       "Physical Contact"
+      ],
+      "note": "CF 总评比 Ball Protection 多约 0.36，但会把 Finishing 再 +1，与 slot 1 重复强化终结"
+     },
+     {
+      "name": "Agility",
+      "value": 1,
+      "stats": [
+       "Speed",
+       "Acceleration",
+       "Balance",
+       "Stamina"
+      ],
+      "note": "不推荐：会加 Stamina，与 2002 年体能有限的设定相反"
+     }
+    ],
+    "status": "推荐，属于玩家自己制作的内容；写入客户端卡数据时 slot 2 必须保持空槽，避免与玩家制作的增能重复叠加"
+   }
+  },
+  "positions": {
+   "registered": "CF",
+   "proficiency": {
+    "CF": "high（深绿，注册位置）",
+    "SS": "mid（浅绿）",
+    "LWF": "mid（浅绿）",
+    "others": "low（无色）"
+   },
+   "why": "03 §4 附加特性：CF 主位；SS 次位；常拉到左路接球（对土耳其 40'、对比利时 22'、半决赛进球），所以 LWF 可用；不给 AMF、RWF 适性。",
+   "position_training_note": "位置训练（04 §3.6）由玩家进行，不写入卡面。"
+  },
+  "playing_styles": {
+   "attacking": {
+    "name": "Goal Poacher",
+    "name_us": "Adv. Striker",
+    "name_zh": "偷猎者",
+    "compatible": [
+     "CF"
+    ],
+    "active_on_this_card": [
+     "CF"
+    ]
+   },
+   "defensive": {
+    "name": "Attack Outlet",
+    "name_zh": "突前球员",
+    "compatible": [
+     "CF",
+     "SS",
+     "LWF",
+     "RWF",
+     "AMF"
+    ],
+    "active_on_this_card": [
+     "CF",
+     "SS",
+     "LWF"
+    ]
+   },
+   "ai": [
+    {
+     "name": "Trickster",
+     "name_zh": "魔术师",
+     "position_check": "AI 风格无位置检查（04 §3.7）"
+    }
+   ],
+   "why": "见 DESIGN.md §5：Goal Poacher = 贴最后一道防线、往身后跑（越位 5 次、近/后点抢点）；Attack Outlet = 不回防、留在前面等球，对应防守投入低和体能有限；Trickster = 2002 年仍在用踩单车。"
+  },
+  "skills": {
+   "card_skills": [
+    {
+     "name": "Scissors Feint",
+     "name_zh": "剪刀脚假动作",
+     "special": false,
+     "trainable_as_additional": true,
+     "evidence": "03 §3.2 踩单车：对土耳其首战'trademark step over'，对比利时 22' 'pedalou'"
+    },
+    {
+     "name": "Cut Behind & Turn",
+     "name_zh": "向后切球并转身",
+     "special": false,
+     "trainable_as_additional": true,
+     "evidence": "03 §3.2 短距离变向/转身：对哥斯达黎加 13' 转身摆脱、半决赛第一脚趟球摆脱、决赛 45' 'twists on a sixpence'"
+    },
+    {
+     "name": "Acceleration Burst",
+     "name_zh": "瞬间加速",
+     "special": true,
+     "trainable_as_additional": false,
+     "evidence": "03 §3.2 原地启动/爆发：'burst through'（对比利时 37'）、短距离爆发保留得最好；不直接加 Speed/Acceleration（04 #12），不会重复计算"
+    },
+    {
+     "name": "Acrobatic Finishing",
+     "name_zh": "杂技般进球",
+     "special": false,
+     "trainable_as_additional": true,
+     "evidence": "03 §1.2 进球 #1：对土耳其飞身伸腿垫射"
+    },
+    {
+     "name": "First-time Shot",
+     "name_zh": "一脚射门",
+     "special": false,
+     "trainable_as_additional": true,
+     "evidence": "03 §1.2：8 球中 5 球一脚出球"
+    },
+    {
+     "name": "Phenomenal Finishing",
+     "name_zh": "无定型射门",
+     "special": true,
+     "trainable_as_additional": false,
+     "evidence": "03 §1.2 进球 #1（伸腿脚尖垫射）、#6（几乎不后摆的脚尖捅射）、#4（打得不实的低射）都是别扭姿势下的射门；04 #28 的效果正是别扭姿势射门的瞄准与误触修正"
+    },
+    {
+     "name": "Gamesmanship",
+     "name_zh": "假摔",
+     "special": false,
+     "trainable_as_additional": true,
+     "evidence": "03 §1.1、§1.3：7 场被犯规 14 次，造了对中国的点球"
+    }
+   ],
+   "card_skill_count": 7,
+   "card_skill_max": 10,
+   "special_skills_seen_on_official_cards": {
+    "Phenomenal Finishing": "Romário Epic Brazil 1994、Adriano Epic 05-06（04 §8.3）",
+    "Acceleration Burst": "Kaká Epic Brazil 2002（04 §8.3）"
+   },
+   "why_not_10": "只放 2002 年有比赛证据的技能（03 §5.3 '证据充分'一组 + Phenomenal Finishing）。卡面技能上限 10 是实测上限，不是必须填满（标准卡常少于 10 个）。剩下 3 个卡面位不用。",
+   "additional_skills_shipped": [],
+   "additional_skills_recommended": [
+    {
+     "name": "One-touch Pass",
+     "name_zh": "一脚传球",
+     "trainable": true,
+     "evidence": "弱：03 §1.4 分边与撞墙配合、§2.1 2001-12-09 与 Vieri 撞墙后进球"
+    },
+    {
+     "name": "Fighting Spirit",
+     "name_zh": "战斗精神",
+     "trainable": true,
+     "evidence": "主观：03 §3.1 带伤上场（'half a leg'），03 §5.3 注明缺乏可量化证据"
+    },
+    {
+     "name": "Chop Turn",
+     "name_zh": "脚后跟磕球变向",
+     "trainable": true,
+     "evidence": "弱：03 §5.3 与 Cut Behind & Turn 二选一的另一项；'turn and jink'、'shimmying'"
+    }
+   ],
+   "additional_skills_rule": "附加技能最多 5 个（04 §4.1，T1），只能是可训练技能；由玩家通过技巧训练获得，出厂为空。",
+   "excluded": [
+    {
+     "name": "Momentum Dribbling",
+     "reason": "持球深入对方半场 +6 四项 = 1996/97 的长距离奔袭（03 §3.2），2002 年 8 球没有一个是长途奔袭"
+    },
+    {
+     "name": "Magnetic Feet",
+     "reason": "比赛中最多 +8 Dribbling/Tight Possession/Physical Contact/Balance，会与 Ball Protection 增能和卡面值重复强化；2002 年也有被两名中国后卫挤掉的记录（03 §3.2）"
+    },
+    {
+     "name": "Attacking Surge",
+     "reason": "无球时 +3 Speed/Acceleration；无球跑动加速已由 Attacking Awareness（v5.0.0 起影响进攻跑动加速，04 §2.3 T1）体现，再加会重复计算"
+    },
+    {
+     "name": "Willpower",
+     "reason": "每射门一次 Finishing/Kicking Power +1，最多 +8；会掩盖 2002 年单刀失手多的事实（03 §1.5），只是复出叙事（03 §5.3 主观）"
+    },
+    {
+     "name": "Snap Strike",
+     "reason": "作用于 Stunning Shot（大力射门）出脚（04 #24）；2002 年脚尖捅射是受伤所迫（03 §1.2 #6），03 §5.3 要求不要为此硬套技能；03 核查记录 #25：pesdb 有此技能名，是否对应低后摆射门未核实"
+    },
+    {
+     "name": "Chip Shot Control",
+     "reason": "2002 年 0 个挑射/过门将进球，单刀面对出击门将失手多（03 §1.5）"
+    },
+    {
+     "name": "Flip Flap",
+     "reason": "2002 年比赛报道中没有使用记录（03 §3.2）"
+    },
+    {
+     "name": "Long-range Shooting / Long-range Curler / Knuckle Shot / Low Screamer / Blitz Curler",
+     "reason": "2002 年 0 个远射或弧线球进球（03 §1.2）"
+    },
+    {
+     "name": "Heading / Bullet Header / Aerial Superiority",
+     "reason": "0 个头球进球，两次头球都没打正（03 §3.2）"
+    },
+    {
+     "name": "Penalty Specialist",
+     "reason": "2002 年不是点球手（03 §1.3）"
+    },
+    {
+     "name": "Captaincy",
+     "reason": "2002 年队长是 Cafu（03 §5.3）"
+    },
+    {
+     "name": "Track Back / Man Marking / Interception",
+     "reason": "防守投入低（03 §3.2）"
+    },
+    {
+     "name": "Pinpoint Crossing / Through Passing / Visionary Pass",
+     "reason": "有传中但不是特长（03 §1.4）"
+    }
+   ]
+  },
+  "other_fields": {
+   "stronger_foot": {
+    "value": "Right",
+    "evidence": "03 §4 附加特性：已知用脚的 5 球中 4 球是右脚"
+   },
+   "weak_foot_usage": {
+    "value": "Regularly",
+    "evidence": "03 §4 建议'Occasionally，偏 Regularly'；生涯'能用双脚'（03 §3.2，T3）；对比利时 87' 右路低平横传到左侧时左脚一脚推射（03 §1.2 #5，核查记录 #7 确认）。04 §3.2：频率只决定球偏向逆足侧时是否允许用逆足，不会强迫使用。",
+    "client_check": "档位编码待客户端核实"
+   },
+   "weak_foot_accuracy": {
+    "value": "High",
+    "evidence": "03 §4：对比利时 87' 左脚一脚推射质量高（03 核查记录 #7 确认），但已知的左脚射门样本只有 2 次左右，不给 Very High。决赛 18' 单刀偏出的'左脚'只有维基转引 BBC 计时稿一处 T3 来源（03 核查记录 #27 部分未核实），只作旁证",
+    "client_check": "pesdb 编码 2（0–3），客户端编码待客户端核实"
+   },
+   "form": {
+    "value": "Standard",
+    "evidence": "03 §4：7 场 6 场进球，但身体起伏大（半决赛 Zagallo 认为他'不对劲'），二选一取 Standard"
+   },
+   "injury_resistance": {
+    "value": "Low",
+    "evidence": "03 §2.2：1999、2000 两次髌腱断裂；2001/02 三次以上大腿肌肉伤；世界杯期间右大腿伤"
+   }
+  },
+  "design_targets": {
+   "max_neutral_overall_cf": 100,
+   "level1_overall_cf": 87,
+   "max_plus_fixed_booster_overall_cf": 102,
+   "reference_group": "04 §8.3：Romário Epic 1994 87/101、Rivaldo Epic 2002 87/101、Kaká Epic 2002 87/102、Ronaldinho Big Time 21 Jun '02 87/102、Adriano Epic 05-06 86/102（1 级 / 满级 + 固定增能）",
+   "ranking": "与 Kaká、Ronaldinho 并列 Brazil 2002 相关卡的最高一档（1 级 87、满级中性 100、加固定增能 102），比 Rivaldo、Romário 高 1；不超过抽样上沿 103"
+  },
+  "client_checks": [
+   "card_id 88044146203441 与基础 ID 990001：必须与主项目核对（04 §8.4、U16）",
+   "26 项能力的客户端字段名、编码和取值区间（04 §10 U2）",
+   "逆足频率/精度、Form、抗伤的枚举编码（0 起还是 1 起）（04 U2）",
+   "比赛风格、AI 风格、技能的客户端 ID/位序，以及'特殊技能'标志位（04 U4）",
+   "Acceleration Burst、Phenomenal Finishing 在 11.1.1 客户端数据中存在且效果与 04 描述一致（04 §4.2，社区逆向）",
+   "增能 Striker's Instinct +3 的客户端 ID（pesdb id 64/+3 档位 id 不是客户端 ID）（04 §6.2、U6）",
+   "增能槽数量（2）与 slot 2 空槽的表示方法（04 U7）",
+   "最高等级 32 → 62 点、⌈n/4⌉ 花费、类别对应关系（04 §5，社区逆向）",
+   "游戏内自动提升的算法（04 U10）；本卡 62 点时贪心与精确最优相同，风险已降低",
+   "总评公式与权重（04 §7，社区逆向；U11）：1 级 87、满级 100、加增能 102 都是按该公式算出的",
+   "主教练熟练度倍率与是否计入显示总评（04 §6.5、§7.1，社区逆向）",
+   "卡面技能上限 10（04 U3）"
+  ],
+  "derived": {
+   "_comment": "由 tools/data/build_r9_2002.py 生成，不要手改。计算全部来自 progression_sim.py / efootball_rules.py；社区逆向（T3）+ 本组推断（T4），待客户端核实。",
+   "manager_assumption": {
+    "proficiency": 89,
+    "model": "efx",
+    "boosters": {},
+    "note": "典型主教练假设（本组推断 T4）：熟练度 89、无主教练增能；不属于卡数据"
+   },
+   "validation": {
+    "errors": [],
+    "warnings": [],
+    "infos": []
+   },
+   "allocation": {
+    "budget": 62,
+    "recommended": {
+     "shooting": 10,
+     "dribbling": 4,
+     "dexterity": 12,
+     "aerial_strength": 4,
+     "lower_body_strength": 8
+    },
+    "recommended_cost": 62,
+    "auto_pesdb_greedy": {
+     "shooting": 10,
+     "dribbling": 4,
+     "dexterity": 12,
+     "aerial_strength": 4,
+     "lower_body_strength": 8
+    },
+    "auto_exact_optimal": {
+     "shooting": 10,
+     "dribbling": 4,
+     "dexterity": 12,
+     "aerial_strength": 4,
+     "lower_body_strength": 8
+    },
+    "all_identical": true
+   },
+   "training_steps": [
+    {
+     "step": 1,
+     "category": "dexterity",
+     "nth": 1,
+     "cost": 1,
+     "points_used": 1,
+     "overall_CF": 88
+    },
+    {
+     "step": 2,
+     "category": "dexterity",
+     "nth": 2,
+     "cost": 1,
+     "points_used": 2,
+     "overall_CF": 88
+    },
+    {
+     "step": 3,
+     "category": "dexterity",
+     "nth": 3,
+     "cost": 1,
+     "points_used": 3,
+     "overall_CF": 89
+    },
+    {
+     "step": 4,
+     "category": "dexterity",
+     "nth": 4,
+     "cost": 1,
+     "points_used": 4,
+     "overall_CF": 89
+    },
+    {
+     "step": 5,
+     "category": "shooting",
+     "nth": 1,
+     "cost": 1,
+     "points_used": 5,
+     "overall_CF": 89
+    },
+    {
+     "step": 6,
+     "category": "shooting",
+     "nth": 2,
+     "cost": 1,
+     "points_used": 6,
+     "overall_CF": 90
+    },
+    {
+     "step": 7,
+     "category": "shooting",
+     "nth": 3,
+     "cost": 1,
+     "points_used": 7,
+     "overall_CF": 90
+    },
+    {
+     "step": 8,
+     "category": "shooting",
+     "nth": 4,
+     "cost": 1,
+     "points_used": 8,
+     "overall_CF": 90
+    },
+    {
+     "step": 9,
+     "category": "lower_body_strength",
+     "nth": 1,
+     "cost": 1,
+     "points_used": 9,
+     "overall_CF": 91
+    },
+    {
+     "step": 10,
+     "category": "lower_body_strength",
+     "nth": 2,
+     "cost": 1,
+     "points_used": 10,
+     "overall_CF": 91
+    },
+    {
+     "step": 11,
+     "category": "lower_body_strength",
+     "nth": 3,
+     "cost": 1,
+     "points_used": 11,
+     "overall_CF": 91
+    },
+    {
+     "step": 12,
+     "category": "lower_body_strength",
+     "nth": 4,
+     "cost": 1,
+     "points_used": 12,
+     "overall_CF": 92
+    },
+    {
+     "step": 13,
+     "category": "dribbling",
+     "nth": 1,
+     "cost": 1,
+     "points_used": 13,
+     "overall_CF": 92
+    },
+    {
+     "step": 14,
+     "category": "dribbling",
+     "nth": 2,
+     "cost": 1,
+     "points_used": 14,
+     "overall_CF": 92
+    },
+    {
+     "step": 15,
+     "category": "dribbling",
+     "nth": 3,
+     "cost": 1,
+     "points_used": 15,
+     "overall_CF": 92
+    },
+    {
+     "step": 16,
+     "category": "dribbling",
+     "nth": 4,
+     "cost": 1,
+     "points_used": 16,
+     "overall_CF": 92
+    },
+    {
+     "step": 17,
+     "category": "aerial_strength",
+     "nth": 1,
+     "cost": 1,
+     "points_used": 17,
+     "overall_CF": 93
+    },
+    {
+     "step": 18,
+     "category": "aerial_strength",
+     "nth": 2,
+     "cost": 1,
+     "points_used": 18,
+     "overall_CF": 93
+    },
+    {
+     "step": 19,
+     "category": "aerial_strength",
+     "nth": 3,
+     "cost": 1,
+     "points_used": 19,
+     "overall_CF": 93
+    },
+    {
+     "step": 20,
+     "category": "aerial_strength",
+     "nth": 4,
+     "cost": 1,
+     "points_used": 20,
+     "overall_CF": 93
+    },
+    {
+     "step": 21,
+     "category": "dexterity",
+     "nth": 5,
+     "cost": 2,
+     "points_used": 22,
+     "overall_CF": 94
+    },
+    {
+     "step": 22,
+     "category": "dexterity",
+     "nth": 6,
+     "cost": 2,
+     "points_used": 24,
+     "overall_CF": 94
+    },
+    {
+     "step": 23,
+     "category": "dexterity",
+     "nth": 7,
+     "cost": 2,
+     "points_used": 26,
+     "overall_CF": 95
+    },
+    {
+     "step": 24,
+     "category": "dexterity",
+     "nth": 8,
+     "cost": 2,
+     "points_used": 28,
+     "overall_CF": 95
+    },
+    {
+     "step": 25,
+     "category": "shooting",
+     "nth": 5,
+     "cost": 2,
+     "points_used": 30,
+     "overall_CF": 95
+    },
+    {
+     "step": 26,
+     "category": "shooting",
+     "nth": 6,
+     "cost": 2,
+     "points_used": 32,
+     "overall_CF": 96
+    },
+    {
+     "step": 27,
+     "category": "shooting",
+     "nth": 7,
+     "cost": 2,
+     "points_used": 34,
+     "overall_CF": 96
+    },
+    {
+     "step": 28,
+     "category": "shooting",
+     "nth": 8,
+     "cost": 2,
+     "points_used": 36,
+     "overall_CF": 96
+    },
+    {
+     "step": 29,
+     "category": "dexterity",
+     "nth": 9,
+     "cost": 3,
+     "points_used": 39,
+     "overall_CF": 97
+    },
+    {
+     "step": 30,
+     "category": "dexterity",
+     "nth": 10,
+     "cost": 3,
+     "points_used": 42,
+     "overall_CF": 97
+    },
+    {
+     "step": 31,
+     "category": "dexterity",
+     "nth": 11,
+     "cost": 3,
+     "points_used": 45,
+     "overall_CF": 98
+    },
+    {
+     "step": 32,
+     "category": "dexterity",
+     "nth": 12,
+     "cost": 3,
+     "points_used": 48,
+     "overall_CF": 98
+    },
+    {
+     "step": 33,
+     "category": "lower_body_strength",
+     "nth": 5,
+     "cost": 2,
+     "points_used": 50,
+     "overall_CF": 98
+    },
+    {
+     "step": 34,
+     "category": "lower_body_strength",
+     "nth": 6,
+     "cost": 2,
+     "points_used": 52,
+     "overall_CF": 99
+    },
+    {
+     "step": 35,
+     "category": "lower_body_strength",
+     "nth": 7,
+     "cost": 2,
+     "points_used": 54,
+     "overall_CF": 99
+    },
+    {
+     "step": 36,
+     "category": "lower_body_strength",
+     "nth": 8,
+     "cost": 2,
+     "points_used": 56,
+     "overall_CF": 99
+    },
+    {
+     "step": 37,
+     "category": "shooting",
+     "nth": 9,
+     "cost": 3,
+     "points_used": 59,
+     "overall_CF": 100
+    },
+    {
+     "step": 38,
+     "category": "shooting",
+     "nth": 10,
+     "cost": 3,
+     "points_used": 62,
+     "overall_CF": 100
+    }
+   ],
+   "auto_plan_by_level": [
+    {
+     "level": 1,
+     "points": 0,
+     "allocation": {},
+     "overall_CF": 87
+    },
+    {
+     "level": 2,
+     "points": 2,
+     "allocation": {
+      "dexterity": 2
+     },
+     "overall_CF": 88
+    },
+    {
+     "level": 3,
+     "points": 4,
+     "allocation": {
+      "dexterity": 4
+     },
+     "overall_CF": 89
+    },
+    {
+     "level": 4,
+     "points": 6,
+     "allocation": {
+      "shooting": 2,
+      "dexterity": 4
+     },
+     "overall_CF": 90
+    },
+    {
+     "level": 5,
+     "points": 8,
+     "allocation": {
+      "shooting": 4,
+      "dexterity": 4
+     },
+     "overall_CF": 90
+    },
+    {
+     "level": 6,
+     "points": 10,
+     "allocation": {
+      "shooting": 4,
+      "dexterity": 4,
+      "lower_body_strength": 2
+     },
+     "overall_CF": 91
+    },
+    {
+     "level": 7,
+     "points": 12,
+     "allocation": {
+      "shooting": 4,
+      "dexterity": 4,
+      "lower_body_strength": 4
+     },
+     "overall_CF": 92
+    },
+    {
+     "level": 8,
+     "points": 14,
+     "allocation": {
+      "shooting": 4,
+      "dribbling": 2,
+      "dexterity": 4,
+      "lower_body_strength": 4
+     },
+     "overall_CF": 92
+    },
+    {
+     "level": 9,
+     "points": 16,
+     "allocation": {
+      "shooting": 4,
+      "dribbling": 4,
+      "dexterity": 4,
+      "lower_body_strength": 4
+     },
+     "overall_CF": 92
+    },
+    {
+     "level": 10,
+     "points": 18,
+     "allocation": {
+      "shooting": 4,
+      "dribbling": 4,
+      "dexterity": 4,
+      "aerial_strength": 2,
+      "lower_body_strength": 4
+     },
+     "overall_CF": 93
+    },
+    {
+     "level": 11,
+     "points": 20,
+     "allocation": {
+      "shooting": 4,
+      "dribbling": 4,
+      "dexterity": 4,
+      "aerial_strength": 4,
+      "lower_body_strength": 4
+     },
+     "overall_CF": 93
+    },
+    {
+     "level": 12,
+     "points": 22,
+     "allocation": {
+      "shooting": 4,
+      "dribbling": 4,
+      "dexterity": 5,
+      "aerial_strength": 4,
+      "lower_body_strength": 4
+     },
+     "overall_CF": 94
+    },
+    {
+     "level": 13,
+     "points": 24,
+     "allocation": {
+      "shooting": 4,
+      "dribbling": 4,
+      "dexterity": 6,
+      "aerial_strength": 4,
+      "lower_body_strength": 4
+     },
+     "overall_CF": 94
+    },
+    {
+     "level": 14,
+     "points": 26,
+     "allocation": {
+      "shooting": 4,
+      "dribbling": 4,
+      "dexterity": 7,
+      "aerial_strength": 4,
+      "lower_body_strength": 4
+     },
+     "overall_CF": 95
+    },
+    {
+     "level": 15,
+     "points": 28,
+     "allocation": {
+      "shooting": 4,
+      "dribbling": 4,
+      "dexterity": 8,
+      "aerial_strength": 4,
+      "lower_body_strength": 4
+     },
+     "overall_CF": 95
+    },
+    {
+     "level": 16,
+     "points": 30,
+     "allocation": {
+      "shooting": 5,
+      "dribbling": 4,
+      "dexterity": 8,
+      "aerial_strength": 4,
+      "lower_body_strength": 4
+     },
+     "overall_CF": 95
+    },
+    {
+     "level": 17,
+     "points": 32,
+     "allocation": {
+      "shooting": 6,
+      "dribbling": 4,
+      "dexterity": 8,
+      "aerial_strength": 4,
+      "lower_body_strength": 4
+     },
+     "overall_CF": 96
+    },
+    {
+     "level": 18,
+     "points": 34,
+     "allocation": {
+      "shooting": 7,
+      "dribbling": 4,
+      "dexterity": 8,
+      "aerial_strength": 4,
+      "lower_body_strength": 4
+     },
+     "overall_CF": 96
+    },
+    {
+     "level": 19,
+     "points": 36,
+     "allocation": {
+      "shooting": 8,
+      "dribbling": 4,
+      "dexterity": 8,
+      "aerial_strength": 4,
+      "lower_body_strength": 4
+     },
+     "overall_CF": 96
+    },
+    {
+     "level": 20,
+     "points": 38,
+     "allocation": {
+      "shooting": 8,
+      "dribbling": 4,
+      "dexterity": 8,
+      "aerial_strength": 4,
+      "lower_body_strength": 5
+     },
+     "overall_CF": 97
+    },
+    {
+     "level": 21,
+     "points": 40,
+     "allocation": {
+      "shooting": 8,
+      "passing": 1,
+      "dribbling": 4,
+      "dexterity": 9,
+      "aerial_strength": 4,
+      "lower_body_strength": 4
+     },
+     "overall_CF": 97
+    },
+    {
+     "level": 22,
+     "points": 42,
+     "allocation": {
+      "shooting": 8,
+      "dribbling": 4,
+      "dexterity": 10,
+      "aerial_strength": 4,
+      "lower_body_strength": 4
+     },
+     "overall_CF": 97
+    },
+    {
+     "level": 23,
+     "points": 44,
+     "allocation": {
+      "shooting": 8,
+      "dribbling": 4,
+      "dexterity": 10,
+      "aerial_strength": 4,
+      "lower_body_strength": 5
+     },
+     "overall_CF": 98
+    },
+    {
+     "level": 24,
+     "points": 46,
+     "allocation": {
+      "shooting": 8,
+      "passing": 1,
+      "dribbling": 4,
+      "dexterity": 11,
+      "aerial_strength": 4,
+      "lower_body_strength": 4
+     },
+     "overall_CF": 98
+    },
+    {
+     "level": 25,
+     "points": 48,
+     "allocation": {
+      "shooting": 8,
+      "dribbling": 4,
+      "dexterity": 12,
+      "aerial_strength": 4,
+      "lower_body_strength": 4
+     },
+     "overall_CF": 98
+    },
+    {
+     "level": 26,
+     "points": 50,
+     "allocation": {
+      "shooting": 8,
+      "dribbling": 4,
+      "dexterity": 12,
+      "aerial_strength": 4,
+      "lower_body_strength": 5
+     },
+     "overall_CF": 98
+    },
+    {
+     "level": 27,
+     "points": 52,
+     "allocation": {
+      "shooting": 8,
+      "dribbling": 4,
+      "dexterity": 12,
+      "aerial_strength": 4,
+      "lower_body_strength": 6
+     },
+     "overall_CF": 99
+    },
+    {
+     "level": 28,
+     "points": 54,
+     "allocation": {
+      "shooting": 8,
+      "dribbling": 4,
+      "dexterity": 12,
+      "aerial_strength": 4,
+      "lower_body_strength": 7
+     },
+     "overall_CF": 99
+    },
+    {
+     "level": 29,
+     "points": 56,
+     "allocation": {
+      "shooting": 8,
+      "dribbling": 4,
+      "dexterity": 12,
+      "aerial_strength": 4,
+      "lower_body_strength": 8
+     },
+     "overall_CF": 99
+    },
+    {
+     "level": 30,
+     "points": 58,
+     "allocation": {
+      "shooting": 8,
+      "dribbling": 5,
+      "dexterity": 12,
+      "aerial_strength": 4,
+      "lower_body_strength": 8
+     },
+     "overall_CF": 99
+    },
+    {
+     "level": 31,
+     "points": 60,
+     "allocation": {
+      "shooting": 9,
+      "passing": 1,
+      "dribbling": 4,
+      "dexterity": 12,
+      "aerial_strength": 4,
+      "lower_body_strength": 8
+     },
+     "overall_CF": 100
+    },
+    {
+     "level": 32,
+     "points": 62,
+     "allocation": {
+      "shooting": 10,
+      "dribbling": 4,
+      "dexterity": 12,
+      "aerial_strength": 4,
+      "lower_body_strength": 8
+     },
+     "overall_CF": 100
+    }
+   ],
+   "stages": {
+    "L1": "1 级卡面（无增能）",
+    "L1+FIXED": "1 级 + 固定增能（slot 1）",
+    "MAX": "满级中性（培养后，无增能、无主教练）",
+    "MAX+FIXED": "满级 + 固定增能（出厂状态）",
+    "MAX+FIXED+CRAFTED": "满级 + 固定增能 + 推荐制作增能（slot 2）",
+    "MAX+FIXED+MANAGER": "满级 + 典型主教练熟练度 + 固定增能",
+    "MAX+FIXED+CRAFTED+MANAGER": "满级 + 典型主教练熟练度 + 固定增能 + 推荐制作增能（完整培养）"
+   },
+   "stats": {
+    "Attacking Awareness": {
+     "L1": 81,
+     "training_add": 12,
+     "MAX": 93,
+     "fixed_booster": 3,
+     "MAX+FIXED": 96,
+     "crafted_booster": 0,
+     "MAX+FIXED+CRAFTED": 96,
+     "MAX+FIXED+MANAGER": 99,
+     "MAX+FIXED+CRAFTED+MANAGER": 99
+    },
+    "Ball Control": {
+     "L1": 84,
+     "training_add": 4,
+     "MAX": 88,
+     "fixed_booster": 3,
+     "MAX+FIXED": 91,
+     "crafted_booster": 1,
+     "MAX+FIXED+CRAFTED": 92,
+     "MAX+FIXED+MANAGER": 94,
+     "MAX+FIXED+CRAFTED+MANAGER": 95
+    },
+    "Dribbling": {
+     "L1": 82,
+     "training_add": 4,
+     "MAX": 86,
+     "fixed_booster": 0,
+     "MAX+FIXED": 86,
+     "crafted_booster": 0,
+     "MAX+FIXED+CRAFTED": 86,
+     "MAX+FIXED+MANAGER": 89,
+     "MAX+FIXED+CRAFTED+MANAGER": 89
+    },
+    "Tight Possession": {
+     "L1": 82,
+     "training_add": 4,
+     "MAX": 86,
+     "fixed_booster": 0,
+     "MAX+FIXED": 86,
+     "crafted_booster": 1,
+     "MAX+FIXED+CRAFTED": 87,
+     "MAX+FIXED+MANAGER": 89,
+     "MAX+FIXED+CRAFTED+MANAGER": 90
+    },
+    "Low Pass": {
+     "L1": 72,
+     "training_add": 0,
+     "MAX": 72,
+     "fixed_booster": 0,
+     "MAX+FIXED": 72,
+     "crafted_booster": 0,
+     "MAX+FIXED+CRAFTED": 72,
+     "MAX+FIXED+MANAGER": 74,
+     "MAX+FIXED+CRAFTED+MANAGER": 74
+    },
+    "Lofted Pass": {
+     "L1": 67,
+     "training_add": 0,
+     "MAX": 67,
+     "fixed_booster": 0,
+     "MAX+FIXED": 67,
+     "crafted_booster": 0,
+     "MAX+FIXED+CRAFTED": 67,
+     "MAX+FIXED+MANAGER": 69,
+     "MAX+FIXED+CRAFTED+MANAGER": 69
+    },
+    "Finishing": {
+     "L1": 82,
+     "training_add": 10,
+     "MAX": 92,
+     "fixed_booster": 3,
+     "MAX+FIXED": 95,
+     "crafted_booster": 0,
+     "MAX+FIXED+CRAFTED": 95,
+     "MAX+FIXED+MANAGER": 98,
+     "MAX+FIXED+CRAFTED+MANAGER": 98
+    },
+    "Heading": {
+     "L1": 64,
+     "training_add": 4,
+     "MAX": 68,
+     "fixed_booster": 0,
+     "MAX+FIXED": 68,
+     "crafted_booster": 0,
+     "MAX+FIXED+CRAFTED": 68,
+     "MAX+FIXED+MANAGER": 70,
+     "MAX+FIXED+CRAFTED+MANAGER": 70
+    },
+    "Set Piece Taking": {
+     "L1": 58,
+     "training_add": 10,
+     "MAX": 68,
+     "fixed_booster": 0,
+     "MAX+FIXED": 68,
+     "crafted_booster": 0,
+     "MAX+FIXED+CRAFTED": 68,
+     "MAX+FIXED+MANAGER": 70,
+     "MAX+FIXED+CRAFTED+MANAGER": 70
+    },
+    "Curl": {
+     "L1": 67,
+     "training_add": 10,
+     "MAX": 77,
+     "fixed_booster": 0,
+     "MAX+FIXED": 77,
+     "crafted_booster": 0,
+     "MAX+FIXED+CRAFTED": 77,
+     "MAX+FIXED+MANAGER": 79,
+     "MAX+FIXED+CRAFTED+MANAGER": 79
+    },
+    "Defensive Awareness": {
+     "L1": 42,
+     "training_add": 0,
+     "MAX": 42,
+     "fixed_booster": 0,
+     "MAX+FIXED": 42,
+     "crafted_booster": 0,
+     "MAX+FIXED+CRAFTED": 42,
+     "MAX+FIXED+MANAGER": 43,
+     "MAX+FIXED+CRAFTED+MANAGER": 43
+    },
+    "Tackling": {
+     "L1": 45,
+     "training_add": 0,
+     "MAX": 45,
+     "fixed_booster": 0,
+     "MAX+FIXED": 45,
+     "crafted_booster": 0,
+     "MAX+FIXED+CRAFTED": 45,
+     "MAX+FIXED+MANAGER": 46,
+     "MAX+FIXED+CRAFTED+MANAGER": 46
+    },
+    "Aggression": {
+     "L1": 50,
+     "training_add": 0,
+     "MAX": 50,
+     "fixed_booster": 0,
+     "MAX+FIXED": 50,
+     "crafted_booster": 0,
+     "MAX+FIXED+CRAFTED": 50,
+     "MAX+FIXED+MANAGER": 51,
+     "MAX+FIXED+CRAFTED+MANAGER": 51
+    },
+    "Defensive Engagement": {
+     "L1": 42,
+     "training_add": 0,
+     "MAX": 42,
+     "fixed_booster": 0,
+     "MAX+FIXED": 42,
+     "crafted_booster": 0,
+     "MAX+FIXED+CRAFTED": 42,
+     "MAX+FIXED+MANAGER": 43,
+     "MAX+FIXED+CRAFTED+MANAGER": 43
+    },
+    "GK Awareness": {
+     "L1": 40,
+     "training_add": 0,
+     "MAX": 40,
+     "fixed_booster": 0,
+     "MAX+FIXED": 40,
+     "crafted_booster": 0,
+     "MAX+FIXED+CRAFTED": 40,
+     "MAX+FIXED+MANAGER": 41,
+     "MAX+FIXED+CRAFTED+MANAGER": 41
+    },
+    "GK Catching": {
+     "L1": 40,
+     "training_add": 0,
+     "MAX": 40,
+     "fixed_booster": 0,
+     "MAX+FIXED": 40,
+     "crafted_booster": 0,
+     "MAX+FIXED+CRAFTED": 40,
+     "MAX+FIXED+MANAGER": 41,
+     "MAX+FIXED+CRAFTED+MANAGER": 41
+    },
+    "GK Parrying": {
+     "L1": 40,
+     "training_add": 0,
+     "MAX": 40,
+     "fixed_booster": 0,
+     "MAX+FIXED": 40,
+     "crafted_booster": 0,
+     "MAX+FIXED+CRAFTED": 40,
+     "MAX+FIXED+MANAGER": 41,
+     "MAX+FIXED+CRAFTED+MANAGER": 41
+    },
+    "GK Reflexes": {
+     "L1": 40,
+     "training_add": 0,
+     "MAX": 40,
+     "fixed_booster": 0,
+     "MAX+FIXED": 40,
+     "crafted_booster": 0,
+     "MAX+FIXED+CRAFTED": 40,
+     "MAX+FIXED+MANAGER": 41,
+     "MAX+FIXED+CRAFTED+MANAGER": 41
+    },
+    "GK Reach": {
+     "L1": 40,
+     "training_add": 0,
+     "MAX": 40,
+     "fixed_booster": 0,
+     "MAX+FIXED": 40,
+     "crafted_booster": 0,
+     "MAX+FIXED+CRAFTED": 40,
+     "MAX+FIXED+MANAGER": 41,
+     "MAX+FIXED+CRAFTED+MANAGER": 41
+    },
+    "Speed": {
+     "L1": 79,
+     "training_add": 8,
+     "MAX": 87,
+     "fixed_booster": 0,
+     "MAX+FIXED": 87,
+     "crafted_booster": 0,
+     "MAX+FIXED+CRAFTED": 87,
+     "MAX+FIXED+MANAGER": 90,
+     "MAX+FIXED+CRAFTED+MANAGER": 90
+    },
+    "Acceleration": {
+     "L1": 79,
+     "training_add": 12,
+     "MAX": 91,
+     "fixed_booster": 3,
+     "MAX+FIXED": 94,
+     "crafted_booster": 0,
+     "MAX+FIXED+CRAFTED": 94,
+     "MAX+FIXED+MANAGER": 97,
+     "MAX+FIXED+CRAFTED+MANAGER": 97
+    },
+    "Kicking Power": {
+     "L1": 77,
+     "training_add": 8,
+     "MAX": 85,
+     "fixed_booster": 0,
+     "MAX+FIXED": 85,
+     "crafted_booster": 0,
+     "MAX+FIXED+CRAFTED": 85,
+     "MAX+FIXED+MANAGER": 88,
+     "MAX+FIXED+CRAFTED+MANAGER": 88
+    },
+    "Jumping": {
+     "L1": 64,
+     "training_add": 4,
+     "MAX": 68,
+     "fixed_booster": 0,
+     "MAX+FIXED": 68,
+     "crafted_booster": 0,
+     "MAX+FIXED+CRAFTED": 68,
+     "MAX+FIXED+MANAGER": 70,
+     "MAX+FIXED+CRAFTED+MANAGER": 70
+    },
+    "Physical Contact": {
+     "L1": 81,
+     "training_add": 4,
+     "MAX": 85,
+     "fixed_booster": 0,
+     "MAX+FIXED": 85,
+     "crafted_booster": 1,
+     "MAX+FIXED+CRAFTED": 86,
+     "MAX+FIXED+MANAGER": 88,
+     "MAX+FIXED+CRAFTED+MANAGER": 89
+    },
+    "Balance": {
+     "L1": 74,
+     "training_add": 12,
+     "MAX": 86,
+     "fixed_booster": 0,
+     "MAX+FIXED": 86,
+     "crafted_booster": 1,
+     "MAX+FIXED+CRAFTED": 87,
+     "MAX+FIXED+MANAGER": 89,
+     "MAX+FIXED+CRAFTED+MANAGER": 90
+    },
+    "Stamina": {
+     "L1": 58,
+     "training_add": 8,
+     "MAX": 66,
+     "fixed_booster": 0,
+     "MAX+FIXED": 66,
+     "crafted_booster": 0,
+     "MAX+FIXED+CRAFTED": 66,
+     "MAX+FIXED+MANAGER": 68,
+     "MAX+FIXED+CRAFTED+MANAGER": 68
+    }
+   },
+   "overall": {
+    "L1": {
+     "GK": 44,
+     "CB": 65,
+     "LB": 73,
+     "RB": 73,
+     "DMF": 67,
+     "CMF": 75,
+     "LMF": 81,
+     "RMF": 81,
+     "AMF": 84,
+     "LWF": 86,
+     "RWF": 86,
+     "SS": 88,
+     "CF": 87
+    },
+    "L1+FIXED": {
+     "GK": 44,
+     "CB": 66,
+     "LB": 74,
+     "RB": 74,
+     "DMF": 68,
+     "CMF": 77,
+     "LMF": 82,
+     "RMF": 82,
+     "AMF": 85,
+     "LWF": 88,
+     "RWF": 88,
+     "SS": 90,
+     "CF": 90
+    },
+    "MAX": {
+     "GK": 46,
+     "CB": 71,
+     "LB": 82,
+     "RB": 82,
+     "DMF": 73,
+     "CMF": 83,
+     "LMF": 90,
+     "RMF": 90,
+     "AMF": 93,
+     "LWF": 97,
+     "RWF": 97,
+     "SS": 99,
+     "CF": 100
+    },
+    "MAX+FIXED": {
+     "GK": 46,
+     "CB": 72,
+     "LB": 83,
+     "RB": 83,
+     "DMF": 74,
+     "CMF": 84,
+     "LMF": 92,
+     "RMF": 92,
+     "AMF": 95,
+     "LWF": 99,
+     "RWF": 99,
+     "SS": 101,
+     "CF": 102
+    },
+    "MAX+FIXED+CRAFTED": {
+     "GK": 46,
+     "CB": 72,
+     "LB": 83,
+     "RB": 83,
+     "DMF": 74,
+     "CMF": 85,
+     "LMF": 92,
+     "RMF": 92,
+     "AMF": 95,
+     "LWF": 100,
+     "RWF": 100,
+     "SS": 101,
+     "CF": 103
+    },
+    "MAX+FIXED+MANAGER": {
+     "GK": 48,
+     "CB": 75,
+     "LB": 87,
+     "RB": 87,
+     "DMF": 77,
+     "CMF": 88,
+     "LMF": 96,
+     "RMF": 96,
+     "AMF": 99,
+     "LWF": 104,
+     "RWF": 104,
+     "SS": 106,
+     "CF": 107
+    },
+    "MAX+FIXED+CRAFTED+MANAGER": {
+     "GK": 49,
+     "CB": 75,
+     "LB": 87,
+     "RB": 87,
+     "DMF": 78,
+     "CMF": 89,
+     "LMF": 96,
+     "RMF": 96,
+     "AMF": 99,
+     "LWF": 104,
+     "RWF": 104,
+     "SS": 106,
+     "CF": 107
+    }
+   },
+   "overall_raw_CF": {
+    "L1": 87.793,
+    "L1+FIXED": 90.235,
+    "MAX": 100.441,
+    "MAX+FIXED": 102.883,
+    "MAX+FIXED+CRAFTED": 103.215,
+    "MAX+FIXED+MANAGER": 107.308,
+    "MAX+FIXED+CRAFTED+MANAGER": 107.64
+   },
+   "overall_alternative_crafted_CF": {
+    "Shooting": {
+     "MAX+FIXED+CRAFTED": 103,
+     "raw": 103.573,
+     "MAX+FIXED+CRAFTED+MANAGER": 107
+    },
+    "Agility": {
+     "MAX+FIXED+CRAFTED": 103,
+     "raw": 103.228,
+     "MAX+FIXED+CRAFTED+MANAGER": 107
+    }
+   },
+   "match_stats_full_build": {
+    "_comment": "比赛中实际能力：满体力、状态正常、不含技能情境加成；位置适性倍率 + 主教练熟练度 + 两个增能槽（04 §6.6 顺序）",
+    "LWF": {
+     "Attacking Awareness": 94,
+     "Ball Control": 88,
+     "Dribbling": 82,
+     "Tight Possession": 90,
+     "Low Pass": 69,
+     "Lofted Pass": 64,
+     "Finishing": 91,
+     "Heading": 65,
+     "Set Piece Taking": 65,
+     "Curl": 74,
+     "Defensive Awareness": 41,
+     "Tackling": 43,
+     "Aggression": 51,
+     "Defensive Engagement": 43,
+     "Speed": 83,
+     "Acceleration": 92,
+     "Kicking Power": 83,
+     "Jumping": 65,
+     "Physical Contact": 86,
+     "Balance": 87,
+     "Stamina": 66
+    },
+    "SS": {
+     "Attacking Awareness": 94,
+     "Ball Control": 88,
+     "Dribbling": 82,
+     "Tight Possession": 90,
+     "Low Pass": 69,
+     "Lofted Pass": 64,
+     "Finishing": 91,
+     "Heading": 65,
+     "Set Piece Taking": 65,
+     "Curl": 74,
+     "Defensive Awareness": 41,
+     "Tackling": 43,
+     "Aggression": 51,
+     "Defensive Engagement": 43,
+     "Speed": 83,
+     "Acceleration": 92,
+     "Kicking Power": 83,
+     "Jumping": 65,
+     "Physical Contact": 86,
+     "Balance": 87,
+     "Stamina": 66
+    },
+    "CF": {
+     "Attacking Awareness": 99,
+     "Ball Control": 95,
+     "Dribbling": 89,
+     "Tight Possession": 90,
+     "Low Pass": 74,
+     "Lofted Pass": 69,
+     "Finishing": 98,
+     "Heading": 70,
+     "Set Piece Taking": 70,
+     "Curl": 79,
+     "Defensive Awareness": 43,
+     "Tackling": 46,
+     "Aggression": 51,
+     "Defensive Engagement": 43,
+     "Speed": 90,
+     "Acceleration": 97,
+     "Kicking Power": 88,
+     "Jumping": 70,
+     "Physical Contact": 89,
+     "Balance": 90,
+     "Stamina": 68
+    }
+   },
+   "count_ge_95": {
+    "MAX": [],
+    "MAX+FIXED": [
+     "Attacking Awareness",
+     "Finishing"
+    ],
+    "MAX+FIXED+CRAFTED": [
+     "Attacking Awareness",
+     "Finishing"
+    ]
+   }
+  }
+ }
+}

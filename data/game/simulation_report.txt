@@ -1,0 +1,517 @@
+R9 2002 球员卡模拟报告（由 tools/data/build_r9_2002.py 生成；每一节都是 progression_sim.py 命令行的原样输出）
+规则与数值：社区逆向（T3）+ 本组推断（T4），待客户端核实。总评 = 社区逆向公式（04 §7）。
+
+####################################################################################################
+# 1. 出厂卡 + 推荐加点（JSON 原样）
+# $ python3 tools/data/progression_sim.py data/game/r9_2002_player.json
+# 退出码 0
+####################################################################################################
+=== Ronaldo Nazário  card_id=88044146203441  卡种=Epic ===
+注册位置 CF；身高 183 cm；体重 82 kg（比赛逻辑不用体重，社区逆向）；年龄 25
+惯用脚 Right；逆足频率 Regularly（逆足概率 100%；弧线射门等技能射门两只脚都可作候选）；逆足精度 High（pesdb 编码 2，总评 WFR=79；逆足踢球扣分 −7 / −10 / −10 / −6，113 km/h）[T3，社区逆向，待客户端核实]
+状态波动 Standard（影响状态抽取，比赛逻辑不直接读取）[T1+T3，社区逆向，待客户端核实]；抗伤 Low（非接触伤病 ×1.5，负荷累积 ×1，严重度减半 30%，升级 5%）
+位置适性：LWF=中（浅绿）  SS=中（浅绿）  CF=高（深绿）（其余为低）
+进攻型风格 Goal Poacher（偷猎者；美式 Adv. Striker）兼容 CF；本卡生效位置 CF
+防守型风格 Attack Outlet（突前球员；美式 Attack Outlet）兼容 AMF, LWF, RWF, SS, CF；本卡生效位置 LWF, SS, CF
+AI 风格：Trickster
+卡面技能（7/10）：Scissors Feint, Cut Behind & Turn, Acceleration Burst★, Acrobatic Finishing, First-time Shot, Phenomenal Finishing★, Gamesmanship（★=特殊技能）
+附加技能（0/5）：无
+增能：slot 1: Striker's Instinct +3（固定，激活；offensive_awareness, ball_control, finishing, acceleration）；slot 2: 空增能槽（可制作 +1）
+最高等级 32 → 能力点 62 = 2×(32−1) [T3，社区逆向，待客户端核实]
+
+--- 加点方案：card（输入文件给定；步骤顺序为本工具按总评增量排出） ---
+  Shooting(射门)=10, Dribbling(盘球)=4, Dexterity(灵巧)=12, Aerial Strength(空中力量)=4, Lower Body Strength(下肢力量)=8；花费 62/62 [T3，社区逆向，待客户端核实]
+  步骤 类别                   第n次  花费  累计  注册位置总评(无增能)
+    1  Dexterity                  1     1     1  88
+    2  Dexterity                  2     1     2  88
+    3  Dexterity                  3     1     3  89
+    4  Dexterity                  4     1     4  89
+    5  Shooting                   1     1     5  89
+    6  Shooting                   2     1     6  90
+    7  Shooting                   3     1     7  90
+    8  Shooting                   4     1     8  90
+    9  Lower Body Strength        1     1     9  91
+   10  Lower Body Strength        2     1    10  91
+   11  Lower Body Strength        3     1    11  91
+   12  Lower Body Strength        4     1    12  92
+   13  Dribbling                  1     1    13  92
+   14  Dribbling                  2     1    14  92
+   15  Dribbling                  3     1    15  92
+   16  Dribbling                  4     1    16  92
+   17  Aerial Strength            1     1    17  93
+   18  Aerial Strength            2     1    18  93
+   19  Aerial Strength            3     1    19  93
+   20  Aerial Strength            4     1    20  93
+   21  Dexterity                  5     2    22  94
+   22  Dexterity                  6     2    24  94
+   23  Dexterity                  7     2    26  95
+   24  Dexterity                  8     2    28  95
+   25  Shooting                   5     2    30  95
+   26  Shooting                   6     2    32  96
+   27  Shooting                   7     2    34  96
+   28  Shooting                   8     2    36  96
+   29  Dexterity                  9     3    39  97
+   30  Dexterity                 10     3    42  97
+   31  Dexterity                 11     3    45  98
+   32  Dexterity                 12     3    48  98
+   33  Lower Body Strength        5     2    50  98
+   34  Lower Body Strength        6     2    52  99
+   35  Lower Body Strength        7     2    54  99
+   36  Lower Body Strength        8     2    56  99
+   37  Shooting                   9     3    59  100
+   38  Shooting                  10     3    62  100
+
+--- 26 项能力：各阶段（增能在 99 封顶之后相加，上限 120）---
+  能力                                              L1      L1+FIXED           MAX     MAX+FIXED  MAX+BOOSTERS   MAX+MANAGER
+   1 Attacking Awareness 进攻意识                   81            84            93            96            96            99
+   2 Ball Control 控球                              84            87            88            91            91            94
+   3 Dribbling 盘球                                 82            82            86            86            86            89
+   4 Tight Possession 紧密控球                      82            82            86            86            86            89
+   5 Low Pass 地面传球                              72            72            72            72            72            74
+   6 Lofted Pass 空中传球                           67            67            67            67            67            69
+   7 Finishing 射门                                 82            85            92            95            95            98
+   8 Heading 头球                                   64            64            68            68            68            70
+   9 Set Piece Taking 罚定位球                      58            58            68            68            68            70
+  10 Curl 弧线球                                    67            67            77            77            77            79
+  11 Defensive Awareness 防守意识                   42            42            42            42            42            43
+  12 Tackling 抢球                                  45            45            45            45            45            46
+  13 Aggression 积极性                              50            50            50            50            50            51
+  14 Defensive Engagement 防守参与度                42            42            42            42            42            43
+  15 GK Awareness 守门员意识                        40            40            40            40            40            41
+  16 GK Catching 守门员接球能力                     40            40            40            40            40            41
+  17 GK Parrying 守门员扑救                         40            40            40            40            40            41
+  18 GK Reflexes 守门员扑救反应                     40            40            40            40            40            41
+  19 GK Reach 守门员臂展                            40            40            40            40            40            41
+  20 Speed 速度                                     79            79            87            87            87            90
+  21 Acceleration 加速                              79            82            91            94            94            97
+  22 Kicking Power 脚下力量                         77            77            85            85            85            88
+  23 Jumping 跳起                                   64            64            68            68            68            70
+  24 Physical Contact 身体接触                      81            81            85            85            85            88
+  25 Balance 平衡                                   74            74            86            86            86            89
+  26 Stamina 体力                                   58            58            66            66            66            68
+  L1: 1 级卡面（无增能）
+  L1+FIXED: 1 级 + 已激活固定增能
+  MAX: 满级中性（培养后，无增能、无主教练）
+  MAX+FIXED: 满级 + 已激活固定增能
+  MAX+BOOSTERS: 满级 + 固定增能 + 可训练（制作）增能
+  MAX+MANAGER: 满级 + 主教练熟练度 + 全部增能 + 主教练增能
+  主教练：熟练度 89（模型 efx）、增能 无 [T3，社区逆向，待客户端核实]；游戏内总评是否计入主教练影响 [T3，社区逆向，待客户端核实]
+
+--- 各位置总评 [T3+T4，社区逆向，本组推断，待客户端核实] ---
+  阶段             GK   CB   LB   RB  DMF  CMF  LMF  RMF  AMF  LWF  RWF   SS   CF
+  L1               44   65   73   73   67   75   81   81   84   86   86   88   87
+  L1+FIXED         44   66   74   74   68   77   82   82   85   88   88   90   90
+  MAX              46   71   82   82   73   83   90   90   93   97   97   99  100
+  MAX+FIXED        46   72   83   83   74   84   92   92   95   99   99  101  102
+  MAX+BOOSTERS     46   72   83   83   74   84   92   92   95   99   99  101  102
+  MAX+MANAGER      48   75   87   87   77   88   96   96   99  104  104  106  107
+
+--- 比赛中实际能力（满体力、状态正常、无情境技能；位置适性/主教练按 efx 模型）[T3，社区逆向，待客户端核实] ---
+  能力                                      LWF(M)     SS(M)     CF(H)
+   1 Attacking Awareness 进攻意识               94        94        99
+   2 Ball Control 控球                          87        87        94
+   3 Dribbling 盘球                             82        82        89
+   4 Tight Possession 紧密控球                  89        89        89
+   5 Low Pass 地面传球                          69        69        74
+   6 Lofted Pass 空中传球                       64        64        69
+   7 Finishing 射门                             91        91        98
+   8 Heading 头球                               65        65        70
+   9 Set Piece Taking 罚定位球                  65        65        70
+  10 Curl 弧线球                                74        74        79
+  11 Defensive Awareness 防守意识               41        41        43
+  12 Tackling 抢球                              43        43        46
+  13 Aggression 积极性                          51        51        51
+  14 Defensive Engagement 防守参与度            43        43        43
+  20 Speed 速度                                 83        83        90
+  21 Acceleration 加速                          92        92        97
+  22 Kicking Power 脚下力量                     83        83        88
+  23 Jumping 跳起                               65        65        70
+  24 Physical Contact 身体接触                  85        85        88
+  25 Balance 平衡                               86        86        89
+  26 Stamina 体力                               66        66        68
+
+--- 校验 ---
+  无问题
+
+--- 本次用到的规则与出处 ---
+  STAT_RANGE: 卡面 26 项能力取值 40–99（外场球员 5 项 GK 能力抽查均为 40） —— 04 §2.2 [S21][S25] [T3，社区逆向，待客户端核实]
+  POINTS: 可用能力点 = 2 × (最高等级 − 1) —— 04 §5.2 [S22][S26][S23] [T3，社区逆向，待客户端核实]
+  STEP_COST: 同一类别第 n 次加点花费 ⌈n/4⌉；前 n 次累计 (g+1)(2g+r)，g=⌊n/4⌋，r=n mod 4；第 13 次以后的单价为公式外推 —— 04 §5.4 [S22][S26][S27] [T3，社区逆向，待客户端核实]
+  CATEGORY_MAP: 10 个培养类别与能力的对应（Jumping 同属 Aerial Strength 与 GK 1） —— 04 §5.3 [S22][S26] [T3，社区逆向，待客户端核实]
+  TRAIN_CAP_99: 培养加点在卡面阶段完成，每项最高 99 —— 04 §6.6 第 7 条 [S22] [T3，社区逆向，待客户端核实]
+  AUTO_DEV_GOAL: 游戏内'自动提升'（Auto Development）的目标是每次升级后重新分配全部点数使总评最大 —— 04 §5.5 [S10][S17] [T1]
+  AUTO_DEV_GREEDY: pesdb 的最大化算法为贪心：每步选'总评增量 ÷ 花费'最高的类别（并列取类别顺序靠前者，零增量也会被选）。游戏内是否同一算法：未找到 —— 04 §5.5 [S22]、§10 U10 [T3，社区逆向，待客户端核实]
+  BOOST_AFTER_CAP: 增能点在 99 封顶之后相加，且不被主教练倍率缩放 —— 04 §6.6 [S25][S22] [T3，社区逆向，待客户端核实]
+  BOOST_CAP_120: 加上增能后的能力上限 120 —— 04 §2.2/§6.6 [S25] [T3，社区逆向，待客户端核实]
+  RATING_FORMULA: 总评 = floor([Σ(能力−25)×权重 + (身高−136)×身高权重 + (WFR−25)×4 + 500] / 1000)，WFR = floor(59×WFA/3+40)；能力为培养后+增能后值；不含技能/风格/状态 —— 04 §7.1 [S22]，§7.3 本组复算 [T3+T4，社区逆向，本组推断，待客户端核实]
+  RATING_WEIGHTS: 13 个位置 × 26 项能力 + 身高的总评权重表（原样摘自 pesdb，含 LMF/RMF 不对称） —— 04 §7.2 [S22] [T3，社区逆向，待客户端核实]
+  MANAGER_FORMULA: 主教练球队风格熟练度倍率：p<90 时 (104−38(p−99)²/99²)/100，p≥90 时 (99.253+0.0485p)/100；增量 = (倍率−1)×卡面值，向零取整；作用于 26 项（逆足精度不在其内），结果封顶 99 —— 04 §6.5 [S25] [T3，社区逆向，待客户端核实]
+  MANAGER_THRESHOLDS: pesdb/ef-labo 的主教练熟练度门槛表（p=70–90）：能力值达到门槛即 +1/+2/+3。与 MANAGER_FORMULA 在 p=73、81、82、84、85、86、90 处有一个门槛差 1–2 点（本组实现时发现，见 manager_threshold_mismatches()）；其余 14 个值一致 —— 04 §6.5 [S22][S26] [T3+T4，社区逆向，本组推断，待客户端核实]
+  MATCH_ORDER: 比赛中叠加顺序：卡面+状态→[40,99]→+技能加成/Link-up→+(位置×疲劳×主教练−1)×卡面值(向零取整)→[40,99]→+增能（≤120） —— 04 §6.6 [S25] [T3，社区逆向，待客户端核实]
+  OUT_OF_POSITION: 非高适性位置的能力倍率（浅绿/无色三组），只按卡面值计算，增能不打折 —— 04 §3.6 [S25] [T3，社区逆向，待客户端核实]
+  SKILL_LIST: 67 种球员技能（pesdb eFootball 2027 筛选器）；客户端技能位序/编码与 11.1.1 中是否全部存在未核对 —— 04 §4.1–4.2 [S20][S25]、§10 U4 [T3，社区逆向，待客户端核实]
+  SKILL_CARD_MAX: 卡面技能实测最多 10 个（硬性上限未找到；本工具按 10 个作硬限制） —— 04 §4.1、§10 U3 [T3，社区逆向，待客户端核实]
+  SKILL_SPECIAL: 特殊技能不能训练，只能写在卡面；19 个 Show Time 技能（[S34]）+ 4 个 2026 新技能（本组推断） —— 04 §4.1 [S34][S37][S41]、§10 U4/U5 [T2+T3+T4，社区逆向，本组推断，待客户端核实]
+  BOOSTER_LIST: 常规增能 29 种（pesdb 列表）与官方'全部 28 种'冲突；各项 4 能力组合取自 pesdb —— 04 §6.2 [S14][S21][S28]、§10 U6 [T1+T3，社区逆向，待客户端核实]
+  BOOSTER_FIXED_RANGE: 卡面固定增能抽样所见：4 项型 +3 至 +6；单项型 +6 或 +8；Total Package +3（26 项全部） —— 04 §6.3–6.4 [S21] [T3，社区逆向，待客户端核实]
+  STYLE_COMPAT: 比赛风格的兼容位置（11.1.1 代码），不兼容位置上大部分失效；LWF/RWF 等左右同组 —— 04 §3.7 [S25]（Classic No. 10 另有 T1 [S08]） [T3，社区逆向，待客户端核实]
+
+
+####################################################################################################
+# 2. 自动提升（pesdb 贪心复现，含每级分配）
+# $ python3 tools/data/progression_sim.py data/game/r9_2002_player.json --allocation auto --no-steps
+# 退出码 0
+####################################################################################################
+=== Ronaldo Nazário  card_id=88044146203441  卡种=Epic ===
+注册位置 CF；身高 183 cm；体重 82 kg（比赛逻辑不用体重，社区逆向）；年龄 25
+惯用脚 Right；逆足频率 Regularly（逆足概率 100%；弧线射门等技能射门两只脚都可作候选）；逆足精度 High（pesdb 编码 2，总评 WFR=79；逆足踢球扣分 −7 / −10 / −10 / −6，113 km/h）[T3，社区逆向，待客户端核实]
+状态波动 Standard（影响状态抽取，比赛逻辑不直接读取）[T1+T3，社区逆向，待客户端核实]；抗伤 Low（非接触伤病 ×1.5，负荷累积 ×1，严重度减半 30%，升级 5%）
+位置适性：LWF=中（浅绿）  SS=中（浅绿）  CF=高（深绿）（其余为低）
+进攻型风格 Goal Poacher（偷猎者；美式 Adv. Striker）兼容 CF；本卡生效位置 CF
+防守型风格 Attack Outlet（突前球员；美式 Attack Outlet）兼容 AMF, LWF, RWF, SS, CF；本卡生效位置 LWF, SS, CF
+AI 风格：Trickster
+卡面技能（7/10）：Scissors Feint, Cut Behind & Turn, Acceleration Burst★, Acrobatic Finishing, First-time Shot, Phenomenal Finishing★, Gamesmanship（★=特殊技能）
+附加技能（0/5）：无
+增能：slot 1: Striker's Instinct +3（固定，激活；offensive_awareness, ball_control, finishing, acceleration）；slot 2: 空增能槽（可制作 +1）
+最高等级 32 → 能力点 62 = 2×(32−1) [T3，社区逆向，待客户端核实]
+
+--- 加点方案：auto（复现 pesdb 贪心；游戏内'自动提升'的目标是最大化总评（T1），具体算法未找到） ---
+  Shooting(射门)=10, Dribbling(盘球)=4, Dexterity(灵巧)=12, Aerial Strength(空中力量)=4, Lower Body Strength(下肢力量)=8；花费 62/62 [T3，社区逆向，待客户端核实]
+  每级自动分配（每次升级重新分配全部点数，复现 pesdb 贪心）：
+    Lv 1 点数   0 总评 87  
+    Lv 5 点数   8 总评 90  shooting=4, dexterity=4
+    Lv10 点数  18 总评 93  shooting=4, dribbling=4, dexterity=4, aerial_strength=2, lower_body_strength=4
+    Lv15 点数  28 总评 95  shooting=4, dribbling=4, dexterity=8, aerial_strength=4, lower_body_strength=4
+    Lv20 点数  38 总评 97  shooting=8, dribbling=4, dexterity=8, aerial_strength=4, lower_body_strength=5
+    Lv25 点数  48 总评 98  shooting=8, dribbling=4, dexterity=12, aerial_strength=4, lower_body_strength=4
+    Lv30 点数  58 总评 99  shooting=8, dribbling=5, dexterity=12, aerial_strength=4, lower_body_strength=8
+    Lv32 点数  62 总评 100  shooting=10, dribbling=4, dexterity=12, aerial_strength=4, lower_body_strength=8
+
+--- 26 项能力：各阶段（增能在 99 封顶之后相加，上限 120）---
+  能力                                              L1      L1+FIXED           MAX     MAX+FIXED  MAX+BOOSTERS   MAX+MANAGER
+   1 Attacking Awareness 进攻意识                   81            84            93            96            96            99
+   2 Ball Control 控球                              84            87            88            91            91            94
+   3 Dribbling 盘球                                 82            82            86            86            86            89
+   4 Tight Possession 紧密控球                      82            82            86            86            86            89
+   5 Low Pass 地面传球                              72            72            72            72            72            74
+   6 Lofted Pass 空中传球                           67            67            67            67            67            69
+   7 Finishing 射门                                 82            85            92            95            95            98
+   8 Heading 头球                                   64            64            68            68            68            70
+   9 Set Piece Taking 罚定位球                      58            58            68            68            68            70
+  10 Curl 弧线球                                    67            67            77            77            77            79
+  11 Defensive Awareness 防守意识                   42            42            42            42            42            43
+  12 Tackling 抢球                                  45            45            45            45            45            46
+  13 Aggression 积极性                              50            50            50            50            50            51
+  14 Defensive Engagement 防守参与度                42            42            42            42            42            43
+  15 GK Awareness 守门员意识                        40            40            40            40            40            41
+  16 GK Catching 守门员接球能力                     40            40            40            40            40            41
+  17 GK Parrying 守门员扑救                         40            40            40            40            40            41
+  18 GK Reflexes 守门员扑救反应                     40            40            40            40            40            41
+  19 GK Reach 守门员臂展                            40            40            40            40            40            41
+  20 Speed 速度                                     79            79            87            87            87            90
+  21 Acceleration 加速                              79            82            91            94            94            97
+  22 Kicking Power 脚下力量                         77            77            85            85            85            88
+  23 Jumping 跳起                                   64            64            68            68            68            70
+  24 Physical Contact 身体接触                      81            81            85            85            85            88
+  25 Balance 平衡                                   74            74            86            86            86            89
+  26 Stamina 体力                                   58            58            66            66            66            68
+  L1: 1 级卡面（无增能）
+  L1+FIXED: 1 级 + 已激活固定增能
+  MAX: 满级中性（培养后，无增能、无主教练）
+  MAX+FIXED: 满级 + 已激活固定增能
+  MAX+BOOSTERS: 满级 + 固定增能 + 可训练（制作）增能
+  MAX+MANAGER: 满级 + 主教练熟练度 + 全部增能 + 主教练增能
+  主教练：熟练度 89（模型 efx）、增能 无 [T3，社区逆向，待客户端核实]；游戏内总评是否计入主教练影响 [T3，社区逆向，待客户端核实]
+
+--- 各位置总评 [T3+T4，社区逆向，本组推断，待客户端核实] ---
+  阶段             GK   CB   LB   RB  DMF  CMF  LMF  RMF  AMF  LWF  RWF   SS   CF
+  L1               44   65   73   73   67   75   81   81   84   86   86   88   87
+  L1+FIXED         44   66   74   74   68   77   82   82   85   88   88   90   90
+  MAX              46   71   82   82   73   83   90   90   93   97   97   99  100
+  MAX+FIXED        46   72   83   83   74   84   92   92   95   99   99  101  102
+  MAX+BOOSTERS     46   72   83   83   74   84   92   92   95   99   99  101  102
+  MAX+MANAGER      48   75   87   87   77   88   96   96   99  104  104  106  107
+
+--- 比赛中实际能力（满体力、状态正常、无情境技能；位置适性/主教练按 efx 模型）[T3，社区逆向，待客户端核实] ---
+  能力                                      LWF(M)     SS(M)     CF(H)
+   1 Attacking Awareness 进攻意识               94        94        99
+   2 Ball Control 控球                          87        87        94
+   3 Dribbling 盘球                             82        82        89
+   4 Tight Possession 紧密控球                  89        89        89
+   5 Low Pass 地面传球                          69        69        74
+   6 Lofted Pass 空中传球                       64        64        69
+   7 Finishing 射门                             91        91        98
+   8 Heading 头球                               65        65        70
+   9 Set Piece Taking 罚定位球                  65        65        70
+  10 Curl 弧线球                                74        74        79
+  11 Defensive Awareness 防守意识               41        41        43
+  12 Tackling 抢球                              43        43        46
+  13 Aggression 积极性                          51        51        51
+  14 Defensive Engagement 防守参与度            43        43        43
+  20 Speed 速度                                 83        83        90
+  21 Acceleration 加速                          92        92        97
+  22 Kicking Power 脚下力量                     83        83        88
+  23 Jumping 跳起                               65        65        70
+  24 Physical Contact 身体接触                  85        85        88
+  25 Balance 平衡                               86        86        89
+  26 Stamina 体力                               66        66        68
+
+--- 校验 ---
+  无问题
+
+--- 本次用到的规则与出处 ---
+  STAT_RANGE: 卡面 26 项能力取值 40–99（外场球员 5 项 GK 能力抽查均为 40） —— 04 §2.2 [S21][S25] [T3，社区逆向，待客户端核实]
+  POINTS: 可用能力点 = 2 × (最高等级 − 1) —— 04 §5.2 [S22][S26][S23] [T3，社区逆向，待客户端核实]
+  STEP_COST: 同一类别第 n 次加点花费 ⌈n/4⌉；前 n 次累计 (g+1)(2g+r)，g=⌊n/4⌋，r=n mod 4；第 13 次以后的单价为公式外推 —— 04 §5.4 [S22][S26][S27] [T3，社区逆向，待客户端核实]
+  CATEGORY_MAP: 10 个培养类别与能力的对应（Jumping 同属 Aerial Strength 与 GK 1） —— 04 §5.3 [S22][S26] [T3，社区逆向，待客户端核实]
+  TRAIN_CAP_99: 培养加点在卡面阶段完成，每项最高 99 —— 04 §6.6 第 7 条 [S22] [T3，社区逆向，待客户端核实]
+  AUTO_DEV_GOAL: 游戏内'自动提升'（Auto Development）的目标是每次升级后重新分配全部点数使总评最大 —— 04 §5.5 [S10][S17] [T1]
+  AUTO_DEV_GREEDY: pesdb 的最大化算法为贪心：每步选'总评增量 ÷ 花费'最高的类别（并列取类别顺序靠前者，零增量也会被选）。游戏内是否同一算法：未找到 —— 04 §5.5 [S22]、§10 U10 [T3，社区逆向，待客户端核实]
+  BOOST_AFTER_CAP: 增能点在 99 封顶之后相加，且不被主教练倍率缩放 —— 04 §6.6 [S25][S22] [T3，社区逆向，待客户端核实]
+  BOOST_CAP_120: 加上增能后的能力上限 120 —— 04 §2.2/§6.6 [S25] [T3，社区逆向，待客户端核实]
+  RATING_FORMULA: 总评 = floor([Σ(能力−25)×权重 + (身高−136)×身高权重 + (WFR−25)×4 + 500] / 1000)，WFR = floor(59×WFA/3+40)；能力为培养后+增能后值；不含技能/风格/状态 —— 04 §7.1 [S22]，§7.3 本组复算 [T3+T4，社区逆向，本组推断，待客户端核实]
+  RATING_WEIGHTS: 13 个位置 × 26 项能力 + 身高的总评权重表（原样摘自 pesdb，含 LMF/RMF 不对称） —— 04 §7.2 [S22] [T3，社区逆向，待客户端核实]
+  MANAGER_FORMULA: 主教练球队风格熟练度倍率：p<90 时 (104−38(p−99)²/99²)/100，p≥90 时 (99.253+0.0485p)/100；增量 = (倍率−1)×卡面值，向零取整；作用于 26 项（逆足精度不在其内），结果封顶 99 —— 04 §6.5 [S25] [T3，社区逆向，待客户端核实]
+  MANAGER_THRESHOLDS: pesdb/ef-labo 的主教练熟练度门槛表（p=70–90）：能力值达到门槛即 +1/+2/+3。与 MANAGER_FORMULA 在 p=73、81、82、84、85、86、90 处有一个门槛差 1–2 点（本组实现时发现，见 manager_threshold_mismatches()）；其余 14 个值一致 —— 04 §6.5 [S22][S26] [T3+T4，社区逆向，本组推断，待客户端核实]
+  MATCH_ORDER: 比赛中叠加顺序：卡面+状态→[40,99]→+技能加成/Link-up→+(位置×疲劳×主教练−1)×卡面值(向零取整)→[40,99]→+增能（≤120） —— 04 §6.6 [S25] [T3，社区逆向，待客户端核实]
+  OUT_OF_POSITION: 非高适性位置的能力倍率（浅绿/无色三组），只按卡面值计算，增能不打折 —— 04 §3.6 [S25] [T3，社区逆向，待客户端核实]
+  SKILL_LIST: 67 种球员技能（pesdb eFootball 2027 筛选器）；客户端技能位序/编码与 11.1.1 中是否全部存在未核对 —— 04 §4.1–4.2 [S20][S25]、§10 U4 [T3，社区逆向，待客户端核实]
+  SKILL_CARD_MAX: 卡面技能实测最多 10 个（硬性上限未找到；本工具按 10 个作硬限制） —— 04 §4.1、§10 U3 [T3，社区逆向，待客户端核实]
+  SKILL_SPECIAL: 特殊技能不能训练，只能写在卡面；19 个 Show Time 技能（[S34]）+ 4 个 2026 新技能（本组推断） —— 04 §4.1 [S34][S37][S41]、§10 U4/U5 [T2+T3+T4，社区逆向，本组推断，待客户端核实]
+  BOOSTER_LIST: 常规增能 29 种（pesdb 列表）与官方'全部 28 种'冲突；各项 4 能力组合取自 pesdb —— 04 §6.2 [S14][S21][S28]、§10 U6 [T1+T3，社区逆向，待客户端核实]
+  BOOSTER_FIXED_RANGE: 卡面固定增能抽样所见：4 项型 +3 至 +6；单项型 +6 或 +8；Total Package +3（26 项全部） —— 04 §6.3–6.4 [S21] [T3，社区逆向，待客户端核实]
+  STYLE_COMPAT: 比赛风格的兼容位置（11.1.1 代码），不兼容位置上大部分失效；LWF/RWF 等左右同组 —— 04 §3.7 [S25]（Classic No. 10 另有 T1 [S08]） [T3，社区逆向，待客户端核实]
+
+
+####################################################################################################
+# 3. 精确最优加点（核对与 1、2 相同）
+# $ python3 tools/data/progression_sim.py data/game/r9_2002_player.json --allocation optimal --no-steps --no-levels
+# 退出码 0
+####################################################################################################
+=== Ronaldo Nazário  card_id=88044146203441  卡种=Epic ===
+注册位置 CF；身高 183 cm；体重 82 kg（比赛逻辑不用体重，社区逆向）；年龄 25
+惯用脚 Right；逆足频率 Regularly（逆足概率 100%；弧线射门等技能射门两只脚都可作候选）；逆足精度 High（pesdb 编码 2，总评 WFR=79；逆足踢球扣分 −7 / −10 / −10 / −6，113 km/h）[T3，社区逆向，待客户端核实]
+状态波动 Standard（影响状态抽取，比赛逻辑不直接读取）[T1+T3，社区逆向，待客户端核实]；抗伤 Low（非接触伤病 ×1.5，负荷累积 ×1，严重度减半 30%，升级 5%）
+位置适性：LWF=中（浅绿）  SS=中（浅绿）  CF=高（深绿）（其余为低）
+进攻型风格 Goal Poacher（偷猎者；美式 Adv. Striker）兼容 CF；本卡生效位置 CF
+防守型风格 Attack Outlet（突前球员；美式 Attack Outlet）兼容 AMF, LWF, RWF, SS, CF；本卡生效位置 LWF, SS, CF
+AI 风格：Trickster
+卡面技能（7/10）：Scissors Feint, Cut Behind & Turn, Acceleration Burst★, Acrobatic Finishing, First-time Shot, Phenomenal Finishing★, Gamesmanship（★=特殊技能）
+附加技能（0/5）：无
+增能：slot 1: Striker's Instinct +3（固定，激活；offensive_awareness, ball_control, finishing, acceleration）；slot 2: 空增能槽（可制作 +1）
+最高等级 32 → 能力点 62 = 2×(32−1) [T3，社区逆向，待客户端核实]
+
+--- 加点方案：optimal（精确最大化 1×CF 总评权重） ---
+  Shooting(射门)=10, Dribbling(盘球)=4, Dexterity(灵巧)=12, Aerial Strength(空中力量)=4, Lower Body Strength(下肢力量)=8；花费 62/62 [T3，社区逆向，待客户端核实]
+
+--- 26 项能力：各阶段（增能在 99 封顶之后相加，上限 120）---
+  能力                                              L1      L1+FIXED           MAX     MAX+FIXED  MAX+BOOSTERS   MAX+MANAGER
+   1 Attacking Awareness 进攻意识                   81            84            93            96            96            99
+   2 Ball Control 控球                              84            87            88            91            91            94
+   3 Dribbling 盘球                                 82            82            86            86            86            89
+   4 Tight Possession 紧密控球                      82            82            86            86            86            89
+   5 Low Pass 地面传球                              72            72            72            72            72            74
+   6 Lofted Pass 空中传球                           67            67            67            67            67            69
+   7 Finishing 射门                                 82            85            92            95            95            98
+   8 Heading 头球                                   64            64            68            68            68            70
+   9 Set Piece Taking 罚定位球                      58            58            68            68            68            70
+  10 Curl 弧线球                                    67            67            77            77            77            79
+  11 Defensive Awareness 防守意识                   42            42            42            42            42            43
+  12 Tackling 抢球                                  45            45            45            45            45            46
+  13 Aggression 积极性                              50            50            50            50            50            51
+  14 Defensive Engagement 防守参与度                42            42            42            42            42            43
+  15 GK Awareness 守门员意识                        40            40            40            40            40            41
+  16 GK Catching 守门员接球能力                     40            40            40            40            40            41
+  17 GK Parrying 守门员扑救                         40            40            40            40            40            41
+  18 GK Reflexes 守门员扑救反应                     40            40            40            40            40            41
+  19 GK Reach 守门员臂展                            40            40            40            40            40            41
+  20 Speed 速度                                     79            79            87            87            87            90
+  21 Acceleration 加速                              79            82            91            94            94            97
+  22 Kicking Power 脚下力量                         77            77            85            85            85            88
+  23 Jumping 跳起                                   64            64            68            68            68            70
+  24 Physical Contact 身体接触                      81            81            85            85            85            88
+  25 Balance 平衡                                   74            74            86            86            86            89
+  26 Stamina 体力                                   58            58            66            66            66            68
+  L1: 1 级卡面（无增能）
+  L1+FIXED: 1 级 + 已激活固定增能
+  MAX: 满级中性（培养后，无增能、无主教练）
+  MAX+FIXED: 满级 + 已激活固定增能
+  MAX+BOOSTERS: 满级 + 固定增能 + 可训练（制作）增能
+  MAX+MANAGER: 满级 + 主教练熟练度 + 全部增能 + 主教练增能
+  主教练：熟练度 89（模型 efx）、增能 无 [T3，社区逆向，待客户端核实]；游戏内总评是否计入主教练影响 [T3，社区逆向，待客户端核实]
+
+--- 各位置总评 [T3+T4，社区逆向，本组推断，待客户端核实] ---
+  阶段             GK   CB   LB   RB  DMF  CMF  LMF  RMF  AMF  LWF  RWF   SS   CF
+  L1               44   65   73   73   67   75   81   81   84   86   86   88   87
+  L1+FIXED         44   66   74   74   68   77   82   82   85   88   88   90   90
+  MAX              46   71   82   82   73   83   90   90   93   97   97   99  100
+  MAX+FIXED        46   72   83   83   74   84   92   92   95   99   99  101  102
+  MAX+BOOSTERS     46   72   83   83   74   84   92   92   95   99   99  101  102
+  MAX+MANAGER      48   75   87   87   77   88   96   96   99  104  104  106  107
+
+--- 比赛中实际能力（满体力、状态正常、无情境技能；位置适性/主教练按 efx 模型）[T3，社区逆向，待客户端核实] ---
+  能力                                      LWF(M)     SS(M)     CF(H)
+   1 Attacking Awareness 进攻意识               94        94        99
+   2 Ball Control 控球                          87        87        94
+   3 Dribbling 盘球                             82        82        89
+   4 Tight Possession 紧密控球                  89        89        89
+   5 Low Pass 地面传球                          69        69        74
+   6 Lofted Pass 空中传球                       64        64        69
+   7 Finishing 射门                             91        91        98
+   8 Heading 头球                               65        65        70
+   9 Set Piece Taking 罚定位球                  65        65        70
+  10 Curl 弧线球                                74        74        79
+  11 Defensive Awareness 防守意识               41        41        43
+  12 Tackling 抢球                              43        43        46
+  13 Aggression 积极性                          51        51        51
+  14 Defensive Engagement 防守参与度            43        43        43
+  20 Speed 速度                                 83        83        90
+  21 Acceleration 加速                          92        92        97
+  22 Kicking Power 脚下力量                     83        83        88
+  23 Jumping 跳起                               65        65        70
+  24 Physical Contact 身体接触                  85        85        88
+  25 Balance 平衡                               86        86        89
+  26 Stamina 体力                               66        66        68
+
+--- 校验 ---
+  无问题
+
+--- 本次用到的规则与出处 ---
+  STAT_RANGE: 卡面 26 项能力取值 40–99（外场球员 5 项 GK 能力抽查均为 40） —— 04 §2.2 [S21][S25] [T3，社区逆向，待客户端核实]
+  POINTS: 可用能力点 = 2 × (最高等级 − 1) —— 04 §5.2 [S22][S26][S23] [T3，社区逆向，待客户端核实]
+  STEP_COST: 同一类别第 n 次加点花费 ⌈n/4⌉；前 n 次累计 (g+1)(2g+r)，g=⌊n/4⌋，r=n mod 4；第 13 次以后的单价为公式外推 —— 04 §5.4 [S22][S26][S27] [T3，社区逆向，待客户端核实]
+  CATEGORY_MAP: 10 个培养类别与能力的对应（Jumping 同属 Aerial Strength 与 GK 1） —— 04 §5.3 [S22][S26] [T3，社区逆向，待客户端核实]
+  TRAIN_CAP_99: 培养加点在卡面阶段完成，每项最高 99 —— 04 §6.6 第 7 条 [S22] [T3，社区逆向，待客户端核实]
+  AUTO_DEV_GOAL: 游戏内'自动提升'（Auto Development）的目标是每次升级后重新分配全部点数使总评最大 —— 04 §5.5 [S10][S17] [T1]
+  AUTO_DEV_GREEDY: pesdb 的最大化算法为贪心：每步选'总评增量 ÷ 花费'最高的类别（并列取类别顺序靠前者，零增量也会被选）。游戏内是否同一算法：未找到 —— 04 §5.5 [S22]、§10 U10 [T3，社区逆向，待客户端核实]
+  BOOST_AFTER_CAP: 增能点在 99 封顶之后相加，且不被主教练倍率缩放 —— 04 §6.6 [S25][S22] [T3，社区逆向，待客户端核实]
+  BOOST_CAP_120: 加上增能后的能力上限 120 —— 04 §2.2/§6.6 [S25] [T3，社区逆向，待客户端核实]
+  RATING_FORMULA: 总评 = floor([Σ(能力−25)×权重 + (身高−136)×身高权重 + (WFR−25)×4 + 500] / 1000)，WFR = floor(59×WFA/3+40)；能力为培养后+增能后值；不含技能/风格/状态 —— 04 §7.1 [S22]，§7.3 本组复算 [T3+T4，社区逆向，本组推断，待客户端核实]
+  RATING_WEIGHTS: 13 个位置 × 26 项能力 + 身高的总评权重表（原样摘自 pesdb，含 LMF/RMF 不对称） —— 04 §7.2 [S22] [T3，社区逆向，待客户端核实]
+  MANAGER_FORMULA: 主教练球队风格熟练度倍率：p<90 时 (104−38(p−99)²/99²)/100，p≥90 时 (99.253+0.0485p)/100；增量 = (倍率−1)×卡面值，向零取整；作用于 26 项（逆足精度不在其内），结果封顶 99 —— 04 §6.5 [S25] [T3，社区逆向，待客户端核实]
+  MANAGER_THRESHOLDS: pesdb/ef-labo 的主教练熟练度门槛表（p=70–90）：能力值达到门槛即 +1/+2/+3。与 MANAGER_FORMULA 在 p=73、81、82、84、85、86、90 处有一个门槛差 1–2 点（本组实现时发现，见 manager_threshold_mismatches()）；其余 14 个值一致 —— 04 §6.5 [S22][S26] [T3+T4，社区逆向，本组推断，待客户端核实]
+  MATCH_ORDER: 比赛中叠加顺序：卡面+状态→[40,99]→+技能加成/Link-up→+(位置×疲劳×主教练−1)×卡面值(向零取整)→[40,99]→+增能（≤120） —— 04 §6.6 [S25] [T3，社区逆向，待客户端核实]
+  OUT_OF_POSITION: 非高适性位置的能力倍率（浅绿/无色三组），只按卡面值计算，增能不打折 —— 04 §3.6 [S25] [T3，社区逆向，待客户端核实]
+  SKILL_LIST: 67 种球员技能（pesdb eFootball 2027 筛选器）；客户端技能位序/编码与 11.1.1 中是否全部存在未核对 —— 04 §4.1–4.2 [S20][S25]、§10 U4 [T3，社区逆向，待客户端核实]
+  SKILL_CARD_MAX: 卡面技能实测最多 10 个（硬性上限未找到；本工具按 10 个作硬限制） —— 04 §4.1、§10 U3 [T3，社区逆向，待客户端核实]
+  SKILL_SPECIAL: 特殊技能不能训练，只能写在卡面；19 个 Show Time 技能（[S34]）+ 4 个 2026 新技能（本组推断） —— 04 §4.1 [S34][S37][S41]、§10 U4/U5 [T2+T3+T4，社区逆向，本组推断，待客户端核实]
+  BOOSTER_LIST: 常规增能 29 种（pesdb 列表）与官方'全部 28 种'冲突；各项 4 能力组合取自 pesdb —— 04 §6.2 [S14][S21][S28]、§10 U6 [T1+T3，社区逆向，待客户端核实]
+  BOOSTER_FIXED_RANGE: 卡面固定增能抽样所见：4 项型 +3 至 +6；单项型 +6 或 +8；Total Package +3（26 项全部） —— 04 §6.3–6.4 [S21] [T3，社区逆向，待客户端核实]
+  STYLE_COMPAT: 比赛风格的兼容位置（11.1.1 代码），不兼容位置上大部分失效；LWF/RWF 等左右同组 —— 04 §3.7 [S25]（Classic No. 10 另有 T1 [S08]） [T3，社区逆向，待客户端核实]
+
+
+####################################################################################################
+# 4. 变体：slot 2 制作推荐增能 Ball Protection +1（其余与 JSON 相同）
+# $ python3 tools/data/progression_sim.py <临时文件：data/game/r9_2002_player.json 的 slot 2 改为 Ball Protection +1> --no-steps --no-levels
+# 退出码 0
+####################################################################################################
+=== Ronaldo Nazário  card_id=88044146203441  卡种=Epic ===
+注册位置 CF；身高 183 cm；体重 82 kg（比赛逻辑不用体重，社区逆向）；年龄 25
+惯用脚 Right；逆足频率 Regularly（逆足概率 100%；弧线射门等技能射门两只脚都可作候选）；逆足精度 High（pesdb 编码 2，总评 WFR=79；逆足踢球扣分 −7 / −10 / −10 / −6，113 km/h）[T3，社区逆向，待客户端核实]
+状态波动 Standard（影响状态抽取，比赛逻辑不直接读取）[T1+T3，社区逆向，待客户端核实]；抗伤 Low（非接触伤病 ×1.5，负荷累积 ×1，严重度减半 30%，升级 5%）
+位置适性：LWF=中（浅绿）  SS=中（浅绿）  CF=高（深绿）（其余为低）
+进攻型风格 Goal Poacher（偷猎者；美式 Adv. Striker）兼容 CF；本卡生效位置 CF
+防守型风格 Attack Outlet（突前球员；美式 Attack Outlet）兼容 AMF, LWF, RWF, SS, CF；本卡生效位置 LWF, SS, CF
+AI 风格：Trickster
+卡面技能（7/10）：Scissors Feint, Cut Behind & Turn, Acceleration Burst★, Acrobatic Finishing, First-time Shot, Phenomenal Finishing★, Gamesmanship（★=特殊技能）
+附加技能（0/5）：无
+增能：slot 1: Striker's Instinct +3（固定，激活；offensive_awareness, ball_control, finishing, acceleration）；slot 2: Ball Protection +1（可训练/制作，激活；ball_control, tight_possession, physical_contact, balance）
+最高等级 32 → 能力点 62 = 2×(32−1) [T3，社区逆向，待客户端核实]
+
+--- 加点方案：card（输入文件给定；步骤顺序为本工具按总评增量排出） ---
+  Shooting(射门)=10, Dribbling(盘球)=4, Dexterity(灵巧)=12, Aerial Strength(空中力量)=4, Lower Body Strength(下肢力量)=8；花费 62/62 [T3，社区逆向，待客户端核实]
+
+--- 26 项能力：各阶段（增能在 99 封顶之后相加，上限 120）---
+  能力                                              L1      L1+FIXED           MAX     MAX+FIXED  MAX+BOOSTERS   MAX+MANAGER
+   1 Attacking Awareness 进攻意识                   81            84            93            96            96            99
+   2 Ball Control 控球                              84            87            88            91            92            95
+   3 Dribbling 盘球                                 82            82            86            86            86            89
+   4 Tight Possession 紧密控球                      82            82            86            86            87            90
+   5 Low Pass 地面传球                              72            72            72            72            72            74
+   6 Lofted Pass 空中传球                           67            67            67            67            67            69
+   7 Finishing 射门                                 82            85            92            95            95            98
+   8 Heading 头球                                   64            64            68            68            68            70
+   9 Set Piece Taking 罚定位球                      58            58            68            68            68            70
+  10 Curl 弧线球                                    67            67            77            77            77            79
+  11 Defensive Awareness 防守意识                   42            42            42            42            42            43
+  12 Tackling 抢球                                  45            45            45            45            45            46
+  13 Aggression 积极性                              50            50            50            50            50            51
+  14 Defensive Engagement 防守参与度                42            42            42            42            42            43
+  15 GK Awareness 守门员意识                        40            40            40            40            40            41
+  16 GK Catching 守门员接球能力                     40            40            40            40            40            41
+  17 GK Parrying 守门员扑救                         40            40            40            40            40            41
+  18 GK Reflexes 守门员扑救反应                     40            40            40            40            40            41
+  19 GK Reach 守门员臂展                            40            40            40            40            40            41
+  20 Speed 速度                                     79            79            87            87            87            90
+  21 Acceleration 加速                              79            82            91            94            94            97
+  22 Kicking Power 脚下力量                         77            77            85            85            85            88
+  23 Jumping 跳起                                   64            64            68            68            68            70
+  24 Physical Contact 身体接触                      81            81            85            85            86            89
+  25 Balance 平衡                                   74            74            86            86            87            90
+  26 Stamina 体力                                   58            58            66            66            66            68
+  L1: 1 级卡面（无增能）
+  L1+FIXED: 1 级 + 已激活固定增能
+  MAX: 满级中性（培养后，无增能、无主教练）
+  MAX+FIXED: 满级 + 已激活固定增能
+  MAX+BOOSTERS: 满级 + 固定增能 + 可训练（制作）增能
+  MAX+MANAGER: 满级 + 主教练熟练度 + 全部增能 + 主教练增能
+  主教练：熟练度 89（模型 efx）、增能 无 [T3，社区逆向，待客户端核实]；游戏内总评是否计入主教练影响 [T3，社区逆向，待客户端核实]
+
+--- 各位置总评 [T3+T4，社区逆向，本组推断，待客户端核实] ---
+  阶段             GK   CB   LB   RB  DMF  CMF  LMF  RMF  AMF  LWF  RWF   SS   CF
+  L1               44   65   73   73   67   75   81   81   84   86   86   88   87
+  L1+FIXED         44   66   74   74   68   77   82   82   85   88   88   90   90
+  MAX              46   71   82   82   73   83   90   90   93   97   97   99  100
+  MAX+FIXED        46   72   83   83   74   84   92   92   95   99   99  101  102
+  MAX+BOOSTERS     46   72   83   83   74   85   92   92   95  100  100  101  103
+  MAX+MANAGER      49   75   87   87   78   89   96   96   99  104  104  106  107
+
+--- 比赛中实际能力（满体力、状态正常、无情境技能；位置适性/主教练按 efx 模型）[T3，社区逆向，待客户端核实] ---
+  能力                                      LWF(M)     SS(M)     CF(H)
+   1 Attacking Awareness 进攻意识               94        94        99
+   2 Ball Control 控球                          88        88        95
+   3 Dribbling 盘球                             82        82        89
+   4 Tight Possession 紧密控球                  90        90        90
+   5 Low Pass 地面传球                          69        69        74
+   6 Lofted Pass 空中传球                       64        64        69
+   7 Finishing 射门                             91        91        98
+   8 Heading 头球                               65        65        70
+   9 Set Piece Taking 罚定位球                  65        65        70
+  10 Curl 弧线球                                74        74        79
+  11 Defensive Awareness 防守意识               41        41        43
+  12 Tackling 抢球                              43        43        46
+  13 Aggression 积极性                          51        51        51
+  14 Defensive Engagement 防守参与度            43        43        43
+  20 Speed 速度                                 83        83        90
+  21 Acceleration 加速                          92        92        97
+  22 Kicking Power 脚下力量                     83        83        88
+  23 Jumping 跳起                               65        65        70
+  24 Physical Contact 身体接触                  86        86        89
+  25 Balance 平衡                               87        87        90
+  26 Stamina 体力                               66        66        68
+
+--- 校验 ---
+  无问题
+
+--- 本次用到的规则与出处 ---
+  STAT_RANGE: 卡面 26 项能力取值 40–99（外场球员 5 项 GK 能力抽查均为 40） —— 04 §2.2 [S21][S25] [T3，社区逆向，待客户端核实]
+  POINTS: 可用能力点 = 2 × (最高等级 − 1) —— 04 §5.2 [S22][S26][S23] [T3，社区逆向，待客户端核实]
+  STEP_COST: 同一类别第 n 次加点花费 ⌈n/4⌉；前 n 次累计 (g+1)(2g+r)，g=⌊n/4⌋，r=n mod 4；第 13 次以后的单价为公式外推 —— 04 §5.4 [S22][S26][S27] [T3，社区逆向，待客户端核实]
+  CATEGORY_MAP: 10 个培养类别与能力的对应（Jumping 同属 Aerial Strength 与 GK 1） —— 04 §5.3 [S22][S26] [T3，社区逆向，待客户端核实]
+  TRAIN_CAP_99: 培养加点在卡面阶段完成，每项最高 99 —— 04 §6.6 第 7 条 [S22] [T3，社区逆向，待客户端核实]
+  AUTO_DEV_GOAL: 游戏内'自动提升'（Auto Development）的目标是每次升级后重新分配全部点数使总评最大 —— 04 §5.5 [S10][S17] [T1]
+  AUTO_DEV_GREEDY: pesdb 的最大化算法为贪心：每步选'总评增量 ÷ 花费'最高的类别（并列取类别顺序靠前者，零增量也会被选）。游戏内是否同一算法：未找到 —— 04 §5.5 [S22]、§10 U10 [T3，社区逆向，待客户端核实]
+  BOOST_AFTER_CAP: 增能点在 99 封顶之后相加，且不被主教练倍率缩放 —— 04 §6.6 [S25][S22] [T3，社区逆向，待客户端核实]
+  BOOST_CAP_120: 加上增能后的能力上限 120 —— 04 §2.2/§6.6 [S25] [T3，社区逆向，待客户端核实]
+  RATING_FORMULA: 总评 = floor([Σ(能力−25)×权重 + (身高−136)×身高权重 + (WFR−25)×4 + 500] / 1000)，WFR = floor(59×WFA/3+40)；能力为培养后+增能后值；不含技能/风格/状态 —— 04 §7.1 [S22]，§7.3 本组复算 [T3+T4，社区逆向，本组推断，待客户端核实]
+  RATING_WEIGHTS: 13 个位置 × 26 项能力 + 身高的总评权重表（原样摘自 pesdb，含 LMF/RMF 不对称） —— 04 §7.2 [S22] [T3，社区逆向，待客户端核实]
+  MANAGER_FORMULA: 主教练球队风格熟练度倍率：p<90 时 (104−38(p−99)²/99²)/100，p≥90 时 (99.253+0.0485p)/100；增量 = (倍率−1)×卡面值，向零取整；作用于 26 项（逆足精度不在其内），结果封顶 99 —— 04 §6.5 [S25] [T3，社区逆向，待客户端核实]
+  MANAGER_THRESHOLDS: pesdb/ef-labo 的主教练熟练度门槛表（p=70–90）：能力值达到门槛即 +1/+2/+3。与 MANAGER_FORMULA 在 p=73、81、82、84、85、86、90 处有一个门槛差 1–2 点（本组实现时发现，见 manager_threshold_mismatches()）；其余 14 个值一致 —— 04 §6.5 [S22][S26] [T3+T4，社区逆向，本组推断，待客户端核实]
+  MATCH_ORDER: 比赛中叠加顺序：卡面+状态→[40,99]→+技能加成/Link-up→+(位置×疲劳×主教练−1)×卡面值(向零取整)→[40,99]→+增能（≤120） —— 04 §6.6 [S25] [T3，社区逆向，待客户端核实]
+  OUT_OF_POSITION: 非高适性位置的能力倍率（浅绿/无色三组），只按卡面值计算，增能不打折 —— 04 §3.6 [S25] [T3，社区逆向，待客户端核实]
+  SKILL_LIST: 67 种球员技能（pesdb eFootball 2027 筛选器）；客户端技能位序/编码与 11.1.1 中是否全部存在未核对 —— 04 §4.1–4.2 [S20][S25]、§10 U4 [T3，社区逆向，待客户端核实]
+  SKILL_CARD_MAX: 卡面技能实测最多 10 个（硬性上限未找到；本工具按 10 个作硬限制） —— 04 §4.1、§10 U3 [T3，社区逆向，待客户端核实]
+  SKILL_SPECIAL: 特殊技能不能训练，只能写在卡面；19 个 Show Time 技能（[S34]）+ 4 个 2026 新技能（本组推断） —— 04 §4.1 [S34][S37][S41]、§10 U4/U5 [T2+T3+T4，社区逆向，本组推断，待客户端核实]
+  BOOSTER_LIST: 常规增能 29 种（pesdb 列表）与官方'全部 28 种'冲突；各项 4 能力组合取自 pesdb —— 04 §6.2 [S14][S21][S28]、§10 U6 [T1+T3，社区逆向，待客户端核实]
+  BOOSTER_FIXED_RANGE: 卡面固定增能抽样所见：4 项型 +3 至 +6；单项型 +6 或 +8；Total Package +3（26 项全部） —— 04 §6.3–6.4 [S21] [T3，社区逆向，待客户端核实]
+  STYLE_COMPAT: 比赛风格的兼容位置（11.1.1 代码），不兼容位置上大部分失效；LWF/RWF 等左右同组 —— 04 §3.7 [S25]（Classic No. 10 另有 T1 [S08]） [T3，社区逆向，待客户端核实]

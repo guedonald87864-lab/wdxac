@@ -71,7 +71,7 @@
 **移动端的引擎沿革**
 - 2018-12，PES 2019 Mobile 更新为 Unreal Engine 4。
   - mac4ever [S05] 原文："utilise désormais le moteur d'Epic Unreal Engine 4"，该更新要求 iOS 9.0。[T2]
-  - 9to5mac [S06] 报道同一次更新，称从 UE3 升级到 UE4。[T2，**只看到搜索摘要，未直接读取页面**]
+  - 9to5mac [S06] 报道同一次更新，称从 UE3 升级到 UE4。[T2，**只看到搜索摘要，未直接读取页面**]（核查更正：核查时已直接读取页面。标题 "Pro Evolution Soccer 2019 for iOS updated with Unreal Engine 4, 12 new leagues"，2018-12-17 9:33 am PT，原文 "upgrading from Unreal Engine 3 to Unreal Engine 4"。不再只是搜索摘要，结论确认）
 - 这说明移动端在 2018 年已经用 UE4，比主机版 2021 年转用 UE 更早。当时的 UE4 小版本号**未找到**。
 
 ### 1.2 社区与代码证据（版本号）[T3]
@@ -82,7 +82,14 @@
 | Gildor 论坛主题「[UE4] eFootball PES Mobile」（国服《实况足球》，pes.163.com） | UE 4.26。<br>"pc0000 is actually zip file and should be extracted first"。<br>"pc* paks are using key for global/pc version while nt* paks are using separate key"。 | 2023-07-12 | [S08] |
 | CUE4Parse commit `7fdb7b9a`「eFootball support」（作者 LongerWarrior） | 在 `EGame.cs` 中新增 `GAME_eFootball = GAME_UE4_26 + 29`。<br>改动 `FFilePackageStoreEntry.cs`：eFootball 的包条目只读 `ExportCount`、`ExportBundleCount`、`ImportedPackages`。<br>改动 `FInstancedStaticMeshInstanceData.cs`：多跳 16 字节。 | 2026-07-03 | [S09] |
 | retoc issue #18 | 报告者使用 UE 4.26.2，路径为 `...\obb\PesMobile\Content\Paks`。<br>报错 "Failed to parse ContainerHeader (FIoChunkId { chunk_id: "29f5850b27aea78f0000000a" ... })"。<br>维护者的解决办法是 `--override-container-header-version PreInitial`，报告者确认 "it worked"。 | 2025-03-06 至 03-15 | [S11] |
-| pesmodding 教程「eFootball detailed texture replacement」 | 要求 "Unreal Engine 4.26.2"，工程名必须是 "PesConsole"。<br>把打出的 `pakchunk1-WindowsNoEditor` 三件套改名为 `pc3607_console_win` 后替换原文件（球衣贴图）。 | 2023-07-04 | [S15] |
+| pesmodding 教程「eFootball detailed texture replacement」 | 要求 "Unreal Engine 4.26.2"，工程名必须是 "PesConsole"。<br>把打出的 `pakchunk1-WindowsNoEditor` 三件套改名为 `pc3607_console_win` 后替换原文件（球衣贴图）。（核查补注：页面标题为 "eFootball 2023 Detailed Texture Replacement Tutorial"，由 G. Leroy 发布，教程署名 Cadi Lillian。其余细节逐条确认） | 2023-07-04 | [S15] |
+
+> **核查补注（S07 原文）**
+> - 首帖原句："It expects global_console_win.utoc/ucas as default naming for global container, which is valid for steam version"。这里说的是 **umodel 专用构建**的默认命名。MS Store 等其他版本要把全局容器改成这个名字（第 9 楼：`global_console_wgd` → `global_console_win`）。
+> - 「改名为 `global.utoc/ucas`」出自**第 2 楼（2021-10-05）**，针对的是 FModel，不在首帖。
+> - 移动版那句的完整原文是 "For mobile version you don't need to rename global container **or use game specific override**"，并要求改选正确的引擎版本。也就是说，umodel 读移动版时**不需要** eFootball 专用覆盖选项。
+>   - 这与 §1.3 的「16 字节包条目」不一定矛盾：umodel 可能根本不读包条目。此推断【未核实】。
+> - 同帖说 "It's the first game from the series using UE4 engine"。这与 §1.1「PES 2019 Mobile 在 2018-12 已改用 UE4」[S05][S06] 字面上冲突。合理的解释是版主只指主机/PC 系列 [T4]。两种说法都保留。
 
 ### 1.3 解读与冲突
 
@@ -138,7 +145,7 @@
 - `X.utoc`：目录表（table of contents）。
 - `X.ucas`：数据。v3 起可以分区为 `X_s1.ucas`、`X_s2.ucas`……
 - `X.pak`：同名配套 pak。
-  - Epic Games Japan 的 UE4.25 IoStore 讲解 [S14][T1]：IoStore 在 4.25 为 Experimental、4.26 为 Beta；`.ucas` 是"コンテナファイル"，`.utoc` 是"目次ファイル"；`.pak` 保留访问较少的文件。
+  - Epic Games Japan 的 UE4.25 IoStore 讲解 [S14][T1]：IoStore 在 4.25 为 Experimental、4.26 为 Beta；`.ucas` 是"コンテナファイル"，`.utoc` 是"目次ファイル"；`.pak` 保留访问较少的文件。【未核实】核查时 SlideShare 页面无法加载（WebFetch 和 curl 都只拿到错误页），以上内容未能复读。此条不影响工具链结论。
   - 社区所有打包流程都是三件套同时出现 [S15][S16][S49][S48]。
   - [T4] 运行时很可能通过挂载 `.pak` 来带出同名的 IoStore 容器，所以替换时三件套的名字要一致。
 - 全局容器：UE4 为 `global.utoc/.ucas`，eFootball PC 为 `global_console_win.*` [S07]。
@@ -640,7 +647,7 @@ TArray PackageRedirects
 | 官方 oo2core 动态库 | Epic UE 源码的 SDK，或 OodleUE 镜像（`WorkingRobot/OodleUE`，按日更新，README 写明最新为 2.9.16） | **专有**；镜像 README 原文："By using these assets, you agree to the Unreal Engine EULA" | 压缩与解压 | [S39] |
 | repak `oodle_loader` | 运行时下载 `liboo2corelinux64.so.9`（Oodle 2.9.10），从 OodleUE 仓库的 `Engine/Source/Programs/Shared/EpicGames.Oodle/Sdk/` 路径获取并校验 sha256 | 同上 | 压缩与解压 | [S40] |
 | CUE4Parse `OodleHelper` | Linux 上下载 `liboodle-data-shared.so`（OodleUE release，2.9.16） | 同上 | 解压 | `OodleHelper.cs` |
-| Epic 官方说法 | 「Oodle now free to use in Unreal Engine via GitHub」；UE 4.27 发布时 "Oodle Compression Suite ... now built into Unreal Engine ... for free" | 免费的前提是在 UE 中使用（UE EULA） | — | [S36][S37]（**只看到搜索摘要**，页面返回 403） |
+| Epic 官方说法 | 「Oodle now free to use in Unreal Engine via GitHub」；UE 4.27 发布时 "Oodle Compression Suite ... now built into Unreal Engine ... for free" | 免费的前提是在 UE 中使用（UE EULA） | — | [S36][S37]（**只看到搜索摘要**，页面返回 403）【未核实】核查时两个 URL（含 `/en-US/` 变体）仍返回 403，原文无法复读 |
 | RAD Game Tools（现属 Epic） | 商业授权，"We generally license per game and per platform" | 商业 | — | [S38] |
 | **ooz**（powzix） | 源码 | **GPL-3.0**（`kraken.cpp` 文件头） | **解码** Kraken、Mermaid、Selkie、Leviathan、LZNA、Bitknit；压缩需要 Windows DLL | [S41]；本地 `/opt/tools/ref/ooz` |
 | **oozextract** | crates.io 0.5.6（2026-10-23） | crates.io 标为 **MIT** | 纯 Rust 解码 | [S42]。[T4] 它自称移植 ooz 的算法，而 ooz 是 GPL；许可沿袭关系**未核实**，商用前要查 |
@@ -659,9 +666,9 @@ TArray PackageRedirects
 | 类别 | 已知内容 | 来源 |
 |---|---|---|
 | UE 资源替换（PC） | **球衣贴图**：用 UE 4.26.2 新建空工程 "PesConsole"，开启 "Allow ChunkID Assignments"、"Use Pak File"、"Use IoStore"、"Generate Chunks"；把资产放在 `Content/Assets/character/Uniform/License/...` 并分配 chunk 1；用 Shipping 打包后改名为 `pc3607_console_win`。<br>球衣参数（长短袖、领型）在 `dt200_console_all.cpk` 内的 `.bin` 中用十六进制改。 | [S15]（2023-07-04，Cadi Lillian 教程） |
-| 综合补丁（PC） | EvoMod 5.4/5.5：改球衣、字体、号码、裁判、广告板、联赛 logo；涉及 `pc7000_console_win(_P)`、`evomod_FNT_P.pak`、`PesConsole/Content/Paks/~mods`。**没有提到脸** | [S16]（2026） |
-| UI 模组（PC） | 记分牌：把 `pc3610_console_win` 从 `eFootball/pak` 复制为 `PesConsole/Content/Paks/pc3610_console_win_P` | [S17]（2025-09） |
-| 数据编辑器 | `Player.bin`、`Team.bin`、`Country.bin`、`PlayerAppearance.bin`，路径为 `dt870_console_*.cpk` 内的 `common\etc\pesdb\`。<br>2024 版编辑器的外观功能"still is disabled"。<br>2027 版：固定 400 字节记录，WESYS 加密容器，`PlayerAppearance.bin` 有 "107 customizable parameters"，并说明这些参数与 "licensed 3D face models and head assets" 是分开的 | [S19]（2024-06）；[S18]（2026-10） |
+| 综合补丁（PC） | EvoMod 5.4/5.5：改球衣、字体、号码、裁判、广告板、联赛 logo；涉及 `pc7000_console_win(_P)`、`evomod_FNT_P.pak`、`PesConsole/Content/Paks/~mods`。**没有提到脸**（核查更正：该 URL 目前显示的是 "eFootball 2026 Patch: EvoMod 5.5.0"，2026-05-28 由 G. Leroy 发布，不是 5.4.0。内容逐条确认，包括「没有提到脸」） | [S16]（2026） |
+| UI 模组（PC） | 记分牌：把 `pc3610_console_win` 从 `eFootball/pak` 复制为 `PesConsole/Content/Paks/pc3610_console_win_P` | [S17]（2025-09）（核查更正：页面标题是 "eFootball 2026 Transparent Scoreboard for Blimp Camera Angle [ver. 2.0]"，日期 2025-09-01。安装步骤原文确认） |
+| 数据编辑器 | `Player.bin`、`Team.bin`、`Country.bin`、`PlayerAppearance.bin`，路径为 `dt870_console_*.cpk` 内的 `common\etc\pesdb\`。<br>2024 版编辑器的外观功能"still is disabled"。<br>2027 版：固定 400 字节记录，WESYS 加密容器，`PlayerAppearance.bin` 有 "107 customizable parameters"，并说明这些参数与 "licensed 3D face models and head assets" 是分开的<br>（核查更正：① S19 原文是 "player appearance feature is still disabled (data will be decoded again)"，不是 "still is disabled"。② `dt870` 路径不在 S19 正文，而在站长 2025-01-26 的评论里："open dt870_console_all file ..."，再到 "common\etc\pesdb\player.bin"。③ **S18（2027 版编辑器）说的是直接打开并写回 `dt200_console_all.cpk`**，不是 dt870。所以不同版本、不同工具给出的 CPK 不一致，以真实文件为准。400 字节、WESYS、107 项参数、与 3D 脸模分开这几句原文确认） | [S19]（2024-06）；[S18]（2026-10） |
 | 脸部模组 | 公开的**只有**「从 eFootball 导出的脸转换到 PES 2021（Fox 引擎）」的脸包，用 Sider 或 CPK 安装，提取过程没有公开。<br>**未找到任何把自制脸放进 eFootball（PC 或移动）的公开模组或教程。** | [S20] 等 |
 
 ### 5.2 球员脸部在 eFootball 中如何存储
@@ -679,6 +686,8 @@ TArray PackageRedirects
 
 **PES 时代（Fox 引擎）的做法，作对照**
 - PES 2021 的脸在 `Asset/model/character/face/real/<球员ID>/`，文件夹里的 `.fpk` 内嵌球员 ID；改 ID 要同时改文件夹名和 `.fpk` 内的 ID [S21][S20][T3]。
+  - 核查结果：S21 原文只给出示例 `.../face/real/44840`，说明工具会 "automatically edits the ID embedded inside the .fpk files and renames the folder"。这两点确认。
+  - **前缀 `Asset/model/character/` 在 S20、S21 中都没有出现，【未核实】。** S20 只说把带编号的 ID 文件夹复制到游戏的 face 目录。
 - [T4] eFootball 的数据表沿用了 PES 的 `Player.bin` 体系（编辑器沿用 PES 时代的命名），但头部模型改用 UE 资产。「按球员或脸 ID 映射到资产路径」的思路**可能**延续下来，但**没有证据**。
 
 **pc 编号已知含义**
@@ -714,7 +723,7 @@ Konami FAQ 把 "Game data modification: Notable changes were made to player abil
   - `minimumOsVersion` 15.0
   - 首次上架 2017-05-24
 - App Store 页面："Approximately 3.5 GB of free storage space is required"。
-- Android 包名为 `jp.konami.pesam` [S07]。
+- Android 包名为 `jp.konami.pesam` [S07]。（核查确认：S07 首帖含 Google Play 链接 `details?id=jp.konami.pesam`；Google Play 该页标题为 "eFootball™ - Apps on Google Play" [T1]）
 - 版本号 11.1.1 与任务书一致；build 号 11.1.101 公开资料中**没有**，需看 IPA 的 `Info.plist`（`CFBundleVersion`）。
 
 ### 6.2 代码签名与改动 [T1/T3]
@@ -726,10 +735,13 @@ Konami FAQ 把 "Game data modification: Notable changes were made to player abil
 
 **App Store 二进制是加密的 [T3]**
 - App Store 下发的二进制带 FairPlay 加密（`LC_ENCRYPTION_INFO(_64)` 的 `cryptid 1`），嵌入的框架同样如此 [S28]，是开发者论坛用户的观察，非 Apple 官方说明。
+  - （核查更正：S28 是一个关于「App Store 增量更新后启动失败（mremap_encrypted）」的帖子。楼主（普通用户 yyy07）的原话是 "every binary with `LC_ENCRYPTION_INFO_64` has `cryptid 1` ... the Firebase/Google frameworks are `cryptid 0`"。所以**并非所有嵌入框架都加密**，有的框架 `cryptid 0`。Apple DTS（Quinn）在帖中只建议提交 bug，没有解释加密机制。eFootball 主程序和框架实际的 cryptid 必须对真实 IPA 用 `otool -l` 检查）
 - [T4] 重签侧载需要已解密的二进制。资源文件（`.ucas` 等）是否也被 FairPlay 加密：**未找到**说明。从 FairPlay 只作用于 Mach-O 的描述看，大概率没有。
 
 **免费签名的期限 [T2]**
 - Apple DTS 工程师在论坛中说，免费 Personal Team 的描述文件 7 天过期，付费开发者为一年 [S27]（**只看到搜索摘要**）。
+  - （核查更正：已直接读取 S27。帖中**没有** Apple DTS 或 Apple 员工的回复。只有楼主（用户，2016-12）说付费账号的描述文件显示 7 天后过期、本以为是一年；另一用户 KMT 反问是否先用过免费描述文件。所以「DTS 工程师说」这一归属是错的。）
+  - 「免费 7 天 / 付费 1 年」【未核实】：S27 不能作为来源，需要 Apple 官方文档佐证。核查时 WebSearch 配额已用完，未能另找。
 
 **重签的副作用 [T4]**
 - 换签名团队后，原有 entitlements（Game Center、推送、iCloud、钥匙串访问组）可能失效。
@@ -787,7 +799,7 @@ Konami FAQ 把 "Game data modification: Notable changes were made to player abil
 
 | 来源 | 说法 | 等级 |
 |---|---|---|
-| Arm astcenc 文档 [S31] | 推荐把 X、Y 存在 **L+A 端点**：编码时用 `rrrg` 换位（`-normal`），采样用 `.ga`，Z 由 `sqrt(1−x²−y²)` 重建；如要匹配 BC5 的顺序，用 `-normal -esw gggr`，解码用 `-dsw arz1` | T1 |
+| Arm astcenc 文档 [S31] | 推荐把 X、Y 存在 **L+A 端点**：编码时用 `rrrg` 换位（`-normal`），采样用 `.ga`，Z 由 `sqrt(1−x²−y²)` 重建；如要匹配 BC5 的顺序，用 `-normal -esw gggr`，解码用 `-dsw arz1`（核查更正：原文是 "to match **BC5n** component ordering use `-normal -esw gggr` for compression and `-normal -dsw arz1` for decompression"。是 BC5n，不是 BC5；解码同样要带 `-normal`） | T1 |
 | CUE4Parse `TextureDecoder.cs`（UE4 的 ASTC 路径） | 解码后若是法线贴图，就用 **R、G** 重建 B，注释为 "UE4 drops blue channel for normal maps before encoding, restore it"，暗示 UE4 的 ASTC 法线是 **RG** 布局 | T3 |
 | CUE4Parse `PixelFormat.cs`（UE5） | `PF_ASTC_*_NORM_RG`："RG format stored in LA endpoints … (requires RHI support for texture swizzle)"，说明 UE5 才专门引入 LA 布局的 RG 法线 | T3 |
 
@@ -911,7 +923,7 @@ Konami FAQ 把 "Game data modification: Notable changes were made to player abil
 | R2 | 容器 AES 加密 | 没有密钥就看不到路径和内容 | 用户在本机提供密钥；工具不记录密钥；用挂载点或解码先证明密钥正确 | T3 |
 | R3 | 签名（`Signed` 标志或 `.sig`）或运行时强制校验 | 修改后的容器被拒绝加载 | P1.1 读取标志；签名容器默认拒绝修补。是否需要改主程序**超出本组范围**，交由主控决定 | T3/T4 |
 | R4 | 应用层完整性校验或 Live Update 覆盖 | 修改被检测，或被重新下载覆盖 | 只在本地单机构建中使用，关闭在线更新；记录原文件哈希以便回退 | T4（FAQ 证实 Live Update 存在） |
-| R5 | iOS 代码签名 | 改包内文件后不重签就无法启动 | 交付说明中写明必须整体重签；可能需要已解密的 IPA；免费签名 7 天过期 | T1/T3 |
+| R5 | iOS 代码签名 | 改包内文件后不重签就无法启动 | 交付说明中写明必须整体重签；可能需要已解密的 IPA；免费签名 7 天过期【未核实】（见 §6.2 核查更正） | T1/T3 |
 | R6 | 共享 donor 槽位 | 其他球员的脸被一起改掉（亨利项目问题 3） | 第二阶段做独立绑定（§8.7）；在此之前只在隔离测试客户端验证，不能冒充生产级绑定 | 任务书 |
 | R7 | Oodle 与混用压缩方法 | 解码依赖专有库或 GPL 实现；替换块不压缩会使体积变大；运行时是否接受混用未证实 | 读取方法名表；实机验证；如有必要，用户按 UE EULA 取得 Oodle 后再压缩 | T3/T4 |
 | R8 | meta 哈希算法（SHA-1 还是 BLAKE3）以及运行时是否校验 | 哈希写错时，若运行时校验则加载失败 | `--hash-algo auto` 实测判定，判定不了就拒绝 | T4 |
@@ -974,8 +986,8 @@ Konami FAQ 把 "Game data modification: Notable changes were made to player abil
 **媒体与参考 [T2]**
 
 - [S05] mac4ever，"PES Mobile 2019 passe sous Unreal Engine 4"，2018-12-17。https://www.mac4ever.com/mobilite/139630-pes-mobile-2019-passe-sous-unreal-engine-4-video
-- [S06] 9to5mac，"PES 2019 graphics update"，2018-12-17（搜索摘要）。https://9to5mac.com/2018/12/17/pes-2019-graphics-update/
-- [S27] Apple Developer Forums「provisioning profile expiring in 7 days」中 Apple DTS 的回复（搜索摘要）。https://developer.apple.com/forums/thread/69248
+- [S06] 9to5mac，"PES 2019 graphics update"，2018-12-17（搜索摘要）。（核查：已直接读取，实际标题 "Pro Evolution Soccer 2019 for iOS updated with Unreal Engine 4, 12 new leagues"）https://9to5mac.com/2018/12/17/pes-2019-graphics-update/
+- [S27] Apple Developer Forums「provisioning profile expiring in 7 days」中 Apple DTS 的回复（搜索摘要）。（核查更正：帖中没有 DTS 回复，只有两名用户发言。此帖不能支持「免费 7 天 / 付费 1 年」，见 §6.2）https://developer.apple.com/forums/thread/69248
 - [S29] OWASP MASTG-TECH-0059（Xcode 下载应用容器，仅限 debug 构建；搜索摘要）。https://mas.owasp.org/MASTG/techniques/ios/MASTG-TECH-0059/
 
 **社区、论坛与第三方代码 [T3]**
@@ -988,8 +1000,8 @@ Konami FAQ 把 "Game data modification: Notable changes were made to player abil
 - [S12] retoc issue #7（SD Gundam Battle Alliance，UE 4.27.2，PreInitial 的由来）。https://github.com/trumank/retoc/issues/7
 - [S13] UEViewer `Unreal/FileSystem/IOStoreFileSystem.cpp` @ `a0bfb46`。https://github.com/gildor2/UEViewer/blob/a0bfb468d42be831b126632fd8a0ae6b3614f981/Unreal/FileSystem/IOStoreFileSystem.cpp
 - [S15] pesmodding，「eFootball detailed texture replacement」，2023-07-04（教程作者 Cadi Lillian）。https://www.pesmodding.com/2023/07/efootball-detailed-texture-replacement.html
-- [S16] pesmodding，「eFootball 2026 Patch EvoMod 5.4.0」，2026。https://www.pesmodding.com/2026/04/efootball-2026-patch-evomod-540.html
-- [S17] pesmodding，「eFootball 2025 transparent scoreboard」，2025-09-01。https://www.pesmodding.com/2025/07/efootball-2025-transparent-scoreboard.html
+- [S16] pesmodding，「eFootball 2026 Patch EvoMod 5.4.0」，2026。（核查更正：该 URL 当前显示 "eFootball 2026 Patch: EvoMod 5.5.0"，2026-05-28）https://www.pesmodding.com/2026/04/efootball-2026-patch-evomod-540.html
+- [S17] pesmodding，「eFootball 2025 transparent scoreboard」，2025-09-01。（核查更正：实际标题 "eFootball 2026 Transparent Scoreboard for Blimp Camera Angle [ver. 2.0]"；URL 中的 2025 只是路径）https://www.pesmodding.com/2025/07/efootball-2025-transparent-scoreboard.html
 - [S18] pesmodding，「eFootball 2027 Player.bin Editor」（RBsGameLab），2026-10-14。https://www.pesmodding.com/2026/08/efootball-2027-playerbin-editor-by.html
 - [S19] pesmodding，「eFootball 2024 Player Data Editor V3.6.0.0」，2024-06-22。https://www.pesmodding.com/2023/02/efootball-20222023-player-data-editor_28.html
 - [S20] pesmodding，「PES 2021 faces converted from eFootball」，2022-12-15。https://www.pesmodding.com/2022/12/pes-2021-faces-converted-from-efootball.html

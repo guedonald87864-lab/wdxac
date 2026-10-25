@@ -16,7 +16,7 @@
 | 射门 | ESPN 逐场统计合计 **27 射 / 21 中目标**，0 助攻，被犯规 14 次，犯规 3 次，越位 5 次，0 黄牌。ESPN 数据**偏少**（决赛实际射门次数明显多于其记录的 5 次），只能当作下限。 | [T3] [P04] |
 | 用脚 | 右脚 4 球（其中 1 个是脚尖捅射）、左脚 1 球、头球 0、未查明 3 球。 | 见 §1.2，逐球标注来源 |
 | 进球类型 | 8 球全部在禁区内或禁区线附近。5 球一脚出球（抢点/包抄/补射/一脚推射），3 球是先摆脱再射（转身、短盘带后脚尖捅射、卸球后推射）。**没有**远射、头球、过门将、挑射进球。 | [T2]/[T3] 综合，[T4] 归类 |
-| 单刀 | 2002 年世界杯单刀/近距离一对一的**失手很多**：决赛上半场三次面对卡恩都没进（其中 18' 用左脚捅偏），对比利时 37' 被门将扑在脚下，对中国 71' 被扑，对哥斯达黎加 83' 打中门柱。**不能**用 1996/97"常常过掉门将"的形象来设计 2002 版的单刀能力。 | [T2] [P10][P15][P25][P33]、[T3] [P04] |
+| 单刀 | 2002 年世界杯单刀/近距离一对一的**失手很多**：决赛上半场三次面对卡恩都没进（其中 18' 用左脚捅偏；核查注："左脚"只见于维基转引 BBC 计时稿 [T3]，Guardian [P15] 原文只写 "pokes it past the left-hand post"，没有写用哪只脚），对比利时 37' 被门将扑在脚下，对中国 71' 被扑，对哥斯达黎加 83' 打中门柱。**不能**用 1996/97"常常过掉门将"的形象来设计 2002 版的单刀能力。 | [T2] [P10][P15][P25][P33]、[T3] [P04] |
 | 2001/02 俱乐部 | 国米官方：**16 场 7 球**（意甲 10/7，欧洲联盟杯 5/0，意大利杯 1/0）。footballdatabase.eu 的出场分钟：意甲 642，欧联杯 169，意杯 22，合计约 **833 分钟**。三次大腿肌肉拉伤，2001-12-23 到 2002-03 下旬整段缺阵。 | [T1] [P38]；分钟数 [T3] [P23] |
 | 身体状态 | 本人回忆"只有 60%"；世界杯期间右大腿肌肉伤，半决赛因此改用脚尖射门；首战之后"第二天疼得要命"，"比别人都累"。 | [T2] 回忆/当时采访 [P26][P29] |
 | 风格定位 | **禁区内外的短距离爆发 + 一脚终结 + 无球跑位**为主。保留了短距离变向、转身和踩单车（pedalada），但长距离持球冲刺明显减少。 | [T2] [P25][P26][P28][P32][P49] |
@@ -40,7 +40,7 @@
 | **合计** | | | **553'** | **8** | **27/21** | **14** | **5** | 犯规 3、黄牌 0、助攻 0 |
 
 - 进球、分钟、换人和"进球类型 Type 2=运动战进球 / Type 1=点球"来自 FIFA 官方数据接口 [T1] [P01]。8 球全部是 Type 2，即**没有点球**。
-- 射门、被犯规、越位、犯规、黄牌和助攻来自 ESPN 的比赛 JSON [T3] [P04]。**可靠性注意**：ESPN 记录的决赛射门是 5 次，但 Guardian 文字直播 [P15] 和 BBC 计时稿可以数出至少 18' 单刀射偏、45' 转身射门被卡恩用腿挡出、53' 射门被 Ramelow 封堵、58' 任意球打人墙，再加两个进球，共 6 次以上。所以 ESPN 只能当作下限。
+- 射门、被犯规、越位、犯规、黄牌和助攻来自 ESPN 的比赛 JSON [T3] [P04]。**可靠性注意**：ESPN 记录的决赛射门是 5 次，但 Guardian 文字直播 [P15] 和 BBC 计时稿可以数出至少 18' 单刀射偏、45' 转身射门被卡恩用腿挡出、53' 射门被 Ramelow 封堵【未核实】、58' 任意球打人墙，再加两个进球，共 6 次以上。所以 ESPN 只能当作下限。（核查更正：重新抓取 Guardian 文字直播全文，**没有** 53' Ramelow 封堵的条目；但有 30' 条目："A high ball from [Ronaldinho] finds [Ronaldo] free in the box, but he Bodes the ball and Kahn collects"，维基决赛条目把 30' 记为"没打出力量，被卡恩扑住"。不算 53'，18'、30'、45'、58' 加两个进球仍是 6 次，"ESPN 5 次是下限"的结论不变。）
 - 决赛换下时间：FIFA 接口记为 90'，CNN 记为 89'（"Denilson, 89"）[P10]，Guardian 文字直播在 90' 条目下记录 [P15]，Ronaldo 本人回忆为"大约终场前五分钟" [P26]（回忆有误差）。分钟数统一采用 FIFA 的 90'。
 - 第 1 场的换人时间：FIFA 接口 73'；通讯稿 [P21] 写 72'；CNN 写"终场前 17 分钟" [P05]，即 73'。
 - 半决赛的换人时间：FIFA 接口 68'；CNN 写"还剩 23 分钟" [P09]，即 67'；新华社写 68' [P17]。
@@ -53,10 +53,10 @@
 |---|---|---|---|---|---|---|---|
 | 1 | 对土耳其 · 50' | 1–1 | Rivaldo 左路快速传中（"hanging cross"）；Ronaldo 飞身扑向来球，伸腿垫射入网。各家措辞："stretched to convert" / "lunging finish" / "athletically hooking in a volley" / "threw himself at it"。本人回忆："I got the crucial touch with the very tip of my right boot." | **右脚**（脚尖部位） | 抢点飞身垫射，一脚出球 | Rivaldo | CNN [P05] T2；BBC 2022 [P25] T2；通讯稿 [P21] T3；本人回忆 FourFourTwo 2018 [P26] T2；助攻记录 [P22] T3 |
 | 2 | 对中国 · 55' | 4–0 | Rivaldo 长传转移给右路的 Cafu；Cafu 过掉防守人后横传；Ronaldo 在无人盯防的情况下近距离推射。"tapped in … from close-range" / "arrived late to turn in a Cafu cross" | **未找到** | 包抄推射（tap-in），一脚出球 | Cafu | 通讯稿 [P21] T3；BBC 2022 [P25] T2；Arab News [P18] T2；ESPN 文字直播 [P04] T3；[P22] T3 |
-| 3 | 对哥斯达黎加 · 10' | 1–0 | Edílson 突到底线传中；Ronaldo 在近门柱抢到两名后卫身前，触球后皮球经 Luis Marín 折射入网。赛后先被记为 Marín 乌龙；Ronaldo 在更衣室坚称自己碰到了球，FIFA 技术研究组（TSG）次日看录像后改判为 Ronaldo 进球。Reuters 后来的报道仍认为 Ronaldo 没有碰到最后一下。 | **未找到** | 近门柱抢点（折射），一脚出球 | Edílson | Reuters 转载于 Dawn [P20] T2；CNN 当时记为乌龙 [P06] T2；FIFA 接口现记为 Ronaldo [P01] T1；维基 [P36] T3 |
+| 3 | 对哥斯达黎加 · 10' | 1–0 | Edílson 突到底线传中；Ronaldo 在近门柱抢到两名后卫身前，触球后皮球经 Luis Marín 折射入网。赛后先被记为 Marín 乌龙；Ronaldo 在更衣室坚称自己碰到了球，FIFA 技术研究组（TSG）次日看录像后改判为 Ronaldo 进球（核查更正：Reuters/Dawn 原文写的是 FIFA 的 "Technical Committee"（技术委员会），没有提到 TSG。经过是三步：当场先判给 Ronaldo → 看录像后改记 Marín 乌龙 → 周五（6-14）技术委员会又改判给 Ronaldo [P20]）。Reuters 后来的报道仍认为 Ronaldo 没有碰到最后一下（核查确认：原文为 "studied a video clearly showing he did not touch the ball"）。 | **未找到** | 近门柱抢点（折射），一脚出球 | Edílson | Reuters 转载于 Dawn [P20] T2；CNN 当时记为乌龙 [P06] T2；FIFA 接口现记为 Ronaldo [P01] T1；维基 [P36] T3 |
 | 4 | 对哥斯达黎加 · 13' | 2–0 | 禁区内转身摆脱盯人，低射穿过防守人裆下，"scuffed shot crept inside the near post"（打得不实，从近角滚进） | **未找到** | 转身摆脱后低射 | **冲突**：[P22] 记为无助攻；ESPN 文字直播写"Rivaldo's corner finds the striker who turns his defender to fire home" | CNN [P06] T2；通讯稿 [P21] T3；ESPN [P04] T3 |
 | 5 | 对比利时 · 87' | 2–0 | 第 81 分钟替补上场的 Kléberson 从右路带球推进，低平球横传；Ronaldo 左脚一脚出球，球从门将 De Vlieger 身下/裆下挤进（门将碰到了球）。 | **左脚** | 一脚推射（逆足） | Kléberson | BBC 2022 "first-time left-footed finish … squeezed under" [P25] T2；Irish Examiner "left foot strike" [P19] T2；CNN "keeper touched but could not keep out" [P07] T2；ESPN "through De Vlieger's legs" [P04] T3；footballdatabase "(left foot)" [P23] T3 |
-| 6 | 对土耳其（半决赛）· 49' | 1–0 | Gilberto Silva 从左路带球推进后传给 Ronaldo；Ronaldo 在左侧回撤一步接球，第一脚向边线方向趟，摆脱盯防后带入禁区，在角度很小的位置提前用**右脚脚尖**捅射（约 15 米），球低平斜穿，Rüştü 碰到后从远门柱弹进。本人解释：右大腿有小的肌肉伤，不敢用脚背或脚内侧发力，"脚尖射门的力量更多来自髋部"；"It was the only non-painful thing I could do"；赛后称之为"Romário 式进球"。 | **右脚脚尖** | 短距离盘带摆脱 → 脚尖捅射（toe-poke） | Gilberto Silva | 新华社/人民网 "with his right toe" [P17] T2；CNN [P09] T2；BBC 2022 [P25] T2；Reuters 通讯稿 [P21] T3；本人回忆 [P26][P29] T2 |
+| 6 | 对土耳其（半决赛）· 49' | 1–0 | Gilberto Silva 从左路带球推进后传给 Ronaldo；Ronaldo 在左侧回撤一步接球，第一脚向边线方向趟，摆脱盯防后带入禁区，在角度很小的位置提前用**右脚脚尖**捅射（约 15 米），球低平斜穿，Rüştü 碰到后从远门柱弹进。本人解释：右大腿有小的肌肉伤，不敢用脚背或脚内侧发力，"脚尖射门的力量更多来自髋部"；"It was the only non-painful thing I could do"【未核实：P26、P29 和维基《Toe punt》里都没有这句话。意思相近的可查原话是 Goal [P29] 转引纪录片的 "I couldn't strike with the inside of my foot, it would've worsened the injury. So I saw the chance and hit it with my toe."】；赛后称之为"Romário 式进球"（核查确认：人民网/新华社 [P17] 原文 "I scored the goal in the style of Romario"）。 | **右脚脚尖** | 短距离盘带摆脱 → 脚尖捅射（toe-poke） | Gilberto Silva | 新华社/人民网 "with his right toe" [P17] T2；CNN [P09] T2；BBC 2022 [P25] T2；Reuters 通讯稿 [P21] T3；本人回忆 [P26][P29] T2 |
 | 7 | 对德国（决赛）· 67' | 1–0 | 先由 Ronaldo 在德国半场从 Hamann 脚下把球抢下（BBC："bundling Dietmar Hamann off the ball"），传给 Rivaldo；Rivaldo 左脚低射，卡恩没抱住；Ronaldo 一直跟进，右脚补射入网。 | **右脚** | 补射，一脚出球（前提是本人逼抢夺球） | Rivaldo（数据库口径；严格说是补射） | AP/Fox "touched it home with his right foot" [P16] T2；CNN [P10][P12] T2；BBC 2022 [P25] T2；Guardian 文字直播 [P15] T2；footballdatabase "(right foot)" [P23] T3 |
 | 8 | 对德国（决赛）· 79' | 2–0 | Kléberson 从右路推进后低传；Rivaldo 在禁区弧顶假装接球，让球从两腿间漏过；Ronaldo 在禁区线内无人盯防，第一脚卸球调整（BBC："cushioned touch"），第二脚右脚低射，球进右下角。 | **右脚** | 两脚：卸球 + 推射死角 | Kléberson | AP/Fox "right-footed a low shot" [P16] T2；Guardian 文字直播 "bottom-right corner" [P15] T2；BBC 2022 [P25] T2；[P23] T3。注：ESPN 文字直播写"Cafu feeds Ronaldo"，与其他所有来源冲突，判为 ESPN 笔误 |
 
@@ -92,7 +92,7 @@
 | 对中国 71' | 单刀被门将江津扑出 | [P04] T3 |
 | 对比利时 37' | 突入禁区，被 De Vlieger 出击扑在脚下 | CNN [P07] T2、[P04] T3 |
 | 对哥斯达黎加 83' | 门将 Lonnis 出击把他逼向边路，射门打中门柱 | [P04] T3；通讯稿称他"missed a sackful of chances" [P21] |
-| 决赛 18' | Ronaldinho 直塞形成单刀，**左脚**捅射，从卡恩身边偏出左门柱 | Guardian 文字直播 [P15] T2；维基引 BBC 计时稿 [P35] T3 |
+| 决赛 18' | Ronaldinho 直塞形成单刀，**左脚**捅射，从卡恩身边偏出左门柱（核查注："左脚"只有维基引 BBC 计时稿一处 [T3] 支持；Guardian 只写 "free in the box on the right … pokes it past the left-hand post"） | Guardian 文字直播 [P15] T2；维基引 BBC 计时稿 [P35] T3 |
 | 决赛 45+' | Roberto Carlos 的低传中经折射到他脚下，原地转身（"twists on a sixpence"）抽射，被卡恩用腿挡出 | [P15] T2 |
 | 决赛整个上半场 | "one v one against Kahn three times in the first half but found no way through" | Guardian/Lawrence 2017 [P50] T2 |
 
@@ -111,22 +111,22 @@
 | 意大利杯 | 1 | 0 | 22 | 替补 | [P38] T1；[P23] T3 |
 | **合计** | **16** | **7** | **≈833** | | |
 
-- **冲突**：意大利文维基的赛季页（引 Panini 年鉴）记为意大利杯 0 场，合计 15 场 [P37]；英文维基的球员页和**国米官网**都是 16 场（意杯 1 场）[P34][P38]。以国米官网 [T1] 为准。
+- **冲突**：意大利文维基的赛季页（引 Panini 年鉴）记为意大利杯 0 场，合计 15 场 [P37]；英文维基的球员页和**国米官网**都是 16 场（意杯 1 场）[P34][P38]。以国米官网 [T1] 为准。（核查更正：**英文维基赛季页** [P37] 的球员统计表同样记为意大利杯 0 场、合计 15 场（意甲 9+1、欧联杯 1+4）。所以记为"0 场"的有英、意两个维基赛季页，记为"1 场"的有英文维基球员页和国米官网。国米官网这一项的标签是 "Coppa Italia e Supercoppa"，2001/02 该栏为 1 场 0 球，已直接抓取确认。英文赛季页列出的两场意杯是对乌迪内斯（2001-11-12、11-29）。）
 - 分钟数说明：footballdatabase.eu 的球员页把各项赛事数据压成一行，分钟数是本组按其表头逐列拆出来的（意甲 642 分钟 ÷ 7 球 ≈ 92，与该站"效率 92"一致；首发/替补数与维基一致）。这是 [T3] 数据加 [T4] 解析，应再用 Transfermarkt 核对（被 WAF 拦截）。
 - 意甲 7 球的分布 [P37] T3：12-09 客场对布雷西亚 1 球；12-19 主场对维罗纳 2 球（50'、55'）；04-14 主场对布雷西亚 2 球（80'/79'、83'）；04-21 客场对切沃 1 球（60'）；04-28 主场对皮亚琴察 1 球（80'/79'）。分钟数在英文和意大利文维基之间差 1 分钟。BBC 说他"在赛季最后五场比赛里打进 4 球"[P25]，与此吻合。
 - 复出后的第一个进球（2001-12-09 对布雷西亚）：与 Vieri 做撞墙配合后，用**右脚外脚背**轻巧推射，"结束了 749 天的进球荒"（Guerin Sportivo 2021 [P41] T2）。
-- 同一赛季（2001/02）国家队的数据：footballdatabase.eu 记为 12 场 9 球、812 分钟 [P23] T3（包括世界杯 7 场）。
+- 同一赛季（2001/02）国家队的数据：footballdatabase.eu 记为 12 场 9 球、812 分钟 [P23] T3（包括世界杯 7 场）。（核查更正/冲突：footballdatabase.eu 本次返回 Cloudflare 验证页和 403，无法复核。national-football-teams.com 球员页 [T3] 列出的 2001/02 赛季国家队出场只有 **10 场 9 球**：2002-03-27 对南斯拉夫、04-17 对葡萄牙、05-25 对马来西亚（1 球），加世界杯 7 场（8 球）。下一次出场是 2002-08-21 对巴拉圭，已属 2002/03。"12 场"可能是该站赛季划分不同，或者记录有误，**不要采用**。10 场的分钟数【未核实】。）
 
 ### 2.2 伤病时间线（2001-09 至 2002-06）
 
 | 时间 | 事件 | 来源 |
 |---|---|---|
-| 2000-04-12 | 意大利杯决赛首回合对拉齐奥，替补上场 6 分钟后右膝**髌腱完全断裂**（前一次是 1999-11 对莱切时的髌腱部分断裂）。Petrone："his knee-cap actually exploded"；BBC 记作做踩单车动作时腿突然支撑不住。 | Guerin [P41] T2；Petrone [P27] T2；BBC [P25] T2 |
+| 2000-04-12 | 意大利杯决赛首回合对拉齐奥，替补上场 6 分钟后右膝**髌腱完全断裂**（前一次是 1999-11 对莱切时的髌腱部分断裂；核查注：BBC、维基、Guerin 只写 "ruptured a tendon" / "lesione al tendine rotuleo"，"**部分**断裂"这一定性【未核实】）。Petrone："his knee-cap actually exploded"；BBC 记作做踩单车动作时腿突然支撑不住。 | Guerin [P41] T2；Petrone [P27] T2；BBC [P25] T2 |
 | 2000/01 | 整季未出场。8 个月时膝关节屈曲仍不到 90°，后来接受了"松解"手术。 | 本人回忆 [P26] T2；国米官网该季 0 场 [P38] T1 |
 | 2001-09 下旬 | 在欧联杯首轮对布拉索夫（9-20 主场在的里雅斯特 3–0；9-27 客场 3–0）复出；轻度大腿拉伤，很快又停赛。Repubblica 2001-09-27 的标题是《国米一切顺利，但 Ronaldo 又停下了》[P52]。WaPo 2001-09-30 标题"Ronaldo (Thigh) Out Again"（右大腿；只取得搜索摘要）。具体哪一场出场**未逐场核实**。 | VOA [P39] T2；维基赛季页 [P37] T3；WaPo 摘要 [P42] |
 | 2001-11-04 | 主场对莱切，两年来首次意甲首发，17 分钟后大腿受伤下场（"less serious than the one in Brasov"）。 | Sky Sports [P40] T2 |
 | 2001-12-09 / 12-19 | 对布雷西亚进球、对维罗纳梅开二度（复出后的状态高峰）。 | [P41] T2、[P37] T3 |
-| 2001-12-23 | 客场对皮亚琴察（3–2）：上半场表现很好（43' 的突破导致对方门将被罚下），下半场中段跛行下场。国米队医 Franco Combi："上个月对莱切时**左大腿**肌肉拉伤的加重"。维基记作 67' 受伤。 | VOA [P39] T2；[P37] T3 |
+| 2001-12-23 | 客场对皮亚琴察（3–2）：上半场表现很好（43' 的突破导致对方门将被罚下），下半场中段跛行下场。国米队医 Franco Combi："上个月对莱切时**左大腿**肌肉拉伤的加重"。维基记作 67' 受伤。（核查冲突：Goal [P29] 写的是"世界杯前几个月他有过五次肌肉伤，**全部在右大腿**"，与 VOA 的"左大腿"矛盾，见 §6。） | VOA [P39] T2；[P37] T3 |
 | 2002-01 至 03 下旬 | 缺阵。BBC："a hamstring injury to rule him out until the end of March"。 | BBC 2022 [P25] T2 |
 | 2002-03-27 | 巴西主场对南斯拉夫（福塔莱萨）友谊赛：踢了 45 分钟，近三年首次代表国家队出场，因此进入世界杯名单。 | 本人回忆 [P26] T2；BBC [P25] T2 |
 | 2002-04 | 欧联杯半决赛两回合对费耶诺德（04-04 主场 0–1，04-11 客场 2–2）；联赛最后几轮 5 场 4 球。 | [P37] T3；BBC [P25] T2 |
@@ -153,8 +153,8 @@
 | Ronaldo 本人 | "I was more tired than the others, but in two or three days I'll be fine" / "After two years without football, it's been intense." | 2002 年对日本电视台，经 Goal 转述 [P29] | T2 |
 | Ronaldo 本人 | 对中国赛后："I'm feeling better physically." 对哥斯达黎加赛后："We were in top physical condition" | 2002 年赛后通讯稿 [P21] | T3（通讯稿镜像） |
 | Scolari | "Quem me dava trabalho, no campo, era o Ronaldo … quando a gente ia trabalhar taticamente era uma má vontade, não participava"（战术训练时不配合，只想练射门）；"no primeiro ou segundo momento que a bola estivesse com ele, ele faria o gol" | 2017 年对 Fox Sports，经 Gazeta Esportiva [P31] / IANS [P30] | T2 |
-| Scolari | 半决赛前："If you've got half a leg, you play!" | Globoplay 纪录片，经 Goal [P29] | T2 |
-| Zagallo（技术协调员） | 半决赛中场休息时认为应该把他换下："Everyone saw he wasn't right." | 同上 [P29] | T2 |
+| Scolari | 半决赛前："If you've got half a leg, you play!" | Globoplay 纪录片，经 Goal [P29]（核查更正：Goal 原文并没有说这句话出自 Globoplay 纪录片。上下文是 2002 年 1/4 决赛后、半决赛前 Scolari 的公开表态，全句为 "His injury worries us … If you've got half a leg, you play! Ronaldo knows Brazil needs him."；Goal 没有注明原始出处） | T2 |
+| Zagallo（技术协调员） | 半决赛中场休息时认为应该把他换下："Everyone saw he wasn't right." | 同上 [P29]（核查注：Goal 写的是 "later admitted"，原话已核对确认，但同样没有注明出处和年份） | T2 |
 | Sol Campbell（英格兰中卫，1/4 决赛对手） | "He had absolutely everything, he was still amazing after his injury … Defenders and goalkeepers were so frightened of him." | 2022 年对 BBC [P25] | T2 回忆 |
 | Dan Leydon（Substack 分析） | "less explosive and relied more on shrewd play and efficient finishing"；变速变向"conspicuous by their absence" | [P44] | T3 |
 | 媒体投票 | 2002 年金球奖（最佳球员）第二名，银球：126 票，21%（卡恩 174 票/25%；CNN 当时报道卡恩 147 票）；入选全明星阵容 | RSSSF [P43] T3；CNN [P13] T2；维基 [P34] T3 | |
@@ -164,8 +164,8 @@
 
 | 维度 | 1996/97（巴萨，对照） | 2002 年 6 月 | 证据与等级 |
 |---|---|---|---|
-| **原地启动/爆发** | Inter 测试推算百米 10.2–10.3 秒（测试时间为 1997–99 年，不是 1996/97 赛季）；"he would explode into life with no warning" | 短距离爆发仍有：对比利时 37' "burst through"，对哥斯达黎加 48' "sprints through the middle"、68' "bursts down the left"，半决赛"ran at the defence"。但多位作者认为他"lost a step" | Petrone [P27] T2；Smyth [P49] T2；CNN [P07][P09] T2；ESPN [P04] T3；Ringer [P32] T2 |
-| **长距离持球冲刺** | 招牌：1996-10-11 对孔波斯特拉从本方半场一路带到对方球门；Robson："could start from the halfway line … the fastest thing I've ever seen running with the ball" | 世界杯 8 球中**没有一个**是长途奔袭。最长的持球是半决赛进球前从左侧边线附近带入禁区，距离很短 | 维基 [P34] T3（引 ESPN）；Smyth [P49] T2；§1.2 |
+| **原地启动/爆发** | Inter 测试推算百米 10.2–10.3 秒（测试时间为 1997–99 年，不是 1996/97 赛季）（核查：Petrone 原话 "We performed several speed tests on him at Inter … he would probably be able to do 100 metres in 10.2 or 10.3 seconds" 已确认。但**原文没有给出测试年份**，"1997–99 年"是本组按他在国米、受伤前的时段推断的 [T4]，【未核实】）；"he would explode into life with no warning" | 短距离爆发仍有：对比利时 37' "burst through"，对哥斯达黎加 48' "sprints through the middle"、68' "bursts down the left"，半决赛"ran at the defence"。但多位作者认为他"lost a step" | Petrone [P27] T2；Smyth [P49] T2；CNN [P07][P09] T2；ESPN [P04] T3；Ringer [P32] T2 |
+| **长距离持球冲刺** | 招牌：1996-10-11 对孔波斯特拉从本方半场一路带到对方球门；Robson："could start from the halfway line … the fastest thing I've ever seen running with the ball"（核查更正：这是把两句不同的话用省略号拼在一起。Guardian/Smyth [P49] 的原话是 "Ronaldo could start from the halfway line and the whole stadium would ignite"；英文维基 [P34] 另引 Robson："He was the fastest thing I've ever seen running with the ball"。两句都确认存在，但不是同一句引语） | 世界杯 8 球中**没有一个**是长途奔袭。最长的持球是半决赛进球前从左侧边线附近带入禁区，距离很短 | 维基 [P34] T3（引 ESPN）；Smyth [P49] T2；§1.2 |
 | **短距离变向/转身** | 极强：Petrone 说他的伤病正是源于"changed direction at incredible speed" | 仍然突出：对土耳其 54' "turn and jink"、"shimmying his way past defenders"；对哥斯达黎加 13' 转身摆脱；半决赛 "spun away from his marker"；决赛 45' "twists on a sixpence" | Petrone [P27] T2；[P21] T3；[P04] T3；CNN [P09] T2；[P15] T2 |
 | **踩单车（pedalada / step-over）** | 招牌："His stepover was a form of hypnosis" | **仍在使用**：对土耳其首战"bamboozling another with a trademark step over"；对比利时 22' "pedalou para cima da marcação" | Smyth [P49] T2；BBC [P25] T2；Trivela [P33] T2 |
 | **牛尾巴（elastico）** | "his signature trick, the elastico"（职业生涯泛指） | 2002 年世界杯的比赛报道中**未找到**使用记录 | [P49] T2；2002 年：未找到 |
@@ -232,7 +232,7 @@
 
 **数值设计红线 [T4]**：不能全部给到 95–99；传中、头球和防守不能因为历史地位拉高；体能和伤病耐受应**明显低于** 1996/97 或"巅峰合集"类卡片；加速可以高于速度。
 
-**外部对照（其他游戏、其他时期，只作量级参考）**：EA FC 26 的 Ronaldo 图标卡（未区分年份，偏巅峰合集）：加速 95、速度 94、射门 95+、头球 84、弹跳 79、体能 81、传中 72、长传 73、任意球 88、逆足 5 星 [P46] T3。这张卡**不代表 2002 年 6 月**，而且该页面的六维汇总与细项自相矛盾。
+**外部对照（其他游戏、其他时期，只作量级参考）**：EA FC 26 的 Ronaldo 图标卡（未区分年份，偏巅峰合集）：加速 95、速度 94、射门 95+、头球 84、弹跳 79、体能 81、传中 72、长传 73、任意球 88、逆足 5 星 [P46] T3（核查：重新抓取 FIFPlay，以上数值全部一致。"射门 95+" 的具体细项为 Finishing 97、Positioning 95、Volleys 95、Shot Power 93、Long Shots 88、Penalties 88）。这张卡**不代表 2002 年 6 月**，而且该页面的六维汇总与细项自相矛盾。
 
 ---
 
@@ -264,7 +264,7 @@
 3. 小范围转身摆脱（Cut Behind & Turn / Chop Turn 二选一，待核实动作含义）：对哥斯达黎加 13'、半决赛、决赛 45'。
 4. 短距离爆发（Acceleration Burst，若客户端存在该技能）：§3.2。
 5. 飞身或伸腿的非常规触球射门（Acrobatic Finishing）：对土耳其首球是飞身伸腿垫射。
-6. 几乎不后摆的快速射门（脚尖捅射）：半决赛制胜球。eFootball 中**没有确认存在**对应"toe-poke"的技能；Snap Strike 等名称是否对应需要核实。**不要**为此编造技能。
+6. 几乎不后摆的快速射门（脚尖捅射）：半决赛制胜球。eFootball 中**没有确认存在**对应"toe-poke"的技能；Snap Strike 等名称是否对应需要核实。**不要**为此编造技能。（核查：pesdb 技能筛选里确实有 "Snap Strike" 这个名称，字段为 `s_snap_strike` [T3]；它的效果，以及是否对应低后摆射门，【未核实】。）
 7. 造犯规、制造点球（Gamesmanship，待核实效果）：被犯规 14 次，造了对中国的点球。
 
 **可以作为"传奇卡"特殊技能考虑，但属于设计选择 [T4]**
@@ -287,7 +287,7 @@
 
 | 事项 | 各方说法 | 处理 |
 |---|---|---|
-| 对哥斯达黎加 10' 进球归属 | 当时记为 Marín 乌龙（CNN [P06]）；FIFA 技术研究组次日改判为 Ronaldo（Reuters/Dawn [P20]）；Reuters 后续报道仍认为 Ronaldo 没碰到球；FIFA 接口现为 Ronaldo [P01] | 采用 FIFA 官方的 8 球 |
+| 对哥斯达黎加 10' 进球归属 | 当时记为 Marín 乌龙（CNN [P06]）；FIFA 技术研究组次日改判为 Ronaldo（Reuters/Dawn [P20]）（核查更正：Reuters 原文是 "Technical Committee"，不是 TSG；当场先判给 Ronaldo，后改为乌龙，再改回 Ronaldo）；Reuters 后续报道仍认为 Ronaldo 没碰到球；FIFA 接口现为 Ronaldo [P01] | 采用 FIFA 官方的 8 球 |
 | 对哥斯达黎加 13' 有无助攻 | [P22]：无助攻；ESPN 文字直播：Rivaldo 角球 | 记为"有争议" |
 | 半决赛被他摆脱的防守人 | BBC 2022：Bülent Korkmaz [P25]；Reuters 通讯稿：Tugay Kerimoğlu [P21] | 未定（需要比赛录像） |
 | 对中国点球的犯规者 | Arab News：Li（李玮锋）[P18]；通讯稿：杜威 [P21] | 未定 |
@@ -297,6 +297,9 @@
 | 2001/02 进球数 | 国米官网：7 球；Petrone 回忆：约 14 球 | 采用 7 球 |
 | 金球奖投票 | RSSSF：卡恩 174 票；CNN 2002：卡恩 147 票；Ronaldo 都是 126 票 | 两者排名一致；票数以 RSSSF 为准，并列出 CNN 的数字 |
 | 决赛 79' 的传球者 | 大多数来源：Kléberson 传、Rivaldo 漏；ESPN 文字直播："Cafu feeds Ronaldo" | 判为 ESPN 笔误 |
+| 2001/02 大腿伤的左右（核查新增） | VOA 2001-12-24 引国米队医 Combi：**左大腿**（对莱切的伤在对皮亚琴察时加重）[P39]；WaPo 2001-09-30 摘要：右大腿 [P42]；Goal [P29]："five muscle injuries - all in his right thigh"（世界杯前几个月）；世界杯期间：右大腿 [P26][P29] | 未定。世界杯期间是右大腿这一点没有冲突；2001 年 11–12 月那次以队医的当时表态（左）为准，Goal 的"全部右大腿"判为概括性表述 |
+| 2001/02 国家队出场（核查新增） | footballdatabase.eu：12 场 9 球、812 分钟 [P23]（本次无法复核）；national-football-teams.com：10 场 9 球（2002-03-27 至 06-30） | 采用 10 场；"12 场"不采用 |
+| 2001/02 意杯出场（核查补充） | 英文维基**赛季页**也是 0 场、合计 15 场（不只意大利文维基） | 仍采用国米官网的 1 场 |
 
 ---
 
@@ -379,3 +382,50 @@
 | P53 | FIFA 2002 技术报告 PDF（原链接，经维基"2002 FIFA World Cup"条目） | https://web.archive.org/web/20090711052315/http://www.fifa.com/mm/document/afdeveloping/technicaldevp/50/08/41/fwc_korea_japan_2002_a_part1_265.pdf ；https://web.archive.org/web/20091122051432/http://www.fifa.com/mm/document/afdeveloping/technicaldevp/50/08/38/fwc_korea_japan_2002_a_part2_264.pdf | T1 | **未取得**（web.archive.org 在本环境中被代理断开） |
 
 **被拦截或未取得的来源（如实记录）**：Transfermarkt（AWS WAF 人机验证）、worldfootball.net（403/402）、fbref.com（403）、11v11（403）、BBC 2002 年旧站（403）、web.archive.org（连接被重置）、SlideShare 上的 FIFA 2002 报告（正文无法加载）、FIFA.com 文章页（JS 渲染，正文为空）。
+
+---
+
+## 核查记录
+
+> 核查人：对抗式事实核查代理。核查日期：2026-10-25。
+> 方法：对每条关键说法，重新抓取档案引用的原始来源（curl 或 WebFetch 直接取页面或 JSON，不用缓存），并尽量再找一个独立来源。本轮 WebSearch 配额已经用完（共享上限），所以第二来源都是直接抓取已知 URL 得到的，没有新做检索。
+> 结果标记：**确认** = 引用来源与独立来源都支持；**更正** = 原文数值或归因有误，已在正文用"（核查更正：…）"标出；**未核实** = 无法取得能支持的来源，已在正文标【未核实】。
+
+| # | 被核查的说法 | 结果 | 核查依据（来源与等级） |
+|---|---|---|---|
+| 1 | 世界杯 8 球 / 7 场，只有 1/4 决赛对英格兰没进球；金靴 | **确认** | FIFA 官方接口 7 场 live JSON，逐场重新下载解析 [T1] [P01]；CNN 2002-07-02 "tournament's leading scorer with eight" [T2] [P13]；英文维基 "Golden Boot … eight goals" [T3] |
+| 2 | 进球分钟：50'、55'、10'/13'、87'、49'、67'/79' | **确认** | FIFA 接口 [T1]；ESPN 文字直播 [T3] [P04]；national-football-teams.com 球员出场表 [T3] |
+| 3 | Ronaldo 没有罚点球；巴西两个点球是 Rivaldo（对土耳其 87'）和 Ronaldinho（对中国 45'） | **确认** | FIFA 接口 Type 1 进球只有这两个 [T1]；takisonline 通讯稿 "Ronaldinho Goal (penalty) First Half 45" [T3] [P21] |
+| 4 | 上场 553 分钟；换下时间和替换者为 73' Luizão、72' Edílson、90'、90'、70' Edílson、68' Luizão、90' Denílson | **确认** | FIFA 接口 Substitutions 字段 [T1]；CNN "substituted 17 minutes from the end"、"with 23 minutes to go"、"Denilson, 89" [T2]；人民网/新华社 "21-Luizao 68" [T2] |
+| 5 | ESPN 合计 27 射 / 21 正、被犯规 14、犯规 3、越位 5、0 黄牌、0 助攻，以及表 1.1 的逐场数 | **确认**（与引用源逐项一致） | 重新拉取 7 个 ESPN summary JSON，逐场相加 [T3] [P04]。只有 ESPN 一家，没有独立第二来源 |
+| 6 | 决赛射门 ≥6 次，其中有 "53' 射门被 Ramelow 封堵" | **部分未核实** | Guardian 文字直播全文 [T2] [P15] 中没有 53' Ramelow 条目，已标【未核实】。有 30' 机会（Guardian 与维基都记）。"≥6 次"的结论仍成立 |
+| 7 | 对比利时进球：左脚一脚出球，Kléberson 传球，Kléberson 81' 替补上场；门将碰到了球 | **确认** | BBC 2022 "first-time left-footed finish from Jose Kleberson's pass" [T2] [P25]；ESPN "Kleberson's low cross … through De Vliegers legs" [T3]；FIFA 接口 81' Ronaldinho 下、Kléberson 上 [T1]；CNN "keeper touched but could not keep out" [T2] |
+| 8 | 半决赛 49'：Gilberto Silva 传球，右脚脚尖捅射，约 15 米；"Romário 式进球"；"脚尖射门的力量来自髋部" | **确认** | 人民网/新华社 "flicked a quick shot from 15 meters into the net with his right toe"、"in the style of Romario" [T2] [P17]；BBC 2022（Bülent Korkmaz、toe poke）[T2]；FourFourTwo 本人回忆 "the power comes more from the hips" [T2] [P26] |
+| 9 | 引语 "It was the only non-painful thing I could do" | **未核实** | P26、P29、维基《Toe punt》全文均未出现这句话。意思相近、可核对的原话已写入正文 |
+| 10 | 决赛 67'：Ronaldo 从 Hamann 脚下抢球 → Rivaldo 左脚射门 → 卡恩脱手 → Ronaldo 右脚补射；79'：Kléberson 传、Rivaldo 漏球、卸球后右脚低射右下角 | **确认** | BBC 2022 "bundling Dietmar Hamann off the ball"、"cushioned touch" [T2]；Fox/AP "hard left-footed shot … touched it home with his right foot"、"right-footed a low shot" [T2] [P16]；Guardian "bottom-right corner" [T2]；CNN "Hamann allowed himself to be dispossessed … by Ronaldo" [T2] [P12] |
+| 11 | 对哥斯达黎加 10' 进球先记乌龙，后由"FIFA 技术研究组（TSG）"改判 | **更正**（机构名和经过） | Reuters/Dawn [T2] [P20]：改判机构是 "Technical Committee"；经过是"先判给 Ronaldo → 改记乌龙 → 再改判给 Ronaldo"；原文还写录像 "clearly showing he did not touch the ball"。CNN 当时记为 Marín 乌龙 [T2] [P06]；FIFA 接口现记为 Ronaldo [T1] |
+| 12 | 国米 2001/02：16 场 7 球（意甲 10/7、欧联杯 5/0、意杯 1/0） | **确认**；冲突描述**更正** | 直接抓取 inter.it G0556 [T1] [P38]：Campionato 10/7、Coppe Europee 5/0、Coppa Italia e Supercoppa 1/0；英文维基球员页统计表同为 16/7 [T3]。更正：英文维基**赛季页**也是意杯 0 场、合计 15 场 |
+| 13 | 意甲 7 球的分布（12-09、12-19 两球、04-14 两球、04-21、04-28）；欧联杯对布拉索夫 9-20 在的里雅斯特主场 3–0、9-27 客场 3–0；对费耶诺德 04-04 0–1、04-11 2–2；05-05 客场 2–4 负拉齐奥是他代表国米的最后一场 | **确认** | 英文维基赛季页 [T3] [P37]；BBC "four goals in the final five games of the season" [T2]；Sky "less serious than the one in Brasov" [T2] [P40] |
+| 14 | 2000-04-12 意杯决赛首回合对拉齐奥，替补上场 6 分钟后髌腱完全断裂；1999-11 对莱切那次是"部分断裂" | **确认**；"部分"**未核实** | Guerin Sportivo "12 aprile del 2000 … tendine rotuleo … si è rotto definitivamente" [T2] [P41]；BBC "only on the pitch six minutes" [T2]；英文维基 "complete rupture of the knee-cap tendons" [T3]。各来源对 1999-11 的伤都只写 "ruptured a tendon"，没有"部分"的说法 |
+| 15 | 2001-12-09 对布雷西亚复出首球，右脚外脚背，结束 749 天进球荒 | **确认** | Guerin "tocco … d'esterno destro … incubo durato 749 giorni" [T2]；英文维基赛季页记 Brescia 1–3 Inter，18'（Guerin 写第 19 分钟，相差 1 分钟）[T3]。2001-12-09 往前推 749 天是 1999-11-21，即对莱切那场 [T4 计算] |
+| 16 | 2001-12-23 对皮亚琴察：43' 的突破导致对方门将被罚下、Vieri 罚进点球；队医 Combi 说是"左大腿"伤加重；2001-11 对莱切首发 17 分钟后受伤 | **确认**；新增冲突 | VOA [T2] [P39] 原文逐句核对；Sky "forced out of the game after 17 minutes with a thigh injury" [T2] [P40]；英文维基赛季页 Guardalben 43' 红牌、Ronaldo 67' 受伤标记 [T3]。冲突：Goal [P29] 说 "five muscle injuries - all in his right thigh"，已写入 §6 |
+| 17 | 2002-03-27 在福塔莱萨对南斯拉夫踢了 45 分钟；2002-05-25 对马来西亚 4–0 进球 | **确认** | FourFourTwo 本人回忆 [T2] [P26]；BBC "45 minutes in a friendly win over Yugoslavia" [T2]；national-football-teams.com 比赛报告：2002-03-27 Brazil 1:0 Yugoslavia，Estádio Governador Plácido Castelo，46' Luizão 换下 Ronaldo；马来西亚战 Ronaldo 51' 进球 [T3]；英文维基国际赛进球表 2002-05-25 [T3] |
+| 18 | 2001/02 国家队 12 场 9 球、812 分钟（footballdatabase.eu） | **更正 / 冲突** | footballdatabase.eu 本次返回 403，无法复核。national-football-teams.com 只列出 10 场 9 球 [T3]。正文已改为采用 10 场 |
+| 19 | 金球奖：Ronaldo 第二（银球），126 票 21%；卡恩 174 票 25%（RSSSF），CNN 报卡恩 147 票 | **确认**（两组数字都与原文一致） | RSSSF 原页 [T3] [P43]；CNN 2002-07-02 "Kahn got 147 votes, followed by Ronaldo with 126" [T2] [P13]。两者对卡恩票数的冲突是真实存在的 |
+| 20 | 专家与本人引语：Smyth "two Ronaldos … great everything" / "took away the explosiveness"；FFT（Nick Moore，2014-06-09）"pace and sheer brute force were diminished"；Ringer "lost a step"；"I was only at 60 percent"（The Sun 2017）；日本电视台 "more tired than the others"；Scolari "má vontade"；Campbell "absolutely everything" | **确认**（原话逐字核对） | Guardian 2016 [T2] [P49]；FourFourTwo [T2] [P28]；The Ringer [T2] [P32]；Goal [T2] [P29]；Gazeta Esportiva 2017-06-30 [T2] [P31]；BBC 2022 [T2] [P25] |
+| 21 | Scolari "half a leg" 与 Zagallo "wasn't right" 出自 Globoplay 纪录片 | **更正**（归因） | Goal [P29] 原文：Scolari 那句是 2002 年半决赛前的公开表态，Zagallo 那句是 "later admitted"，两句都没有注明出自纪录片 |
+| 22 | Robson："could start from the halfway line … the fastest thing I've ever seen running with the ball" | **更正**（两句话被拼成一句） | Guardian [P49] "could start from the halfway line and the whole stadium would ignite"；英文维基 [P34] "He was the fastest thing I've ever seen running with the ball" |
+| 23 | Petrone：国米测试推算百米 10.2–10.3 秒，测试时间为 1997–99 年 | 数值**确认**；年份**未核实** | FourFourTwo/Petrone [T2] [P27]："speed tests on him at Inter … 10.2 or 10.3 seconds"，原文没有年份。另核对：Petrone 的"约 14 球""2 月在 Palma de Maiorca 受伤"确实是他的原话，档案判其为错误回忆的处理正确 |
+| 24 | EA FC 26 图标卡数值（加速 95、速度 94、头球 84、弹跳 79、体能 81、传中 72、长传 73、任意球 88、逆足 5 星） | **确认**（与引用源一致） | 重新抓取 FIFPlay [T3] [P46]。只有一家来源，而且是其他游戏的数据，只作量级参考 |
+| 25 | eFootball 命名：比赛风格 Goal Poacher / Fox in the Box / Dummy Runner / Prolific Winger / Deep-lying Forward；AI 风格 Trickster / Incisive Run / Mazing Run / Speeding Bullet；技能 Acceleration Burst、Phenomenal Finishing、Willpower、Fighting Spirit、Gamesmanship、Snap Strike、First-time Shot、Acrobatic Finishing、Scissors Feint、Double Touch、Cut Behind & Turn、Chop Turn、Flip Flap、Chip Shot Control 等；能力名 Attacking Awareness / Set Piece Taking / Defensive Awareness / Tackling / Aggression / Defensive Engagement；逆足频率 Almost Never–Regularly、逆足精度 Low–Very High、状态 Inconsistent/Standard/Unwavering、伤病耐受 Low/Medium/High；R9 不在 pesdb 库中 | **确认（仅限 pesdb [T3]）**；客户端**未核实** | 重新抓取 pesdb.net（页面标注 "eFootball 2027"）：以上名称都在筛选控件中（技能为 `s_*`，AI 风格为 `p_*`）。按 "Ronaldo" 检索两页结果、按 "Nazario" 检索（"No players found"）都没有 R9；名叫 "Ronaldo" 的只有 DMF/GK 等无关条目。**build 11.1.101 客户端里的实际字段名、技能是否存在及其编码都没有核实**，仍需另一代理用客户端数据确认 |
+| 26 | 2002 年队长是 Cafu | **确认** | FIFA 接口 7 场的 Captain 标记都在 Cafu（2 号）身上 [T1] |
+| 27 | 决赛 18' 单刀"左脚"捅射偏出 | **部分未核实** | 只有维基转引 BBC 计时稿 [T3]；Guardian [P15] 没写用脚。BBC 2002 年旧站原页无法访问 |
+
+**核查结论**：档案的核心数据层（进球、分钟、换人、点球、ESPN 统计、国米官方出场、伤病日期、金球奖票数）经 T1/T2 原始来源复核**基本可靠**，没有发现编造的数值。发现并已在正文修正的问题有五类：
+1. 一处引语查不到出处（"only non-painful thing"）。
+2. 两处引语归因或拼接错误（Robson 的话被拼成一句；"half a leg"、Zagallo 被误归为纪录片）。
+3. 一处机构名错误（TSG 应为 Technical Committee）。
+4. 一处国家队出场数和数据冲突描述不完整（12 场应为 10 场；英文维基赛季页也记意杯 0 场）。
+5. 三处细节没有原始支持（53' Ramelow、1999 年"部分"断裂、Petrone 测试的年份）。
+
+§4 和 §5 的分级与数值带本来就标为 [T4]。核查时没有发现它们被当作事实陈述，但所有 eFootball 名称都只经 pesdb [T3] 验证，**仍需对照客户端核实**。

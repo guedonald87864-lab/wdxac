@@ -1699,27 +1699,13 @@ def observed_mmap_alignment(toc: TocResource) -> Tuple[int, dict]:
     return a, {"memory_mapped_chunks": n, "observed_min_alignment": obs, "used": a}
 
 
-def patch_container(c: IoStoreContainer, replacements: Dict[int, bytes], out_dir: str, rebuild: bool = False,
-                    unsign: bool = False, hash_algo: str = "auto", align: int = AES_BLOCK,
-                    verify: bool = False, extra_inputs: Sequence[str] = (), argv: Optional[List[str]] = None,
-                    key_source: str = "none", allow_unverified_key: bool = False) -> dict:
-    """Write a NEW container (same base name) into out_dir with the given chunk payloads replaced.
-
-    Append mode (default): partition files are copied byte for byte, replaced chunks are appended to
-    the last partition as uncompressed blocks (method index 0), their FIoOffsetAndLength points at the
-    new block range, TOC meta hash/flags are updated; everything else (chunk ids, perfect hash,
-    directory index, other blocks) is untouched, so the old payload stays as unreferenced bytes.
-    Rebuild mode: every partition is rewritten; unchanged chunks' on-disk blocks are copied verbatim
-    (still compressed/encrypted), replaced chunks are written uncompressed, orphan blocks are dropped.
-    """
-    toc_in = c.toc
+def _writer_preflight(c: IoStoreContainer, unsign: bool, allow_unverified_key: bool, warnings: List[str],
+                      what: str) -> dict:
+    """Checks every writing command (patch, add, clone-package) runs before touching anything:
+    signatures, OnDemand, TOC version, AES key proven, TOC re-serialises byte-identically.
+    Returns the key-check record for the manifest."""
     h_in = c.header
     flags = h_in.flags
-    warnings: List[str] = []
-    if not replacements:
-        raise IoStoreError("nothing to replace")
-    if align < 1 or align % AES_BLOCK:
-        raise IoStoreError("--align must be a positive multiple of 16")
     if flags & ContainerFlags.Signed and not unsign:
         raise IoStoreError("container is Signed: its RSA TOC/block signatures cannot be regenerated without the "
                            "publisher's private key. Refusing. Pass --unsign to clear the Signed flag and drop the "
@@ -1730,7 +1716,7 @@ def patch_container(c: IoStoreContainer, replacements: Dict[int, bytes], out_dir
         raise IoStoreError(f"TOC version {h_in.version} is newer than this tool knows ({int(LATEST_KNOWN_VERSION)})")
     key_check: dict = {"status": "not-encrypted"}
     if c.encrypted:
-        c._need_key("patching")
+        c._need_key(what)
         if c.directory_index_plain() is not None:  # raises KeyRequired on a wrong key
             key_check = {"status": "accepted", "method": "directory index mount point (IsValidIndex)"}
         else:
@@ -1749,8 +1735,32 @@ def patch_container(c: IoStoreContainer, replacements: Dict[int, bytes], out_dir
                                        "--allow-unverified-key only if you are sure the key is right")
                 warnings.append("AES key could not be verified (no directory index); written with "
                                 "--allow-unverified-key")
-    if toc_in.serialize() != c.toc_bytes:
+    if c.toc.serialize() != c.toc_bytes:
         raise IoStoreError("input TOC does not re-serialise byte-identically; refusing to write from it")
+    return key_check
+
+
+def patch_container(c: IoStoreContainer, replacements: Dict[int, bytes], out_dir: str, rebuild: bool = False,
+                    unsign: bool = False, hash_algo: str = "auto", align: int = AES_BLOCK,
+                    verify: bool = False, extra_inputs: Sequence[str] = (), argv: Optional[List[str]] = None,
+                    key_source: str = "none", allow_unverified_key: bool = False) -> dict:
+    """Write a NEW container (same base name) into out_dir with the given chunk payloads replaced.
+
+    Append mode (default): partition files are copied byte for byte, replaced chunks are appended to
+    the last partition as uncompressed blocks (method index 0), their FIoOffsetAndLength points at the
+    new block range, TOC meta hash/flags are updated; everything else (chunk ids, perfect hash,
+    directory index, other blocks) is untouched, so the old payload stays as unreferenced bytes.
+    Rebuild mode: every partition is rewritten; unchanged chunks' on-disk blocks are copied verbatim
+    (still compressed/encrypted), replaced chunks are written uncompressed, orphan blocks are dropped.
+    """
+    toc_in = c.toc
+    h_in = c.header
+    warnings: List[str] = []
+    if not replacements:
+        raise IoStoreError("nothing to replace")
+    if align < 1 or align % AES_BLOCK:
+        raise IoStoreError("--align must be a positive multiple of 16")
+    key_check = _writer_preflight(c, unsign, allow_unverified_key, warnings, "patching")
     layout = toc_in.layout_report()
     if rebuild and (layout["shared_blocks_count"] or layout["chunks_misaligned_count"] or layout["chunks_out_of_range_count"]):
         raise IoStoreError(f"--rebuild needs block-aligned, non-overlapping chunks; layout: {json.dumps(layout)}")

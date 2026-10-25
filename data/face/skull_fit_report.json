@@ -1,0 +1,119 @@
+{
+ "loss_start": 0.32680712071125484,
+ "loss_end": 0.2422680230816447,
+ "vars": {
+  "head/head-scale-vert-decr|incr": -0.24457669346087463,
+  "head/head-scale-depth-decr|incr": -0.21852412629766,
+  "head/head-scale-horiz-decr|incr": -0.23567860088735393,
+  "head/head-back-scale-depth-decr|incr": 0.029297890533974254,
+  "head/head-round": 0.3648556067296567,
+  "head/head-oval": 0.05924580989967096,
+  "head/head-square": 0.17255083924756295,
+  "forehead/forehead-scale-vert-decr|incr": -0.021890823952997816,
+  "forehead/forehead-trans-backward|forward": 0.1618771958430954,
+  "forehead/forehead-temple-decr|incr": 0.018750037293205804
+ },
+ "views_start": [
+  {
+   "name": "c_2002.jpg",
+   "silhouette_err": 0.3435022820081672,
+   "lm_rms_pct_iod": 4.740359229911256,
+   "model_area_roi": 5593,
+   "photo_area_roi": 4163
+  },
+  {
+   "name": "g651884454.png",
+   "silhouette_err": 0.26968196037539105,
+   "lm_rms_pct_iod": 8.763816832081849,
+   "model_area_roi": 9741,
+   "photo_area_roi": 7672
+  },
+  {
+   "name": "g78968267.png",
+   "silhouette_err": 0.10165277168348691,
+   "lm_rms_pct_iod": 27.91171462488006,
+   "model_area_roi": 43258,
+   "photo_area_roi": 41022
+  },
+  {
+   "name": "g78971169.png",
+   "silhouette_err": 0.06550738446879466,
+   "lm_rms_pct_iod": 17.9383206270021,
+   "model_area_roi": 40828,
+   "photo_area_roi": 41980
+  },
+  {
+   "name": "g891445.png",
+   "silhouette_err": 0.3195926285160039,
+   "lm_rms_pct_iod": 9.6505618998094,
+   "model_area_roi": 5442,
+   "photo_area_roi": 4124
+  },
+  {
+   "name": "g891940.png",
+   "silhouette_err": 0.15631691648822268,
+   "lm_rms_pct_iod": 6.710266328445784,
+   "model_area_roi": 8622,
+   "photo_area_roi": 7472
+  },
+  {
+   "name": "g923205.png",
+   "silhouette_err": 0.10634951838018479,
+   "lm_rms_pct_iod": 16.789598763722832,
+   "model_area_roi": 5584,
+   "photo_area_roi": 5087
+  }
+ ],
+ "views_end": [
+  {
+   "name": "c_2002.jpg",
+   "silhouette_err": 0.1453278885419169,
+   "lm_rms_pct_iod": 4.723346268956584,
+   "model_area_roi": 4768,
+   "photo_area_roi": 4163
+  },
+  {
+   "name": "g651884454.png",
+   "silhouette_err": 0.16058394160583941,
+   "lm_rms_pct_iod": 9.205272042568158,
+   "model_area_roi": 8450,
+   "photo_area_roi": 7672
+  },
+  {
+   "name": "g78968267.png",
+   "silhouette_err": 0.05899273560528497,
+   "lm_rms_pct_iod": 24.91011324504555,
+   "model_area_roi": 39302,
+   "photo_area_roi": 41022
+  },
+  {
+   "name": "g78971169.png",
+   "silhouette_err": 0.12382086707956169,
+   "lm_rms_pct_iod": 17.608693787038334,
+   "model_area_roi": 37070,
+   "photo_area_roi": 41980
+  },
+  {
+   "name": "g891445.png",
+   "silhouette_err": 0.19180407371483996,
+   "lm_rms_pct_iod": 9.80962195235402,
+   "model_area_roi": 4785,
+   "photo_area_roi": 4124
+  },
+  {
+   "name": "g891940.png",
+   "silhouette_err": 0.05620985010706638,
+   "lm_rms_pct_iod": 6.9844979426805995,
+   "model_area_roi": 7398,
+   "photo_area_roi": 7472
+  },
+  {
+   "name": "g923205.png",
+   "silhouette_err": 0.03164930214271673,
+   "lm_rms_pct_iod": 17.005322490949375,
+   "model_area_roi": 5062,
+   "photo_area_roi": 5087
+  }
+ ],
+ "nfev": 555
+}
