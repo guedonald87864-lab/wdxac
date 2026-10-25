@@ -6,7 +6,7 @@
  "rule": "pesdb60 offset = edit72 offset - 8, covers edit bytes 0x0C..0x43",
  "pid_field": "pid",
  "pid_width": 32,
- "offset_space": "decoded table payload (row i at i*60). NOT CPK/file-container offsets, NOT memory.",
+ "offset_space": "DECODED table payload (row i at i*60; the file must first be extracted from its CPK). NOT CPK/file-container offsets, NOT memory.",
  "sorted_by_pid": "unknown (not claimed for PES tables) - find reports it, never assumes it",
  "record_size": 60,
  "bit_numbering": "LSB-first inside each byte, bytes concatenated little-endian (06 §1.2): bit position p = byte*8 + bit; value = (int.from_bytes(record, 'little') >> p) & ((1 << width) - 1). 'nibble' = which half of the byte a byte-aligned 4-bit field occupies (low = bits 0-3, high = bits 4-7); the 14 body fields are 7 bytes, first field of each pair in the LOW nibble.",

@@ -22,14 +22,14 @@
 
 | 项目 | 结论 | 分级 |
 |---|---|---|
-| iOS 11.1.1 是什么 | Konami 国际服 App `eFootball™`（bundle `jp.konami.pesactionmobile`），**2026-10-15** 上架，更新说明只有 "A number of issues were fixed"。<br>它是游戏版本 **v6.1.0（App 11.1.0，2026-10-08）的修复版**，属于 "eFootball 2027" 赛季（v6.0.0 起，2026-08-13）。<br>App 主版本号 = 游戏主版本号 + 5。 | T1 [S01][S02][S04] + T4 推断 |
+| iOS 11.1.1 是什么 | Konami 国际服 App `eFootball™`（bundle `jp.konami.pesactionmobile`），**2026-10-15** 上架，更新说明只有 "A number of issues were fixed"。<br>它是游戏版本 **v6.1.0（App 11.1.0，2026-10-08）的修复版**，属于 "eFootball 2027" 赛季（v6.0.0 起，2026-08-13）。<br>App 主版本号 = 游戏主版本号 + 5。<br>（核查：版本号、日期、bundle 已用 iTunes Lookup 与 App Store 版本历史复核一致；"eFootball 2027" 这个赛季名称在 Konami 的 v6.0.0 Steam 公告中**没有出现**，该公告只写 "New Season Update (v6.0.0)" 和 "2026/27" 联赛名。赛季名来自 pesdb 与 Operation Sports，属 T2/T3。） | T1 [S01][S02][S04] + T4 推断 |
 | build 11.1.101 | 公开渠道**未找到**这个构建号。推测是 iOS 的 CFBundleVersion（T4）。需要 IPA 的 `Info.plist` 才能确认。 | 未找到 |
 | 能力项数 | **26 项**：21 项场上能力 + 5 项门将能力。<br>卡面数值范围 **40–99**。增能（Booster）加在 99 封顶之后，社区逆向称上限 **120**。<br>官方确认：增能可让能力"超越 99"（v3.0.0）；总评自 v2.5.0 起可超过 100。 | T1 [S06][S15] + T3 [S25] |
 | 能力英文名有两套 | 英式英语用 **Attacking Awareness**，美式英语用 **Offensive Awareness**。<br>其他差异：Set Piece Taking / Set Pieces，GK Parrying / GK Deflecting。<br>简中（Konami 国际服）："进攻意识"。 | T1 [S13] + T3 [S20] |
 | 逆足 | 频率 4 档：Almost Never / Rarely / Occasionally / Regularly。<br>精度 4 档：Low / Medium / High / Very High。 | T3 [S20] |
 | 状态波动（Form） | 3 档：Inconsistent / Standard / Unwavering。官方说它影响"状态（Condition）"的抽取概率。<br>社区逆向称比赛中不直接读取 Form。旧作 PES 2021 是 1–8 档。 | T1 [S06] + T3 [S25][S38] |
 | 抗伤 | 3 档：Low / Medium / High。 | T3 [S20][S25] |
-| 位置适性 | 13 个位置，**3 级**：高（深绿）/ 中（浅绿）/ 低（无色）。不是旧 PES 的 A/B/C。<br>位置训练：v3.4.0 起可随机提升最多 2 个位置；v6.1.0 新增"选择位置代币"（100 个换 1 次自选）。 | T1 [S08][S04] |
+| 位置适性 | 13 个位置，**3 级**：高（深绿）/ 中（浅绿）/ 低（无色）。不是旧 PES 的 A/B/C。<br>位置训练：v3.4.0 起可随机提升最多 2 个位置；v6.1.0 新增"选择位置代币"（100 个换 1 次自选）。<br>（核查更正：Konami v3.4.0 英文原文用的是 "Bright green (high level of Proficiency)" 和 "Faded green (intermediate level of Proficiency)"，对应"亮绿/淡绿"。"无色 = 低"这一档官方页面没有描述，出处是 efootballexplained 的 "low (uncoloured)"，属 T3。） | T1 [S08][S04] + T3 [S25] |
 | 比赛风格 | v6.0.0 起分为**进攻型比赛风格 + 防守型比赛风格**，每名球员有其一或两者。<br>另有"AI 比赛风格"7 种：Trickster、Mazing Run、Speeding Bullet、Incisive Run、Long Ball Expert、Early Cross、Long Ranger。 | T1 [S03] + T3 [S20][S25] |
 | 技能总数 | 当前数据库共 **67 种**球员技能。其中约 44 种可以通过技巧训练获得，其余为"特殊技能/Show Time 技能"。<br>客户端代码里另有 7 个未发布的占位技能（名为 "Dummy"）。 | T3 [S20][S25][S34] |
 | 技能上限 | 卡面技能实测最多 **10** 个。另外可通过技巧训练加 **最多 5 个附加技能**（v2.5.0 官方）。合计 15（T2 媒体）。 | T1 [S15] + T2 [S35] + T3 实测 |
@@ -72,6 +72,8 @@
 
 App Store 各版本的更新说明，与 Konami 官网版本说明的条目**逐字一致**。据此可以对应如下 [S02][S03][S04][S10][S12][S13][S14]。
 
+（核查更正："逐字一致"说得太满，应改为"部分条目逐字一致"。抽查结果：App 10.0.0 的 "Added "Custom Stadium", a new mode …" 在 v5.0.0 页面逐字出现。App 11.1.0 的 4 条功能说明中，"Notifications will now be provided …" 和 "Added "Order of Signing" …" 两条在 v6.1.0 页面逐字出现；"Select Skill Token""Select Position Token" 两条在官网上的措辞不同。版本对应关系本身成立。）
+
 | App 版本 | 上架日 | 游戏版本 | 赛季 | 与球员数据相关的变更 [T1] |
 |---|---|---|---|---|
 | 9.2.0 | 2024-12-05 | v4.2.0 | 2025 | 可用 GP 兑换道具；比赛中角色的适配值计入增能、位置适性和主教练熟练度。 |
@@ -83,8 +85,8 @@ App Store 各版本的更新说明，与 Konami 官网版本说明的条目**逐
 | **11.1.1** | **2026-10-15** | v6.1.x 修复版（T4） | 2027 | 只写了"修复若干问题"。 |
 
 - **规律（T4）**：App 主版本号 = 游戏主版本号 + 5，即 9↔v4、10↔v5、11↔v6。次版本号对应游戏的 x.y（11.1 ↔ v6.1）。
-- **构建号**：APKMirror 搜索摘要中，安卓 10.5.1 的 versionCode 写作 `310050101`（T3，没有打开原页面核实）。iOS 的 "11.1.101" 可能遵循类似的"补丁×100+构建"写法，**未证实**。
-- **社区分析也基于这个版本**：efootballexplained.com 全站标注 "Checked on game version 11.1.1 (2026-10)" [S25]。eFHUB 在 2026-10-17 发表的机制分析文章，基于对一个游戏包（SHA-256 前缀 `2ea6b0b5…`）的静态分析和 ARM64 指令级实验 [S24]。这两份是目前与研究基准版本最接近的社区逆向资料，但都自称可能有误（T3）。
+- **构建号**：APKMirror 搜索摘要中，安卓 10.5.1 的 versionCode 写作 `310050101`（T3，没有打开原页面核实）【未核实】（核查时直接请求 APKMirror 页面返回 404，仍无法确认）。iOS 的 "11.1.101" 可能遵循类似的"补丁×100+构建"写法，**未证实**。
+- **社区分析也基于这个版本**：efootballexplained.com 全站标注 "Checked on game version 11.1.1 (2026-10)" [S25]。eFHUB 在 2026-10-17 发表的机制分析文章，基于对一个游戏包（SHA-256 前缀 `2ea6b0b5…`）的静态分析和 ARM64 指令级实验 [S24]。这两份是目前与研究基准版本最接近的社区逆向资料，但都自称可能有误（T3）。（核查更正：eFHUB 原文写的是 "SHA256 of the original library analysed: `2ea6b0b56bb5…`"，即**一个原生库文件**的哈希，不是整个游戏包。该文**没有写明**对应的游戏版本号。所以"与 11.1.1 最接近"只对 efootballexplained 有原文依据；对 eFHUB 是 T4 推断。eFHUB 文首注明转载自 wyzzzzzzz 的工作，"Some findings are still undergoing further verification"。）
 
 ---
 
@@ -95,7 +97,7 @@ App Store 各版本的更新说明，与 Konami 官网版本说明的条目**逐
 字段说明：
 - `key`：pesdb、eFHUB 页面数据中使用的键名（T3）。**不是**客户端字段名；客户端字段名未找到。
 - "简中"：pesdb 简体中文界面的用语（T3）。其中"进攻意识、防守意识、防守参与度、截球（技能）、偷猎者（风格）、锋线施压（风格）、传统十号位置（风格）"已与 Konami 官网简中版本说明对上 [S17]，所以判断 pesdb 的简中多半取自游戏文本，但并未逐项核对。
-- "国服"：网易官方页面上实际见到的写法（T1，仅限能找到的）。
+- "国服"：网易官方页面上实际见到的写法（T1，仅限能找到的）。（核查更正：所引网易页面 [S37] 位于 skol.163.com，页面标题为"《实况足球Online》官方网站-虚幻引擎实况PC端游"，是网易**PC 端游**的官网，**不是**手游国服"实况足球" App（`com.netease.pes`）。本文所有"国服"写法都应理解为"网易《实况足球Online》PC 端用语"，不能直接当作手游国服 UI 文本。）
 
 | # | key | 英式英语（UK） | 美式英语（US）差异 | 简中（国际服） | 繁中 | 日文 | 所属培养类别 |
 |---|---|---|---|---|---|---|---|
@@ -244,6 +246,7 @@ App Store 各版本的更新说明，与 Konami 官网版本说明的条目**逐
 - 深绿 = 高（high level of Proficiency）。注册位置永远是高。
 - 浅绿 = 中（intermediate）。
 - 无色 = 低。
+- （核查更正：官方原文为 "Bright green" / "Faded green"，即亮绿、淡绿；"无色 = 低"不在 v3.4.0 官方页，出处是 efootballexplained 的 "low (uncoloured)"，属 T3。"注册位置永远是高"也来自 efootballexplained："A card's own position is always high"。）
 - pesdb 的 UI 写作 "Full Familiarity / Partial Familiarity"（T3）。
 
 **不在高适性位置时的惩罚（T3 [S25]，11.1.1 逆向）**：
@@ -327,7 +330,7 @@ App Store 各版本的更新说明，与 Konami 官网版本说明的条目**逐
 | Deep Defender | = | 纵深防守者 | CB, LB/RB | 盯人时可退到防线后 7 m |
 | Sweeper GK | = | 清道夫门将 | GK | 在 Attacking GK 基础上，最远可站到离门 42 m |
 
-- 拥有新防守风格的卡还很少。2026-10-16 卡表中：Front Line Pressure 40 张、Front Line Poacher 32 张、Attack Outlet 未统计、Press Back 4 张（T3 [S25]）。
+- 拥有新防守风格的卡还很少。2026-10-16 卡表中：Front Line Pressure 40 张、Front Line Poacher 32 张、Attack Outlet 未统计、Press Back 4 张（T3 [S25]）。（核查更正：efootballexplained 的 Attack Outlet 页**有统计**：原文 "In the card list of the 16 Oct live update: 15 cards (CF 6, wingers 4, SS 3, AMF 2)"。其余三项数字已复核一致。）
 
 **AI 比赛风格（7 项）**
 
@@ -374,7 +377,8 @@ App Store 各版本的更新说明，与 Konami 官网版本说明的条目**逐
 - Konami 没有公布哪些技能"不能训练"。
 - Operation Sports（2026-08-13）把 19 个技能列为 "Showtime skills … not available through training"，并按 6 类列出了可训练技能（T2/T3 [S34]）。
   - 该文自称"40 个"可训练技能，但实际列出 44 个不重复的名称，**存在矛盾**。
-- 网易国服官方活动页把旋风盘带、瞬间加速、无定型射门、落叶式横传、后防领袖、到位传球、伸脚抢截、炮弹式头球、掠地瞬击等称为 **"特殊技能"**（T1 [S37]）。
+  - （核查更正：上面引号里的文字不是原文。原文是 "eFootball 2027 allows you to choose from a total of 40 Player Skills, as well as get access to over 20 Showtime picks not available via training"。也就是说，正文写的是"20 多个" Showtime 技能，而 Showtime 一节实际只列了 19 个，**这里也自相矛盾**。可训练技能放在 **5 个**标题下，不是 6 类：Shooting、Passing、Dribbling、Defending And Goalkeeper、All-Purpose。共 45 条，其中 Weighted Pass 在传球组和防守组各出现一次，去重后 44 个。作者 Franklin Bellone Borges。）
+- 网易国服官方活动页把旋风盘带、瞬间加速、无定型射门、落叶式横传、后防领袖、到位传球、伸脚抢截、炮弹式头球、掠地瞬击等称为 **"特殊技能"**（T1 [S37]）。（核查：这些词在 6 个 skol.163.com 页面中确实出现。但该站是网易《实况足球Online》**PC 端游**官网，不是手游国服，见 §2.1 的更正。）
 - 2026 年新出现的 Tap Trick、Snap Strike、Power Tackle、Shadow Hunt 四项，没有出现在任何可训练列表中。新闻片段称 Snap Strike 和 Power Tackle 是 "Showtime skill"（T3 [S41]），本组推断四项都属特殊技能（T4）。
 - **客户端用什么字段编码"特殊"标记，未找到。**
 
@@ -383,7 +387,7 @@ App Store 各版本的更新说明，与 Konami 官网版本说明的条目**逐
 列说明：
 - "类别"：可训练技能按 [S34] 的分组标注；特殊技能标"特殊"。
 - "效果"：主要取自 efootballexplained（T3，11.1.1 逆向）的数值，以及 eFHUB 收录的游戏内说明文本（T3 [S23]）。
-- 所有技能加成都**在 99 封顶之前**相加：已到 99 的能力不再受益（T3 [S25]）。
+- 所有技能加成都**在 99 封顶之前**相加：已到 99 的能力不再受益（T3 [S25]）。（核查更正：这句话需要加限定。efootballexplained 原文只说 "active stat-boost skills" 在 99 封顶之前相加，即直接加能力值的技能，如 Momentum Dribbling、Magnetic Feet、Attacking Surge、Willpower。"按某能力 +N 瞄准"一类的技能不受此限。例如 Through Passing 原文为 "aimed as if his Low Pass or Lofted Pass were 5 higher, even at 99 and with extra points from boosters"，这与本表第 31 行"可超过 99"一致。）
 
 **盘带**
 
@@ -482,9 +486,9 @@ App Store 各版本的更新说明，与 Konami 官网版本说明的条目**逐
 | 66 | Fighting Spirit | | 战斗精神 | 训练·通用 | 受压迫时精度损失减少 20%；电脑控制时，疲劳状态下更努力 |
 | 67 | Attacking Surge | | 进攻提速 | 特殊 | 在对方半场且队友持球时 Speed、Acceleration +3，自己拿到球即失效 |
 
-- **可训练技能合计 44 个**：盘带 9、射门 9、传球 9、防守 6、门将 4、通用 7（其中 Aerial Superiority 在 [S34] 中归入防守组）。
+- **可训练技能合计 44 个**：盘带 9、射门 9、传球 9、防守 6、门将 4、通用 7（其中 Aerial Superiority 在 [S34] 中归入防守组）。（核查更正：44 这个总数正确，但"防守 6、通用 7"不是 [S34] 的分组。[S34] 的防守组去掉 GK 项和重复的 Weighted Pass 后有 **7** 个：Man Marking、Track Back、Interception、Blocker、Aerial Superiority、Sliding Tackle、Acrobatic Clearance。通用组（All-Purpose）有 **6** 个：Heading、Long Throws、Gamesmanship、Captaincy、Super-Sub、Fighting Spirit。本文的 6/7 是把 Aerial Superiority 移到了通用组。）
 - **特殊技能合计 23 个**：19 个 Show Time 技能 + 4 个 2026 年新技能。
-- 网易国服的写法与国际服简中不同的例子（T1 [S37]）：落叶式横传（= Edged Crossing）、伸腿/伸脚抢截、牛尾巴、旋风盘球/旋风盘带。
+- 网易国服的写法与国际服简中不同的例子（T1 [S37]）：落叶式横传（= Edged Crossing）、伸腿/伸脚抢截、牛尾巴、旋风盘球/旋风盘带。（核查更正：[S37] 是网易《实况足球Online》PC 端游官网，不是手游国服，见 §2.1。）
 
 ### 4.3 技能与 R9 的直接关系（只列事实，不做设计）
 
@@ -513,7 +517,7 @@ App Store 各版本的更新说明，与 Konami 官网版本说明的条目**逐
 **能力点公式**：可用能力点 = **2 × (最高等级 − 1)**。
 
 依据：
-- pesdb 的计算脚本直接写作 `availablePoints = (maxLevel - 1) * 2`（T3 [S22]）。
+- pesdb 的计算脚本直接写作 `availablePoints = (maxLevel - 1) * 2`（T3 [S22]）。（核查更正：代码原文为 `return (readMaxLevel() - 1) * 2;` 和 `metadata.availablePoints = (baseMaxLevel - 1) * 2;`。上面的写法是转述，含义相同。）
 - ef-labo 写 "Each level gives you 2 points"（T3 [S26]）。
 - 独立核对：eFHUB 显示 Adriano Epic 05-06 的能力点为 "0 / 66"，与 pesdb 的最高等级 34 吻合，因为 2 × 33 = 66（T3 [S23]）。
 
@@ -560,7 +564,7 @@ App Store 各版本的更新说明，与 Konami 官网版本说明的条目**逐
 | 累计花费（到该段末） | 4 | 12 | 24 | 40 | 60 |
 
 - **单一类别有没有加点次数上限：未找到。** pesdb 不设上限，只把每项能力夹在 99。
-- 13 次及以后的单价（4、5）来自公式外推。efootballlab 只明确写到第 12 次（T3 [S27]）。
+- 13 次及以后的单价（4、5）来自公式外推。efootballlab 只明确写到第 12 次（T3 [S27]）。（核查更正：不是外推。ef-labo 明确写了第 13–16 次每次 4 点，FAQ 原文 "the 13th to 16th cost 4 each"。pesdb 代码 `nextAllocationCost(value) = Math.floor(value / 4) + 1` 对任意次数都有定义，所以第 17–20 次每次 5 点是脚本直接给出的，属 T3。efootballlab 的说法本次没有重新核对。）
 
 ### 5.5 自动分配与重置 [T1]
 
@@ -654,7 +658,7 @@ App Store 各版本的更新说明，与 Konami 官网版本说明的条目**逐
 | Legendary、Standard、Strike Arena | 无 | | |
 
 - **"增能 2 默认未激活"的含义未找到。** eFHUB 页面把两个增能槽都显示为 "off"。它们可能是有激活条件的增能（参考 §6.1 的条件型），也可能需要玩家选择。需要游戏内说明或数据表来确认。
-- 网易国服称同时拥有两个增能的卡为"双增能史诗"（T1 [S37]）。
+- 网易国服称同时拥有两个增能的卡为"双增能史诗"（T1 [S37]）。（核查更正："双增能"一词在 skol.163.com 的 6 个页面中都有出现。但该站是网易《实况足球Online》PC 端游，不是手游国服，见 §2.1。）
 
 ### 6.5 主教练的三种影响（彼此独立）
 
@@ -768,8 +772,8 @@ WFR = floor(59 × WFA / 3 + 40)，其中 WFA = 逆足精度档位 0–3
 
 | 验证内容 | 结果 |
 |---|---|
-| pesdb 抓取的 97 张卡的 1 级总评 | **97/97 一致**（涵盖 8 种卡型、多个位置、各档逆足精度） |
-| 其中 51 张可培养卡的满级总评（贪心自动分配 + 固定增能 1） | **51/51 一致** |
+| pesdb 抓取的 97 张卡的 1 级总评 | **97/97 一致**（涵盖 8 种卡型、多个位置、各档逆足精度）（核查：本次只用独立脚本重算了 5 张卡，全部一致；97 张全量**没有重跑**【未核实】） |
+| 其中 51 张可培养卡的满级总评（贪心自动分配 + 固定增能 1） | **51/51 一致**（核查：同上，只抽查了 5 张，满级总评和自动加点结果全部一致；全量【未核实】） |
 | Adriano Epic 05-06 在 13 个位置的评分，对照 eFHUB 独立显示的位置评分（LWF 83、CF 86、SS 83、RWF 83、LMF 78、AMF 79、CMF 74、DMF 68、RMF 78、LB 75、CB 69、GK 48、RB 75） | **13/13 一致** |
 
 - **局限**：pesdb 和 eFHUB 都是社区站点，可能用的是同一份逆向结果。复算一致只能说明公式与这两个数据库自洽，**不能等同于**官方客户端的公式。最终仍需在实机或从 IPA 中验证。
@@ -785,18 +789,18 @@ WFR = floor(59 × WFA / 3 + 40)，其中 WFA = 逆足精度档位 0–3
 - pesdb（eFootball 2027 数据库）：分别按 "Ronaldo"、"Nazario"、"Naz" 搜索，并选"不可用球员"。另外筛选巴西籍不可用球员，共 667 人。**均无 R9**（T3 [S20]）。
   - 名为 "Ronaldo" 的只有三名现役巴西球员（ID 102827、109566、110562，标准卡，身高 178 / 194 / 179 cm），与 R9 无关。
 - pesdb 按 ID 查询：`88044146203441`（历史候选 card_id）返回 404，`990001` 也返回 404。作为对照，已知 ID 4522 和 88045755960841 都能查到。说明这个候选 ID **不是**官方现有的卡（T3）。
-- 用 `site:konami.com efootball "Ronaldo Nazário" OR "Ronaldo Nazario"` 检索，没有返回任何 konami.com 页面。这是检索结果为空，不等于官方否认。
+- 用 `site:konami.com efootball "Ronaldo Nazário" OR "Ronaldo Nazario"` 检索，没有返回任何 konami.com 页面。这是检索结果为空，不等于官方否认。【未核实】（核查时 WebSearch 额度已用完，这次检索没能重做。pesdb 部分已复核，见 §核查记录。）
 
 **网上流传的内容都不是官方卡**：
 
 | 内容 | 性质 |
 |---|---|
-| X 账号 @EFOOT_INFORMER（2025-07-14、2025-08-26，日期由帖子 ID 换算）："Epic: World Classics" R9，总评 103（满 109），技能 Phenomenal Finishing、Bullet Header；"Epic: National Legend" R9，102（满 108）。帖子自己标明 "CONCEPT ART" / "Fan Demand" | 粉丝概念，T4 级，不可用作事实 [S39] |
-| X 账号 "Efootball__PES"（2025-03-09，日期由帖子 ID 换算）："Ronaldo Nazário 🇧🇷 played for four eFootball partner clubs, yet no Epic card? #BringR9" | **非官方账号**。官方账号为 @play_eFootball。只看到了搜索结果标题 |
-| YouTube 视频 "Epic R9 Ronaldo Nazário"、"RONALDO NAZARIO 112 CARD? … LEAKED"（2026） | 标题党或传闻 [S40] |
-| GamingonPhone（2026-09-28）：传闻中有一张 112 总评的 Big Time 卡，但明确写 "There is no confirmation that this player is Ronaldo"；另提到 Steam 版国际米兰球场过场中出现 R9 图像 | 传闻，T3 [S32] |
+| X 账号 @EFOOT_INFORMER（2025-07-14、2025-08-26，日期由帖子 ID 换算）："Epic: World Classics" R9，总评 103（满 109），技能 Phenomenal Finishing、Bullet Header；"Epic: National Legend" R9，102（满 108）。帖子自己标明 "CONCEPT ART" / "Fan Demand" | 粉丝概念，T4 级，不可用作事实 [S39]。【未核实】：帖子日期已按 ID 换算复核（2025-07-14 10:41 UTC、2025-08-26 14:33 UTC）；帖子内容（总评、技能）未能打开原帖核对 |
+| X 账号 "Efootball__PES"（2025-03-09，日期由帖子 ID 换算）："Ronaldo Nazário 🇧🇷 played for four eFootball partner clubs, yet no Epic card? #BringR9" | **非官方账号**。官方账号为 @play_eFootball。只看到了搜索结果标题。【未核实】：日期已按 ID 换算复核（2025-03-09），文字内容未核对 |
+| YouTube 视频 "Epic R9 Ronaldo Nazário"、"RONALDO NAZARIO 112 CARD? … LEAKED"（2026） | 标题党或传闻 [S40]【未核实】 |
+| GamingonPhone（2026-09-28）：传闻中有一张 112 总评的 Big Time 卡，但明确写 "There is no confirmation that this player is Ronaldo"；另提到 Steam 版国际米兰球场过场中出现 R9 图像 | 传闻，T3 [S32]。（核查更正：原文是 "He was featured in the Inter Milan stadium cutscene, which was added this year."，全文**没有**出现 "Steam"，未说明是哪个平台。另外，该文的传闻表中列有 "Ronaldo Nazário, Brazil, Epic/Big Time, CF, 109-112*"；文中嵌入的帖子包括 "Concept: EPIC 112 Ronaldo Nazário eFootball!"。"There is no confirmation …" 一句已逐字核实。） |
 
-- 公开说法认为 R9 没有授权给 eFootball，与他和 EA 的独家协议有关。这只是推文回复里的说法，**未找到可靠来源**。
+- 公开说法认为 R9 没有授权给 eFootball，与他和 EA 的独家协议有关。这只是推文回复里的说法，**未找到可靠来源**。【未核实】
 
 ### 8.2 最接近的官方卡：Brazil 2002 主题（T3 [S21]）
 
@@ -869,7 +873,7 @@ WFR = floor(59 × WFA / 3 + 40)，其中 WFA = 逆足精度档位 0–3
 - **低 24 位 = 基础球员 ID**。同一球员的不同卡，低 24 位相同。
   - Adriano 各卡都是 134665，与 eFootBase 的 URL `/players/134665/88045755960841` 吻合（T3）。
   - C 罗是 4522，与 pesdb 的 `?id=4522` 跳转吻合（T3）。
-- 巴西传奇的基础 ID 是连号：Roberto Carlos 134604、Cafu 134605、Rivaldo 134606、Romário 134607、Ronaldinho 134608、Bebeto 134646、Adriano 134665。**没有 R9。**
+- 巴西传奇的基础 ID 是连号：Roberto Carlos 134604、Cafu 134605、Rivaldo 134606、Romário 134607、Ronaldinho 134608、Bebeto 134646、Adriano 134665。**没有 R9。**（核查更正：严格说只有 134604–134608 五个是连号。Bebeto 134646、Adriano 134665 在同一区段，但并不相连。七个值已按 pesdb card_id 低 24 位逐一复算无误。另外，Kaká Epic Brazil 2002（88044145217198）的低 24 位是 3758，不在这个区段。）
 - **高位 = 卡种或批次**：
 
 | 高位 | 卡种或批次 |
@@ -884,6 +888,7 @@ WFR = floor(59 × WFA / 3 + 40)，其中 WFA = 逆足精度档位 0–3
   - 如果客户端用低 24 位关联球员外观、姓名、FaceNumber 等基础数据，990001 必须在本地数据库中有完整的基础球员记录。
   - 高位沿用 `0x501360` 意味着它在 UI 或卡框上可能被当作该 Epic 批次。
   - 部分标准球员的基础 ID 大于 2²⁴，例如 16898477。所以"低 24 位 = 基础 ID"的规律**并非普遍成立**，必须用客户端实际数据确认。
+  - （核查更正：16898477 是 pesdb 上 Matheus Dantas 的**卡 ID**，不一定是基础 ID。它等于 `0x01_01D9AD`，可以拆成"高位 0x01 + 低 24 位 121261"。作为对照，C 罗的 Standard 卡 16781738 = `0x01_0011AA`，低 24 位是 4522，正好等于他的基础 ID。所以这个例子更可能说明"部分标准卡的高位为 0x01"，**不构成**规律的反例。不过，121261 是不是 Dantas 的基础 ID，没有其他卡可以印证：pesdb `?id=121261` 返回 404。整条规律仍属 T4 推断，"必须用客户端实际数据确认"这一结论不变。）
 
 ---
 
@@ -948,7 +953,7 @@ WFR = floor(59 × WFA / 3 + 40)，其中 WFA = 逆足精度档位 0–3
 | S15 | Konami, eFootball™ 2023 v2.5.0 Patch Notes：https://www.konami.com/efootball/en-us/page/2023/season4_patch-notes_v2-50 |
 | S16 | Konami v2.6.0 Patch Notes：https://www.konami.com/efootball/en-us/page/2023/season5_patch-notes_v2-60 |
 | S17 | Konami 官网简体中文版本说明：<br>v6.0.0：https://www.konami.com/efootball/zh-cn/page/v6/versioninfo_v6-00<br>v6.1.0：https://www.konami.com/efootball/zh-cn/page/v6/versioninfo_v6-10<br>v3.0.0：https://www.konami.com/efootball/zh-cn/page/2024/versioninfo_v3-00<br>v3.4.0：https://www.konami.com/efootball/zh-cn/page/2024/versioninfo_v3-40<br>v4.0.0：https://www.konami.com/efootball/zh-cn/page/v4/versioninfo_v4-00<br>v4.4.0：https://www.konami.com/efootball/zh-cn/page/v4/versioninfo_v4-40<br>v5.0.0：https://www.konami.com/efootball/zh-cn/page/v5/versioninfo_v5-00<br>v5.2.0：https://www.konami.com/efootball/zh-cn/page/v5/versioninfo_v5-20 |
-| S37 | 网易《实况足球Online》官网活动页（国服用语"增能""特殊技能"等）：<br>https://skol.163.com/news/official/20251023/41562_1266629.html<br>…/20260108/41562_1280807.html<br>…/20260129/41562_1284562.html<br>…/20260226/41562_1288472.html<br>…/20260410/41562_1295521.html<br>…/20260625/41562_1305662.html |
+| S37 | 网易《实况足球Online》官网活动页（国服用语"增能""特殊技能"等）。（核查注：页面标题为"《实况足球Online》官方网站-虚幻引擎实况PC端游"，是 PC 端游，不是手游国服 App。）：<br>https://skol.163.com/news/official/20251023/41562_1266629.html<br>…/20260108/41562_1280807.html<br>…/20260129/41562_1284562.html<br>…/20260226/41562_1288472.html<br>…/20260410/41562_1295521.html<br>…/20260625/41562_1305662.html |
 | S42 | Apple iTunes Search API（cn，"实况足球"）：https://itunes.apple.com/search?term=实况足球&country=cn&entity=software |
 
 ### T2：媒体
@@ -967,7 +972,7 @@ WFR = floor(59 × WFA / 3 + 40)，其中 WFA = 逆足精度档位 0–3
 | S21 | pesdb.net 单卡页（举例）：<br>https://pesdb.net/efootball/players/adriano-88045755960841<br>…/adriano-88040387251721<br>…/adriano-89066884435465<br>…/adriano-17593796791817<br>…/romario-88044145348047<br>…/rivaldo-88044145348046<br>…/kaka-88044145217198<br>…/cafu-88044145348045<br>…/roberto-carlos-88044145348044<br>…/ronaldinho-gaucho-89138288266704<br>…/rivaldo-89072253144526<br>精选卡包：https://pesdb.net/efootball/players/?featured=50 、?featured=51 、?featured=1754<br>各卡种抽样：?type=epic / big_time / show_time / highlight / trending / legendary / standard / strike_arena |
 | S22 | pesdb.net 培养与总评计算脚本：https://pesdb.net/assets/js/player.js |
 | S23 | eFHUB 单卡页（Adriano 88045755960841，含技能说明文本、风格说明、增能名称表、位置评分）：https://efhub.com/players/88045755960841 |
-| S24 | eFHUB, "[17 October 2026] eFootball's Skill Mechanics Cracked: The Complete Guide"：https://efhub.com/articles/261017_3-17-october-2026-efootball-s-skill-mechanics-cracked-the-complete-guide |
+| S24 | eFHUB, "[17 October 2026] eFootball's Skill Mechanics Cracked: The Complete Guide"：https://efhub.com/articles/261017_3-17-october-2026-efootball-s-skill-mechanics-cracked-the-complete-guide（核查注：分析对象是一个原生库文件，SHA-256 为 `2ea6b0b56bb590420f967dc62b4ee24c9495b92a2bb67a71c7b270e79bebc82b`；文中没有写明游戏版本号） |
 | S25 | efootballexplained.com（标注 "Checked on game version 11.1.1 (2026-10)"）：<br>/stats/、/skills/、/playing-styles/、/myths/、/about/、/changelog/<br>/stats/wfa/、/stats/wfu/、/stats/inj/<br>/playing-styles/manager-team-playstyle-proficiency/<br>/playing-styles/playing-out-of-position/<br>以及各风格页 /playing-styles/<name>/ |
 | S26 | ef-labo：<br>培养计算器：https://ef-labo.com/efootball/player-progression/<br>主教练库：https://ef-labo.com/efootball/managers/<br>José Mourinho 页：https://ef-labo.com/efootball/manager-jose-mourinho-aug-2025/ |
 | S27 | efootballlab 培养计算器：https://efootballlab.com/efootball-player-progression-calculator |
@@ -987,3 +992,60 @@ WFR = floor(59 × WFA / 3 + 40)，其中 WFA = 逆足精度档位 0–3
 > - 抓取的页面：`/tmp/claude-0/-home-user-wdxac/53d2b8c2-6abb-5fab-91db-f6077147a038/scratchpad/web/`
 > - 复算脚本：`/tmp/claude-0/-home-user-wdxac/53d2b8c2-6abb-5fab-91db-f6077147a038/scratchpad/calc/ovr.py`、`calc/ref_cards.py`
 > - 参考卡数据：`/tmp/claude-0/-home-user-wdxac/53d2b8c2-6abb-5fab-91db-f6077147a038/scratchpad/ref_cards.json`
+
+---
+
+## 核查记录
+
+> - **核查方式**：对抗式事实核查，日期 2026-10-25，核查人是本组另一名成员，不是原作者。
+> - **方法**：对文中承重最大的结论，**重新直接抓取**所引原始页面，并尽量再找第二个来源交叉核对。
+> - **工具限制**：本轮 WebSearch 额度在核查开始时已经用完，所以没有做新的搜索引擎检索。依赖"搜索"才能确认的条目一律标为【未核实】。
+> - **数值复算**：用自写的独立脚本，没有复用原作者的 `calc/ovr.py`。脚本是 `/tmp/claude-0/-home-user-wdxac/53d2b8c2-6abb-5fab-91db-f6077147a038/scratchpad/fc04_scripts/ovr.py`，它直接读取新抓取的 pesdb `player.js` 和卡页里嵌入的 JSON。
+> - **原始抓取文件**：`/tmp/claude-0/-home-user-wdxac/53d2b8c2-6abb-5fab-91db-f6077147a038/scratchpad/fc04/`（临时目录，未入库）。
+
+### 逐项结果
+
+| # | 被核查的结论（所在节） | 结果 | 核查依据 |
+|---|---|---|---|
+| C01 | iOS 11.1.1 元数据（§1.1）：bundle `jp.konami.pesactionmobile`、ID 1117270703、上架 2026-10-15T04:57:46Z、minOS 15.0、3,484,689,408 字节、14 个语言码（ZH 出现两次）、多区一致、中国区查不到 | **确认** | iTunes Lookup：us、jp、gb 三区结果完全一致；jp 区的更新说明是日文，意思相同。cn 区 `resultCount: 0`。App Store 网页的版本历史也显示 11.1.1 / 2026-10-15。[S01][S02] |
+| C02 | 网易手游"实况足球" ID 1347776121、`com.netease.pes`、版本 11.0.0、2026-09-23（§1.1） | **确认** | iTunes Lookup `id=1347776121&country=cn` 返回 11.0.0，日期 2026-09-23T02:10:26Z。 |
+| C03 | App 版本与上架日：9.2.0 2024-12-05、9.4.0 2025-04-17、10.0.0 2025-08-14、10.2.0 2025-12-04、11.0.0 2026-08-13、11.1.0 2026-10-08（§1.2） | **确认**；"逐字一致"一句**更正**为"部分条目逐字一致" | 日期取自 App Store 版本历史，逐条读取。10.0.0 的 Custom Stadium 一条与 Konami v5.0.0 页逐字相同；11.1.0 的 4 条中有 2 条与 v6.1.0 页逐字相同。 |
+| C04 | v6.0.0 内容（§0、§1.2、§3.7）：比赛风格拆为进攻型/防守型；移除 Classic No. 10 的降防守效果；位置代币不能学注册位置；新增 Overload；培养界面显示比赛计划下的能力；部分语言改了技能名和风格名 | **确认**；"eFootball 2027"赛季名称**更正**为 T2/T3 | Konami v6.0.0 英文页逐句核对；zh-cn v6.0.0 页有"进攻型比赛风格""防守型比赛风格""偷猎者""锋线施压""传统十号位置"等词。Konami 的 Steam 公告 news/5633 日期为 12/08/2026，标题 "New Season Update (v6.0.0) Available"，**没有**出现 "eFootball 2027"。 |
+| C05 | v6.1.0：Select Skill Token 和 Select Position Token 都是 100 个换 1 次；Advanced Skill Token 废止，1 个换 20 个 Select Skill Token（§1.2、§4.1） | **确认** | Konami news/5888（28/09/2026）原文 "each Advanced Skill Token owned will be converted into 20 Select Skill Tokens"；v6.1.0 页原文 "Collect 100 Select Skill Tokens"；App Store 11.1.0 的更新说明。 |
+| C06 | 增能可超过 99（v3.0.0 原文）；三个增能的能力组合示例；将推出"球员专属增能"；Form 与 Condition 的规则；球员本身不再有 Team Playstyle Proficiency（§2.2、§3.3、§6.1、§6.5） | **确认** | Konami v3.0.0 页逐句核对；zh-cn v3.0.0 有"状态波动""不稳定""普通""稳定"。 |
+| C07 | 增能点在 99 封顶之后相加，最高 120（§0、§2.2、§6.6） | **确认**（只有 T3，没有官方来源） | efootballexplained 的 /stats/（"Extra points from boosters come after that, up to 120"）、/myths/、manager 页三处一致。官方只确认"可超过 99"。 |
+| C08 | v2.5.0 附加技能最多 5 个；总评可超过 100；Legacy Transfer；合计 15 个技能（§0、§4.1、§5.1） | **确认** | Konami v2.5.0 Patch Notes 逐句核对；RealSport101 原文 "a maximum of 15 Player Skills"。 |
+| C09 | 共 67 种技能；另有 7 个名为 "Dummy" 的未发布技能：Spring Cut、Thames、Nile、Amazon、Mekong、Congo、Indus（§0、§4.1） | **确认**（T3） | pesdb 搜索表单里正好有 67 个 `s_*` 技能字段，逐个列出。efootballexplained /skills/ 的 "Upcoming" 一节正好 7 个，名称一致。 |
+| C10 | 增能数量冲突（§0、§6.1、§6.2）：v4.0.0 有 17 种；v5.2.0 新开放 12 种，并称"全部 28 种"；随机代币按位置从 14–15 种中抽，门将从 8 种中抽；pesdb 和 GamingonPhone 都列出 29 种 | **确认**（冲突依旧存在） | Konami v4.0.0 列出 17 个名称，逐一对上；v5.2.0 原文 "select from all 28 kinds"；pesdb 下拉框 29 项；GamingonPhone 表格 29 项，能力组合与 §6.2 逐项一致，但该文正文又写 "17 types"。 |
+| C11 | 增能的官网简中名：前 17 种（攻门……球场幻想家）、精准、强壮；"自动提升"（§6.2、§5.5） | **确认** | Konami zh-cn v4.0.0 和 v5.2.0 页面里逐词出现。 |
+| C12 | 能力点 = 2 ×（最高等级 − 1）（§0、§5.2） | **确认**；代码引文**更正**为原文 | pesdb `player.js` 原文 `return (readMaxLevel() - 1) * 2;`；ef-labo 原文 "Each level gives you 2 points"；eFHUB 的 Adriano 页显示 "Points 0 / 66"，对应 pesdb maxLevel 34。 |
+| C13 | 同一类别第 n 次加点花费 ⌈n/4⌉，累计花费 (g+1)(2g+r)（§5.4） | **确认**；"13 次及以后是外推"**更正** | pesdb 代码 `nextAllocationCost = floor(v/4)+1` 和 `allocationCost = (g+1)*(2g+r)`；ef-labo 明确写到第 13–16 次每次 4 点。 |
+| C14 | 10 个培养类别与能力的对应（§5.3、§2.1） | **确认** | pesdb 卡页嵌入 JSON 的 `categories`，与 ef-labo 表格一致，GK 1 = GK Awareness + Jumping 也一致。 |
+| C15 | 总评公式、WFR 换算和 13 × 27 权重表（含"合计"行）（§7.1、§7.2） | **确认** | 程序逐格比对新抓的 pesdb `player.js`，0 处不一致。位置顺序 GK…CF 已用卡页 JSON 的 `positions` 数组确认。 |
+| C16 | 参考卡数值与复算（§5.6、§7.3、§8.3）：Adriano Epic 05-06 1 级 86 → 满级 99 → 102，加点为 Shooting 11 / Passing 1 / Dribbling 4 / Dexterity 12 / Aerial 4 / Lower Body 8；Romário 87/101；Rivaldo 87/101；Kaká 87/102；Ronaldinho BT 87/102；Adriano 13 个位置评分；5 张卡 × 21 项 1 级能力 | **确认**；97/97、51/51 全量复算标【未核实】 | 独立脚本重算，结果全部一致。Adriano 的 13 个位置评分与 eFHUB 页面显示 13/13 一致。§8.3 中 5 张卡的 1 级能力与 pesdb JSON 逐值比对，0 处不一致。Adriano 与 Romário 的体型 11 参数、派生量 192 cm、年龄 23、技能、逆足、Form、抗伤、增能（含 pesdb id 82）均已逐项核对。全量 97/51 张没有重跑。 |
+| C17 | 主教练熟练度公式（p < 90 与 p ≥ 90 两段）、示例值、64–71 不变、不含逆足精度、增能不缩放；p = 89 门槛 40/56/84；Mourinho PC +1、Stamina +1（§6.5） | **确认**（T3） | efootballexplained manager 页公式逐字一致；ef-labo managers 页原文 "89 +1 up to 55 +2 56-83 +3 84+"；ef-labo Mourinho 页；pesdb `applyManagerProficiency` 的门槛逻辑。 |
+| C18 | 位置惩罚倍率三组（×0.92/0.80、×0.94/0.82、×0.96/0.84）、不受影响的 4 项、约 450 处位置检查；位置训练最多 2 个、CF 相邻为 SS/RWF/LWF、Trending 不可训练；Classic No. 10 只限 SS/AMF（§3.6、§3.7） | **确认**；颜色名称**更正** | efootballexplained /playing-styles/playing-out-of-position/；Konami v3.4.0 页。官方颜色名是 "Bright green / Faded green"，"无色 = 低"属 T3。 |
+| C19 | 逆足频率 0/33/67/100%；逆足精度扣分 −15/−11/−7/−3 等五行；抗伤三档倍率；Form 在比赛中不被读取（§3.2–§3.4） | **确认**（T3） | efootballexplained /stats/wfu/、/stats/wfa/、/stats/inj/，数值逐项一致。 |
+| C20 | Momentum Dribbling 四项各 +6（≥18 m）；Acceleration Burst 不直接加能力；Phenomenal Finishing +7；Super-sub 25 项 +1（"两份逆向一致"）；eFHUB 的分析对象（§1.2、§4.2） | **确认**；eFHUB"游戏包"一说**更正** | efootballexplained /skills/ 与 eFHUB 2026-10-17 文章两处数值一致。eFHUB 分析的是"original library"（原生库），没有写明版本号。 |
+| C21 | "所有技能加成都在 99 封顶之前相加"（§4.2） | **更正**（加限定） | efootballexplained 只对 "active stat-boost skills" 这么说；Through Passing 原文 "even at 99 and with extra points from boosters"。 |
+| C22 | Operation Sports 的计数和引文（§4.1、§4.2） | **更正** | 原文是 "a total of 40 Player Skills … over 20 Showtime picks not available via training"，但 Showtime 一节实列 19 个；可训练技能分 5 个标题，不是 6 类；防守组 7 个、通用组 6 个，去重后总计 44 个（这个总数正确）。 |
+| C23 | pesdb 没有 R9（§0、§8.1） | **确认**（只限 pesdb）；Konami 站内检索【未核实】 | pesdb `?name=Ronaldo`（默认 availability = all，共 2 页）只有 Standard 卡 "Ronaldo" 102827、109566、110562，以及其他同名球员，没有 R9；`?name=Nazario` 返回 "No players found"；`/efootball/?id=88044146203441` 与 `?id=990001` 返回 404，而 `?id=4522` 与 `?id=88045755960841` 返回 301 跳到卡页。site:konami.com 的检索没能重做。 |
+| C24 | 精选卡包 "Brazil 2002"（featured 50）的 11 张卡及其 card_id；"Brazil 1994"（51）；Big Time Ronaldinho 89138288266704 对应 2002-06-21 对英格兰的 1/4 决赛（§0、§8.2） | **确认** | pesdb `?featured=50` 列出的 11 个 card_id 与文中完全一致；Wikipedia "2002 FIFA World Cup knockout stage" 的 England vs Brazil 条目，引用 FIFA 比赛报告，日期 21 June 2002。 |
+| C25 | card_id 结构（§0、§8.4）：`88044146203441 = 0x5013600F1B31`，低 24 位 990001，高位 0x501360 与 Kaká、RC、Cafu、Rivaldo、Romário 相同；基础 ID 134604–134608、134646、134665 | **确认**（算术）；"连号"和"16898477 反例"**更正** | Python 复算十六进制与位运算。16898477 = `0x01_01D9AD`；C 罗 Standard 卡 16781738 = `0x01_0011AA`，低 24 位 4522。所以 16898477 不能作为"基础 ID 大于 2²⁴"的证据。 |
+| C26 | GamingonPhone 2026-09-28 的 R9 传闻（§8.1） | **更正** | "There is no confirmation that this player is Ronaldo" 逐字属实。但原文没有 "Steam"，只写 "He was featured in the Inter Milan stadium cutscene, which was added this year." |
+| C27 | 网易 [S37] 页面是"国服"用语来源（§2.1、§4.1、§6.4、§11） | **更正** | skol.163.com 六个页面的标题都是"《实况足球Online》官方网站-虚幻引擎实况PC端游"，属 PC 端游，不是手游国服 App。各页确实出现"特殊技能""双增能""落叶式横传"等词。 |
+| C28 | 新防守风格的卡数（§3.7） | **更正** | efootballexplained Attack Outlet 页：15 张（CF 6、边锋 4、SS 3、AMF 2）；Front Line Pressure 40、Front Line Poacher 32、Press Back 4 都已核对一致；Goal Poacher、Fox in the Box、Target Man 都只兼容 CF。 |
+| C29 | 其他官方条目：v3.2.0 Blitz Curler 的 "Very High" 例外和两种条件型增能；v3.6.0 Phenomenal Pass；v5.1.0 "may glow yellow"；v5.0.0 英式 "Attacking Awareness" 与美式 "Offensive Awareness"；v4.0.0 Auto Development 与重置免 GP；v4.2.0 GP 兑换；v4.4.0 Advanced Skill Training 与单独删除技能 | **确认** | 逐页核对 Konami v3.2.0、v3.6.0、v5.1.0、v5.0.0（en 与 en-us）、v4.0.0、v4.2.0、v4.4.0。 |
+| C30 | GamingonPhone 指南 [S29][S30]：Epic、Big Time 固定为 "B"；Trending 不可训练；Level Training 有 100/1000/4000/10000 EXP 四种；2023→2024 删除了球队风格培养类别 | **确认**（T3） | 两篇原文逐句核对，均为 2025-09-20 发表。 |
+| C31 | X 帖内容、YouTube 标题、"R9 与 EA 独家协议"、APKMirror versionCode `310050101`、build 11.1.101 的含义 | **未核实** | X 帖日期按雪花 ID 换算已确认（2025-07-14、2025-08-26、2025-03-09），但帖子正文无法打开；APKMirror 页面返回 404；没有搜索额度。build 号仍需读取 IPA 的 `Info.plist`。 |
+
+### 结论
+
+- **主体可靠**。文中最承重的几组数据都能被原始来源**逐值复现**：官方版本元数据、官方规则条目，以及 pesdb 公式、权重、培养花费和参考卡数值。
+  - 总评权重表 0 处偏差，参考卡能力 0 处偏差。
+- **发现的问题**主要是以下几类，没有发现编造的数值或 ID：
+  - **来源性质误标**：网易 PC 端游被当成手游国服；eFHUB 分析的是原生库，被写成"游戏包"。
+  - **引文转述成了伪引号**：Operation Sports 那句、pesdb 那行代码。
+  - **对自身证据的误读**：16898477 被当作反例；"13 次以后是外推"。
+  - **细节夸大或遗漏**："逐字一致"、"连号"、"Steam"、Attack Outlet "未统计"、技能封顶说法没加限定。
+- **仍需在实机或 IPA 中确认的事项不变**，见 §10 U1–U16。所有 T3 社区逆向结论（120 上限、各技能数值、主教练公式等）仍然只是 T3，本次核查**没有**把它们升级为 T1。

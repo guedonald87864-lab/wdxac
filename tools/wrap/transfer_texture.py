@@ -154,6 +154,9 @@ def rasterise(uv_tris, size):
 
 
 def dilate(img, cov, iters):
+    """`iters` passes of edge extension (each uncovered texel with covered 8-neighbours takes their
+    mean), then a push-pull fill (coverage-weighted mip pyramid, coarse values pulled back into the
+    remaining holes) so no texel - and no mip level - ever sees an undefined colour."""
     img = img.copy()
     cov = cov.copy()
     H, W, C = img.shape
@@ -174,8 +177,29 @@ def dilate(img, cov, iters):
         img[new] = acc[new] / cnt[new][:, None]
         cov = cov | new
     if not cov.all():
-        img[~cov] = img[cov].mean(0)
+        img = push_pull(img, cov)
     return img
+
+
+def push_pull(img, cov):
+    levels = [(img * cov[..., None], cov.astype(float))]
+    while max(levels[-1][1].shape) > 1:
+        a, w = levels[-1]
+        h, ww = a.shape[:2]
+        if h % 2 or ww % 2:
+            a = np.pad(a, ((0, h % 2), (0, ww % 2), (0, 0)))
+            w = np.pad(w, ((0, h % 2), (0, ww % 2)))
+        a2 = a.reshape(a.shape[0] // 2, 2, a.shape[1] // 2, 2, -1).sum((1, 3))
+        w2 = w.reshape(w.shape[0] // 2, 2, w.shape[1] // 2, 2).sum((1, 3))
+        levels.append((a2, w2))
+    filled = levels[-1][0] / np.maximum(levels[-1][1], 1e-12)[..., None]
+    for a, w in reversed(levels[:-1]):
+        up = np.repeat(np.repeat(filled, 2, 0), 2, 1)[:a.shape[0], :a.shape[1]]
+        mean = a / np.maximum(w, 1e-12)[..., None]
+        filled = np.where((w > 0)[..., None], mean, up)
+    out = img.copy()
+    out[~cov] = filled[~cov]
+    return out
 
 
 def box_down(img_lin, cov, factor):
@@ -206,9 +230,7 @@ class HDSource:
         F = A[f"{part}.faces"].astype(np.int64)
         layer = uv_layer or meta.get("head_uv", "HeadUV")
         uv = A[f"{part}.uv.{layer}"].astype(np.float64)
-        if fd["det"] < 0:          # export reversed the winding for LH frames; undo to keep corners aligned
-            F, uv = F[:, ::-1].copy(), uv[:, ::-1].copy()
-        if G.orientation_sign(self.P, F) < 0:
+        if G.orientation_sign(self.P, F) < 0:         # corners and UVs are reversed together
             F, uv = F[:, ::-1].copy(), uv[:, ::-1].copy()
         self.F, self.uv = F, uv
         self.N = MD.vertex_normals(self.P, F)
@@ -331,7 +353,7 @@ def consistency_check(src, Vw, F, uv_bl, maps, albedo_hd_lin, n=40000, seed=5):
         uv = (uvd[c["tri"]] * c["bary"][:, :, None]).sum(1)
         r = ref if name == "face_surface" else ref_l
         for mname, img in maps.items():
-            got = bilinear(img, uv)
+            got = lin_to_srgb(bilinear(img, uv))
             de = delta_e2000(srgb_to_lab(r), srgb_to_lab(got))
             out[f"{name}/{mname}"] = {"n": int(len(P)), "psnr_db": psnr(r, got), "dE00_mean": float(de.mean()),
                                       "dE00_p50": float(np.median(de)), "dE00_p90": float(np.percentile(de, 90)),
@@ -393,17 +415,17 @@ def run(a):
         else:
             raise SystemExit(f"size {size} must divide {big}")
         dil = max(2, int(round(a.dilate * size / 2048)))
-        lin_d = dilate(lin, cov, dil * 4)
+        lin_d = dilate(lin, cov, dil)
         srgb = lin_to_srgb(lin_d)
         p = os.path.join(a.out_dir, f"{a.prefix}_albedo_{size}.png")
         save_png(p, srgb)
         dec, ainfo = astc_roundtrip(srgb, os.path.join(a.out_dir, f"{a.prefix}_albedo_{size}_astc{a.block}_decoded.png"),
                                     a.block, srgb=True)
-        entry = {"albedo_png": p, "dilate_px": dil * 4, "covered": float(cov.mean()), "astc": ainfo}
+        entry = {"albedo_png": p, "dilate_px": dil, "covered": float(cov.mean()), "astc": ainfo}
         maps_for_check[f"albedo_{size}"] = srgb_to_lin(srgb)
         maps_for_check[f"albedo_{size}_astc"] = srgb_to_lin(dec)
         if nrm is not None:
-            nd = dilate(nrm, ncov, dil * 4)
+            nd = dilate(nrm, ncov, dil)
             pn = os.path.join(a.out_dir, f"{a.prefix}_normal_{size}.png")
             save_png(pn, nd)
             _, ninfo = astc_roundtrip(nd, os.path.join(a.out_dir, f"{a.prefix}_normal_{size}_astc{a.block}_decoded.png"),
@@ -435,7 +457,7 @@ def build_argparser():
     ap.add_argument("--sizes", default="2048,256")
     ap.add_argument("--block", default="4x4")
     ap.add_argument("--ray-mm", type=float, default=3.0)
-    ap.add_argument("--dilate", type=int, default=16, help="dilation at 2048 px (scaled with size), x4 passes")
+    ap.add_argument("--dilate", type=int, default=16, help="edge-extension passes at 2048 px (scaled with size); push-pull fills the rest")
     ap.add_argument("--no-check", dest="check", action="store_false")
     ap.add_argument("--prefix", default="donor")
     ap.add_argument("--out-dir", required=True)

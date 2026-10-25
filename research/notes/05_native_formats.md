@@ -1006,7 +1006,7 @@ Konami FAQ 把 "Game data modification: Notable changes were made to player abil
 - [S19] pesmodding，「eFootball 2024 Player Data Editor V3.6.0.0」，2024-06-22。https://www.pesmodding.com/2023/02/efootball-20222023-player-data-editor_28.html
 - [S20] pesmodding，「PES 2021 faces converted from eFootball」，2022-12-15。https://www.pesmodding.com/2022/12/pes-2021-faces-converted-from-efootball.html
 - [S21] pesmodding，「Face ID Relinker PES 2021」，2026-06-12。https://www.pesmodding.com/2026/06/face-id-relinker-pes-2021.html
-- [S28] Apple Developer Forums thread 845557（用户观察：`cryptid 1` 与 FairPlay 加密的嵌入框架），2026-09。https://developer.apple.com/forums/thread/845557
+- [S28] Apple Developer Forums thread 845557（用户观察：`cryptid 1` 与 FairPlay 加密的嵌入框架），2026-09。（核查补注：帖子标题为 App Store 更新后 dyld "could not register fairplay decryption" 启动失败；楼主同时指出部分框架为 `cryptid 0`）https://developer.apple.com/forums/thread/845557
 - [S39] WorkingRobot/OodleUE README（UE EULA 声明）。https://github.com/WorkingRobot/OodleUE
 - [S40] trumank/repak `oodle_loader/src/lib.rs`（下载 `liboo2corelinux64.so.9`，2.9.10）。https://github.com/trumank/repak/blob/master/oodle_loader/src/lib.rs
 - [S41] powzix/ooz（GPL-3.0）。https://github.com/powzix/ooz
@@ -1026,3 +1026,94 @@ Konami FAQ 把 "Game data modification: Notable changes were made to player abil
 
 - `tools/native/README_iostore.md`、`tools/native/README_zen_inplace.md`、`tools/native/cue4parse_check/README.md`、`tools/native/{iostore,zen_package,inplace_patch,astc_tool}.py`。
 - 任务书 `docs/TASK_BRIEF.md`：亨利项目的 donor 数据、`pc3600_mobile_ios` 与 `pc3611_mobile_ios` 的命名、资源槽位 110718。
+
+---
+
+## 核查记录
+
+> **核查方式**
+> - 核查人：对抗性事实核查（独立复核），2026-10-25。
+> - 原则：每条结论都回到**被引用的原始来源**重读，再找**至少一个独立来源**交叉对照。
+>   - 代码类结论：本地检出的 CUE4Parse `77b94fa`、retoc `885a8da` 源码，加上 GitHub 页面（commit、issue、文件历史），以及 UEViewer、UnrealReZen、repak、Arm 文档的原始文件（raw.githubusercontent.com）。
+>   - 事实类结论：直接读取 Konami、Apple、pesmodding、Gildor 原页面，加上 iTunes Lookup API 与 Google Play 的实时查询。
+> - **限制**：本轮 WebSearch 的共享配额在核查开始时已经用完，只能直接抓取已知 URL，没有做新的搜索引擎检索。因此凡是「原文来源打不开，又找不到替代来源」的条目，都标为【未核实】。
+> - **结论**：抽查 41 项关键结论（A–E 五组）。
+>   - 完全确认：34 项。
+>   - 含更正：4 项（C5、E5、E7、E8）。都是引文措辞、标题、日期、归属或过度概括，**没有改变任何格式、偏移或工具链结论**。
+>   - 含未核实：4 项（D5、E6 的路径前缀、E8 的「7 天/1 年」、E9）。
+>   - E8 同时有更正和未核实，所以 34 + 4 + 4 − 1 = 41。
+>   - 正文中已就地标注「（核查更正：…）」或【未核实】，原有内容一律保留。
+
+### A. 引擎版本与 Konami 定制（§0、§1）
+
+| # | 被核查的结论 | 结果 | 核查依据 |
+|---|---|---|---|
+| A1 | CUE4Parse commit `7fdb7b9`「eFootball support」：作者 LongerWarrior，**2026-07-03**；新增 `GAME_eFootball = GAME_UE4_26 + 29`；改动 3 个文件（`EGame.cs`、`FFilePackageStoreEntry.cs`、`FInstancedStaticMeshInstanceData.cs`） | **确认** | ① GitHub commit 页面：消息、作者、3 个文件、新增行原文；② GitHub 上 `FFilePackageStoreEntry.cs` 的文件历史：日期 Jul 3, 2026；③ 本地 `77b94fa` 源码 `EGame.cs:130`。CUE4Parse 中只有这 3 处提到 eFootball（grep） |
+| A2 | eFootball 包条目为 **16 字节**（`ExportCount`、`ExportBundleCount`、`ImportedPackages`），原版 4.26 为 **32 字节**；retoc `PreInitial => (8, 16)`，`Initial => (24, 32)`；retoc 把 4.25/4.26/4.27 都映射到 `Initial` | **确认** | ① CUE4Parse `FFilePackageStoreEntry.cs`：eFootball 分支与默认分支（跳 8、读 4+4、跳 8、CArrayView 8 = 32）；② retoc `container_header.rs:436-437`、`version.rs:44-46`。两个实现彼此独立，结论一致 |
+| A3 | retoc issue #18：PesMobile、UE 4.26.2、`obb\PesMobile\Content\Paks`、chunk id `29f5850b27aea78f0000000a`、`--override-container-header-version PreInitial`、报告者回复 "it worked"，时间 2025-03-06 至 03-15 | **确认** | ① GitHub issue 原页（报告者 AbirHayat，维护者 trumank 2025-03-14 给出 PreInitial，同日报告者确认，03-15 关闭）；② 维护者同帖 "IoStore container compression is not implemented yet"，与 retoc 源码 `iostore_writer.rs:68`（方法索引 0）一致 |
+| A4 | retoc issue #7：SD Gundam Battle Alliance（UE 4.27.2）；维护者说 16 字节布局来自 "4.27.2 与 5.0.0 之间" 移除 `ExportBundlesSize/Load Order/Pad` 的提交 | **确认** | ① GitHub issue 原页（2025-02-08 原话）；② #18 中维护者说 "Tested as working in #7 as well"，两帖相互印证 |
+| A5 | Gildor「eFootball 2022-2026」：spiritovod，2021-09-30 建帖，2026-02-15 最后编辑；"UE4 version: 4.26"；mixed resources（UE4 + cpk）；移动版不用改全局容器名 | **确认（补注）** | ① Gildor 原帖；② 国服帖 [S08] 同样写 4.26；③ CUE4Parse 把 eFootball 定为 4.26 变体。补注：「改名为 `global.*`」出自第 2 楼（FModel），不在首帖；移动版那句还包括 "or use game specific override"；"first game from the series using UE4" 与 PES 2019 Mobile 用 UE4 字面冲突（§1.2 后已补注） |
+| A6 | Gildor 国服帖：2023-07-12，UE 4.26，"pc0000 is actually zip file …"，"pc* paks are using key for global/pc version while nt* paks are using separate key" | **确认** | ① Gildor 原帖逐句；② 帖子注明官网 pes.163.com |
+| A7 | Konami 2021-07-21 新闻稿："Dramatically rebuilt in Unreal® Engine…"；木村誠太郎 "we've made a number of modifications to virtually create a new football game engine"；没有给出 UE 版本号；移动版 "will be detailed at a later date" | **确认** | 美区 [S01]、欧区 [S02] 两个原页面分别读取，引文一致；两页都没有版本号 |
+| A8 | PES 2019 Mobile 于 2018-12 改用 UE4（mac4ever："utilise désormais le moteur d'Epic Unreal Engine 4"，要求 iOS 9.0；9to5mac：UE3→UE4） | **确认（S06 已升级）** | 两篇原文都已直接读取（2018-12-17）。S06 原标为「只看到搜索摘要」，现已核实，正文已标注 |
+| A9 | pesmodding 教程 [S15]：UE 4.26.2、工程名必须是 "PesConsole"、4 个设置项、chunk 1、Shipping、`pakchunk1-WindowsNoEditor` 改名为 `pc3607_console_win` | **确认（补注）** | ① 原页逐条；② 与 [S49]（PhoenixUProj，4.27.2，三件套同名 `_P`）的打包流程一致。补注：发布者 G. Leroy，教程署名 Cadi Lillian，页面标题 "eFootball 2023 Detailed Texture Replacement Tutorial" |
+
+### B. IoStore 格式（§2）
+
+| # | 被核查的结论 | 结果 | 核查依据 |
+|---|---|---|---|
+| B1 | `FIoStoreTocHeader` 固定 **144 字节**，§2.2 表中各偏移（16 Version、20 TocHeaderSize … 56 ContainerId、64 Guid、80 Flags、81 EncryptionMethod、84 PerfectHashSeedsCount、88 PartitionSize、96、100、104 Reserved8[5]） | **确认** | CUE4Parse `FIoStoreTocHeader.cs`（`SIZE = 144`），逐字段累加偏移，结果完全吻合；retoc `lib.rs`（`compression_method_name_length: 32`，第 542 行） |
+| B2 | `FIoOffsetAndLength` 为 10 字节**大端** 5+5；压缩块条目为 12 字节小端 5/3/3/1 | **确认** | CUE4Parse `FIoOffsetAndLength.cs`（字节 [0] 移 32 位）、`FIoStoreTocCompressedBlockEntry.cs`（`SIZE = 5+3+3+1`，40/24 位掩码）；UEViewer 注释 "CompressionBlocks are not in sync with any chunk data…" 原文确认 |
+| B3 | `EIoChunkType` 两套枚举：UE4 中 ContainerHeader = 10，UE5 中 = 6；11、12 只在 retoc 中出现；retoc 用 `version > PerfectHash` 判断新枚举 | **确认** | CUE4Parse `FIoChunkId.cs`（UE4 枚举到 10 为止，`EIoChunkType5` 中为 6）；retoc `lib.rs:1263-1300`、`lib.rs:862` |
+| B4 | TOC 版本映射：retoc 4.25/4.26 → DirectoryIndex(2)，4.27 → PartitionSize(3)，5.0–5.3 → 5，5.4 → 6，5.5–5.7 → 8；UEViewer 注释 "UE4.27, allows to use multi-volume (partitioned) ucas files"；容器头版本映射 5.0→1 … 5.6/5.7→5 | **确认** | retoc `version.rs:25-55`；UEViewer `IOStoreFileSystem.cpp@a0bfb46` 第 19 行 |
+| B5 | `FIoChunkId` 布局，以及 ChunkIndex 字节序冲突（CUE4Parse 注释 `NETWORK_ORDER16`，retoc 按小端写） | **确认** | CUE4Parse `FIoChunkId.cs:68`；retoc `lib.rs:877-878`（`u16::to_le_bytes`） |
+| B6 | 完美哈希：FNV 变体（`0xcbf29ce484222325`、`0x100000001B3`，先乘后异或），以及查找步骤 | **确认** | CUE4Parse `FIoChunkId.HashWithSeed`、`IoStoreReader.TryResolve`（第 167–200 行） |
+| B7 | chunk meta：v<8 为 33 字节（32+1），v≥8 为 24 字节（20+1+3）；retoc 写 BLAKE3 截断到 20 字节再补零 | **确认** | CUE4Parse `FIoStoreTocEntryMeta.cs`；retoc `lib.rs:1035`（`from_blake3`）、`iostore_writer.rs:62` |
+| B8 | CUE4Parse 缺陷：同时请求「目录索引 + meta」时，没有跳过目录索引 | **确认** | 重读 `FIoStoreTocResource.cs:178-200`：`ReadDirectoryIndex` 分支只记录 `DirectoryIndexBufferOffset`，不前移位置，meta 从同一位置开始读。与本工程 `cue4parse_check/README.md` 的实测记录（读出 `../../../`）一致 |
+| B9 | 签名段布局，CUE4Parse 注释 "You could verify hashes here but nah"；Epic `UCryptoKeysSettings` 中有 `bEnablePakSigning`、`SigningModulus`、`SigningPublicExponent`、`SigningPrivateExponent` | **确认** | CUE4Parse `FIoStoreTocResource.cs:168-175`；Epic API 文档原页（共 10 个属性，含上述 4 个，描述原文 "Enable signing of pak files, to prevent tampering of the data."） |
+| B10 | UE5 容器头魔数 `0x496F436E`，版本 0–5 | **确认** | CUE4Parse `FIoContainerHeader.cs:46-63` |
+
+### C. cooked 资产与 ASTC（§3、§7）
+
+| # | 被核查的结论 | 结果 | 核查依据 |
+|---|---|---|---|
+| C1 | `PF_ASTC_4x4..12x12` = 50–54（bpp 8.00/3.56/2.00/1.28/0.89）；HDR 为 73–77；NORM_RG 为 87–91（原注释 "RG format stored in LA endpoints…"）；8x5/8x6/10x8 为 253–255，是库内扩展值 | **确认** | CUE4Parse `PixelFormat.cs`（枚举与行内注释原文）。UE 官方头文件不在本环境，所以「这些是 UE 官方编号」仍只到 T3 |
+| C2 | 纹理序列化：`SkipOffset` 在 4.20–4.27 为绝对位置、UE5 为相对位置；`PackedData` 中 bit31 = 立方体、bit30 = OptData、bit29 = CPU 副本、低 30 位 = NumSlices；`PixelFormat` 是 FString；bulk 标志值 0x1/0x40/0x100/0x800/0x1000/0x2000/0x10000 | **确认** | CUE4Parse `UTexture.cs:118-125`、`FTexturePlatformData.cs:40-43、97`、`EBulkDataFlags.cs` |
+| C3 | Zen 包：`FPackageSummary` 64 字节、`FExportMapEntry` 72 字节、`FExportBundleHeader` 8 字节（UE5 为 16）；`PKG_UnversionedProperties = 0x2000` | **确认** | CUE4Parse `FPackageSummary.cs`（8+8+4+4+9×4+4 = 64）、`FExportMapEntry.cs`（`Size = 72`）、`FExportBundleHeader.cs`、`EPackageFlags.cs:23` |
+| C4 | eFootball 骨骼网格不读光追数据；`FPackedNormal` 自 4.20（`IncreaseNormalPrecision`）起用 `^0x80808080`，`Pack = clamp(round((v+1)×127.5))` | **确认** | CUE4Parse `VersionContainer.cs:80-85`（eFootball 不在 HasRayTracingData 列表中）、`FPackedNormal.cs:13-50`、`FRenderingObjectVersion`（`< GAME_UE4_21 => IncreaseNormalPrecision`） |
+| C5 | ASTC 法线：CUE4Parse 注释 "UE4 drops blue channel for normal maps before encoding, restore it"（暗示 RG 布局）；Arm 推荐 `rrrg`/`.ga`（L+A） | **确认（部分更正）** | CUE4Parse `TextureDecoder.cs:364`；Arm `Docs/Encoding.md` 原文。更正：Arm 原文是 "to match **BC5n** component ordering"，不是 BC5；解码参数为 `-normal -dsw arz1` |
+| C6 | ASTC 每块 16 字节；`.astc` 文件头魔数 `13 AB A1 5C`；astcenc 质量预设 fast = 10、medium = 60、thorough = 98、verythorough = 99、exhaustive = 100，以及 "-medium or higher" 的建议；sRGB 编码建议原文 | **确认** | 本机 `astcenc -help`（v4.8.0）；Arm `Docs/FileFormat.md`、`Docs/Encoding.md`；256² 各块大小的字节数已重新算过（65,536 / 29,584 / 16,384） |
+| C7 | Metal `astc_4x4_srgb` 自 iOS 8.0 起可用，说明为 "conversion between sRGB and linear space" | **确认** | Apple 文档 JSON（`introducedAt: 8.0`，摘要原文） |
+
+### D. 工具与许可（§4）
+
+| # | 被核查的结论 | 结果 | 核查依据 |
+|---|---|---|---|
+| D1 | UnrealReZen：`PackUtocVersion = 3`；UE4 依赖条目 `DepLinks_UE4.SizeOf() = 8×2+4×4`（32 字节），并实际用于写容器头 chunk；README "…doesn't work until you bypass the sig loader"；GPL-3.0 | **确认** | `bf9e8de` 的 `Constants.cs`、`FIoDependency.cs:179-192`、`FIoPack.cs:150、241、258`、`README.md:50`、`LICENSE` |
+| D2 | retoc：写入不压缩（方法 0、块大小 0x10000）、"TODO encrypt directory index"、MIT 许可；README 称 5.3 及以上支持良好，更早版本 "failing to load a handful of assets" | **确认** | 本地 retoc `iostore_writer.rs:32、68`、`lib.rs:530`、`LICENSE`、`README.md:77-80`；issue #18 维护者原话 |
+| D3 | 许可：CUE4Parse Apache-2.0、FModel GPL-3.0、UEViewer MIT、UAssetAPI MIT、ZenTools MIT（README "superseded by retoc"，支持 5.1/5.2）、ZenTools-UE4 MIT、ooz GPL-3（`kraken.cpp` 文件头）、oozextract 0.5.6（2026-10-23，MIT） | **确认** | 各仓库 LICENSE 原文件；本地 `/opt/tools/ref/ooz/kraken.cpp`；crates.io API。oozextract 与 ooz 之间的许可沿袭关系仍为 T4，未核实（原文已注明） |
+| D4 | Oodle：repak 下载 `liboo2corelinux64.so.9`（2.9.10），从 OodleUE 的 `…/EpicGames.Oodle/Sdk/` 取得并校验 sha256；OodleUE 最新为 2.9.16，原文 "By using these assets, you agree to the Unreal Engine EULA"；CUE4Parse 用 `liboodle-data-shared.so`（2.9.16）；Epic 文档 "The decoder at runtime never needs to know what method was used" 以及 256KB 块大小建议；RAD "We generally license per game and per platform" | **确认** | repak `oodle_loader/src/lib.rs:100-191`；OodleUE `README.md:9、21、38`；CUE4Parse `OodleHelper.cs:25-27`；Epic「Oodle Data」（UE 5.8 页）；RAD sales 页 |
+| D5 | Epic 博客「Oodle now free…」「UE 4.27 released」的引文 [S36][S37] | **未核实** | 两个 URL 仍返回 403，与原作者的情况相同；没有替代来源（搜索配额已用完）。D4 的 OodleUE EULA 声明和 Epic Oodle 文档可以间接说明「在 UE 中使用受 UE EULA 约束」 |
+| D6 | Unreal-Mappings-Archive 中没有 eFootball，只有 "Maximum Football" | **确认** | 仓库根目录列表 |
+
+### E. 社区信息与 iOS（§5、§6）
+
+| # | 被核查的结论 | 结果 | 核查依据 |
+|---|---|---|---|
+| E1 | iTunes Lookup：`bundleId` `jp.konami.pesactionmobile`、`version` 11.1.1、`currentVersionReleaseDate` 2026-10-15、`fileSizeBytes` 3,484,689,408、`minimumOsVersion` 15.0、首次上架 2017-05-24；App Store 页面 "Approximately 3.5 GB of free storage space is required…" | **确认** | ① 实时调用 iTunes Lookup API，各字段逐一吻合（seller：Konami Digital Entertainment Co., Ltd.）；② App Store 网页：版本 11.1.1、Oct 15、iOS 15.0、引文原文 |
+| E2 | Android 包名 `jp.konami.pesam` | **确认** | ① S07 首帖中的 Google Play 链接；② Google Play 页面标题 "eFootball™ - Apps on Google Play" |
+| E3 | Apple TN3126 引文（CodeResources、Slot -3、"break the seal"）；2022-05-03 重发、2024-02-06 修订；文件系统指南中 `.app` "signed at installation time…prevents your app from launching"；ODR "hosted on the App Store and are separate from the related app bundle"（2017-01-12）；OWASP MASTG 中 Xcode 下载容器 "only works for debug builds" | **确认** | Apple 文档 JSON 与原页面；修订记录原文（另有 2022-05-24 的小修订，原文未列，不影响结论）；OWASP 原页 |
+| E4 | Konami FAQ："Game data modification" / "Notable changes were made to player ability levels or appearance (height, etc.)"；Clear Cache、Delete Live Update；[Extras] > [Game Settings] > [Download Data] > [Commentary Language] | **确认** | Konami FAQ 原页逐句 |
+| E5 | pesmodding [S16][S17][S18][S19] 的标题、日期、措辞 | **更正** | S16 当前为 EvoMod **5.5.0**（2026-05-28）；S17 实际标题为 "eFootball **2026** Transparent Scoreboard … [ver. 2.0]"；S19 原文是 "still disabled"，dt870 路径出自站长评论；S18 写回的是 **`dt200_console_all.cpk`**。400 字节、WESYS、107 项参数、与 3D 脸模分开这几点确认 |
+| E6 | PES 2021 脸路径 `Asset/model/character/face/real/<ID>/`，`.fpk` 内嵌 ID [S20][S21] | **部分确认 / 前缀未核实** | S21 原文确认 `.../face/real/44840`，以及「改 .fpk 内 ID + 改文件夹名」；`Asset/model/character/` 前缀在两个来源中都没有出现 |
+| E7 | App Store 二进制和嵌入框架都带 FairPlay（`cryptid 1`）[S28] | **更正** | S28 楼主（普通用户）原话指出 Firebase/Google 框架为 `cryptid 0`，所以「嵌入框架同样如此」不能一概而论；Apple DTS 在帖中没有解释加密机制 |
+| E8 | 「Apple DTS 工程师说免费描述文件 7 天、付费 1 年」[S27] | **更正 + 未核实** | 直接读取 S27：帖中没有 DTS 或 Apple 员工回复，只有两名用户（2016-12）。归属错误已更正；7 天/1 年的说法本身需要 Apple 官方来源 |
+| E9 | Epic Games Japan 幻灯片 [S14]：IoStore 在 4.25 为 Experimental、4.26 为 Beta，以及 `.ucas`/`.utoc` 的日文术语 | **未核实** | SlideShare 对 WebFetch 和 curl 都只返回错误页 |
+
+### F. 核查后仍然成立的关键判断（承重结论）
+
+1. eFootball 是 **UE 4.26 的 Konami 定制版**，目前唯一有代码证据的 IoStore 定制是**容器头包条目 16 字节**（CUE4Parse + retoc 两套独立实现 + issue #18 实测）。
+2. IoStore 的 TOC 头、偏移/长度、压缩块、chunk id、meta、完美哈希等**全部字节布局**在 CUE4Parse、retoc、UEViewer 之间一致，§2 可以作为 `tools/native/iostore.py` 的规格依据（T3）。
+3. **没有现成写入器能直接产出 eFootball 兼容容器**：UnrealReZen 固定写 v3 和 32 字节条目；retoc 写入不压缩、不加密。所以「原地、等长」补丁路线仍然成立（T4 判断，依据已核实）。
+4. iOS 版本 11.1.1、bundleId、包体大小已实时确认；build 号 11.1.101 仍需从 IPA 的 `Info.plist` 读取。
+5. `pc3600_mobile_ios`、`pc3611_mobile_ios`、FaceNumber 的含义在公开资料中**仍然未找到**（核查没有发现任何能补上的公开来源），需要真实文件。

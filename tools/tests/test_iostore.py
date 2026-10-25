@@ -163,7 +163,7 @@ def build_container(out_dir, name, chunks: List[SChunk], version: int, *, key: O
                     ctr: bool = False, partition_size: Optional[int] = None, perfect_hash: bool = False,
                     max_seed: int = 1 << 16, meta_algo: str = "sha1", signed: bool = False,
                     methods=("Zlib", "LZ4"), block_size: int = BS, mount: str = "../../../",
-                    indexed: bool = True):
+                    indexed: bool = True, container_id: Optional[int] = None):
     os.makedirs(out_dir, exist_ok=True)
     rnd = random.Random(hash(name) & 0xFFFF)
     cids = [c.cid for c in chunks]
@@ -263,7 +263,8 @@ def build_container(out_dir, name, chunks: List[SChunk], version: int, *, key: O
         pcount, psize = 0, 0
     reserved3 = (2 if ctr else (1 if key else 0)) if version >= 10 else 0
     reserved8 = (struct.pack("<I", len(ivs)) if version >= 10 else b"\0" * 4) + b"\0" * 36
-    container_id = rnd.getrandbits(64)
+    random_container_id = rnd.getrandbits(64)  # always drawn, so the random stream is unchanged
+    container_id = random_container_id if container_id is None else container_id
     guid = rnd.randbytes(16) if key else b"\0" * 16
     header = struct.pack("<16sBBHIIIIIIIIIQ16sBBHIQII40s", b"-==--==--==--==-", version, 0, 0, 144,
                          len(table), len(blocks), 12, len(methods), 32, block_size, len(dir_index), pcount,

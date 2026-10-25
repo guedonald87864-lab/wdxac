@@ -1,0 +1,1937 @@
+{
+ "_doc": "R9（2002 世界杯决赛）14 项身体参数候选值。状态：已完成候选、等待实机（不是已验证的原生值）。字段含义、证据与标定见 data/body/BODY_PARAMS.md。model_estimate_T4 与 comparators.stats 由 tools/model/body_params_estimate.py --write 生成，其余为人工整理。",
+ "schema": "r9.body_params.v1",
+ "date": "2026-10-25",
+ "player": {
+  "name": "Ronaldo Luís Nazário de Lima",
+  "version": "2002-06-30 世界杯决赛（巴西 2–0 德国），25 岁",
+  "card_id_candidate": "88044146203441（接入时须核对，任务书第二节）"
+ },
+ "status": "已完成候选、等待实机",
+ "scale": {
+  "stored": "0..14",
+  "neutral": 7,
+  "display": "stored − 7（−7…+7）",
+  "illegal": "15（PES 2021 解码器把 15 当 0；本编解码器拒绝写入）",
+  "source": "06 §2.2（PES 2016–2021 实测，高置信）；eFootball 0–14/中性 7 来自 pesdb 观察与编辑器说明（06 §3.3，中高置信）"
+ },
+ "height_cm": {
+  "value": 183,
+  "acceptable": [
+   182,
+   184
+  ],
+  "evidence": "02 §2：所有来源一致 1.83 m（多源 T3，维基引 AC Milan 2007 官方页，未逐字核对）；工作基线"
+ },
+ "weight_kg": {
+  "value": 82,
+  "acceptable": [
+   80,
+   84
+  ],
+  "evidence": "02 §3：Capello 两次转述 82/84 kg（同一来源，不独立），ESPN/AP 摘要'官方登记 82 kg'未核实；82 为中值候选；不要用 88–90（退役后数据）"
+ },
+ "height_weight_note": "身高、体重不在 PlayerAppearance 表里（PES 2016–2021 在球员记录中；eFootball 预计在 Player.bin，位置未核实），本编解码器不写它们；其值与 data/game/r9_2002_player.json 一致（183/82）。",
+ "codec_patch": {
+  "_doc": "可直接用于 tools/data/player_appearance.py patch --set-json（存储值 0–14）。只改这 14 个半字节；从原记录出发，其余所有字段（肤色、发型、编辑脸、穿着、未分配位、PID）保持原值。",
+  "NeckLength": 5,
+  "NeckSize": 11,
+  "ShoulderHeight": 8,
+  "ShoulderWidth": 10,
+  "ChestMeasurement": 9,
+  "WaistSize": 8,
+  "ArmSize": 8,
+  "ArmLength": 7,
+  "ThighSize": 11,
+  "CalfSize": 7,
+  "LegLength": 6,
+  "HeadLength": 7,
+  "HeadWidth": 7,
+  "HeadDepth": 7
+ },
+ "encode_rule": "从原记录出发（patch/encode 先读出该球员的原始行，只改 codec_patch 中列出的半字节，其他位逐位保留；写到新文件，保留原表与 .patch.json 作为回退）。原始值必须先 decode 存档（06 §8 第 8 步、任务书第五节'取得原始值并保留记录'）。",
+ "head_policy": {
+  "summary": "头部 3 项与我们自己的头部网格互相耦合，候选值 7/7/7 针对'使用本组 R9 头部网格'的情形。",
+  "scenarios": {
+   "S_similarity_wrap": "tools/wrap/wrap.py 默认 --align similarity：输出网格先按特征点相似变换对齐，再用 sim_inverse_apply 回到供体坐标，即 R9 头型被缩放到供体大小，只保留形状比例。整体大小由头部 3 项**同步**表达：k ≈ 供体原值 + 100·(s−1)/1.43（s = wrap 报告中的 align_scale，供体→R9；1.43%/档为 PES 2021 刻度，T4）。没有供体数据前取 7。",
+   "R_rigid_wrap": "--align rigid：网格保留 R9 绝对尺寸，头部 3 项应保持供体原值（通常 7），否则尺寸会被重复施加。",
+   "D_stock_head": "不用本组网格、只用原版/通用头时才逐轴设置：相对常模 HeadLength 5 / HeadWidth 8 / HeadDepth 12（常模未核实，HeadDepth 依赖可疑的头长测量），相对 MakeHuman 中性 7 / 11 / 8。两套参照差别很大，只能实机定。"
+  },
+  "open_issue": "模型头指数 74.6、头围 60.8 cm（Bushby 1992 男性均值 57.2）与 01 档案'圆颅、不要窄长颅'不一致，可能是 MakeHuman 底模头偏长的残留；已转面部组复核（不在本任务范围内修改）。"
+ },
+ "comparator_table": {
+  "source": "research/notes/02_body_2002.md §6.2（pesdb.net eFootball 当前库，2026-10-25 抓取，T3 游戏数据，不是真人体测）；Rivaldo 来自 06 §5.2",
+  "param_order": [
+   "NeckLength",
+   "NeckSize",
+   "ShoulderHeight",
+   "ShoulderWidth",
+   "ChestMeasurement",
+   "WaistSize",
+   "ArmSize",
+   "ArmLength",
+   "ThighSize",
+   "CalfSize",
+   "LegLength"
+  ],
+  "players": {
+   "Christian Vieri": {
+    "role": "anchor",
+    "eF_height_weight": "186/82",
+    "real_height": "1.85 m（worldfootball）",
+    "values": [
+     6,
+     7,
+     9,
+     10,
+     9,
+     9,
+     9,
+     7,
+     8,
+     7,
+     10
+    ]
+   },
+   "Karim Benzema": {
+    "role": "anchor",
+    "eF_height_weight": "185/81",
+    "real_height": "1.85 m",
+    "values": [
+     4,
+     10,
+     10,
+     10,
+     7,
+     7,
+     7,
+     7,
+     11,
+     9,
+     7
+    ]
+   },
+   "Robert Lewandowski": {
+    "role": "similar",
+    "eF_height_weight": "185/81",
+    "real_height": "1.86 m（FC Barcelona 官网）",
+    "values": [
+     7,
+     7,
+     10,
+     9,
+     5,
+     5,
+     7,
+     8,
+     8,
+     5,
+     7
+    ]
+   },
+   "Luis Suárez": {
+    "role": "anchor",
+    "eF_height_weight": "182/83",
+    "real_height": "1.82 m（足球数据库）",
+    "values": [
+     4,
+     8,
+     4,
+     12,
+     10,
+     5,
+     7,
+     4,
+     9,
+     8,
+     6
+    ]
+   },
+   "Adriano": {
+    "role": "similar",
+    "eF_height_weight": "189/90",
+    "real_height": "1.89 m（Inter 2004/05 官网）",
+    "values": [
+     6,
+     14,
+     4,
+     11,
+     7,
+     7,
+     11,
+     8,
+     11,
+     10,
+     10
+    ]
+   },
+   "Hulk": {
+    "role": "similar",
+    "eF_height_weight": "180/85",
+    "real_height": "1.80 m（Zenit 官网）",
+    "values": [
+     4,
+     13,
+     5,
+     10,
+     9,
+     9,
+     8,
+     1,
+     9,
+     9,
+     10
+    ]
+   },
+   "Diego Costa": {
+    "role": "similar",
+    "eF_height_weight": "186/87",
+    "real_height": "1.86 m（Wolves 官网）",
+    "values": [
+     5,
+     12,
+     4,
+     9,
+     8,
+     8,
+     10,
+     7,
+     8,
+     7,
+     10
+    ]
+   },
+   "Gabriel Batistuta": {
+    "role": "similar",
+    "eF_height_weight": "185/73",
+    "real_height": "1.85 m（AS Roma 官网）",
+    "values": [
+     9,
+     8,
+     0,
+     6,
+     6,
+     6,
+     8,
+     6,
+     9,
+     9,
+     8
+    ]
+   },
+   "Fernando Morientes": {
+    "role": "similar",
+    "eF_height_weight": "186/79",
+    "real_height": "1.84 m",
+    "values": [
+     11,
+     9,
+     5,
+     5,
+     9,
+     9,
+     3,
+     5,
+     9,
+     6,
+     7
+    ]
+   },
+   "Andriy Shevchenko": {
+    "role": "anchor",
+    "eF_height_weight": "183/73",
+    "real_height": "1.83 m（Premier League 官网）",
+    "values": [
+     5,
+     7,
+     9,
+     7,
+     6,
+     7,
+     8,
+     5,
+     7,
+     7,
+     7
+    ]
+   },
+   "Wayne Rooney": {
+    "role": "similar",
+    "eF_height_weight": "176/83",
+    "real_height": "1.76 m（FIFA 名单）",
+    "values": [
+     6,
+     13,
+     7,
+     8,
+     12,
+     13,
+     8,
+     6,
+     13,
+     13,
+     6
+    ]
+   },
+   "Lautaro Martínez": {
+    "role": "similar",
+    "eF_height_weight": "174/79",
+    "real_height": "1.74 m（Inter 官网）",
+    "values": [
+     8,
+     7,
+     9,
+     7,
+     10,
+     9,
+     8,
+     4,
+     10,
+     10,
+     7
+    ]
+   },
+   "Rivaldo (Brazil 2002 Epic, 06 §5.2)": {
+    "role": "counter",
+    "eF_height_weight": "186/75",
+    "real_height": "1.87 m",
+    "values": [
+     7,
+     7,
+     6,
+     8,
+     5,
+     2,
+     3,
+     7,
+     3,
+     2,
+     14
+    ]
+   }
+  },
+  "roles": "anchor = 02 §6.4 指定的主锚点（Benzema、Vieri、Suárez、Shevchenko）；similar = 其余相似体型；counter = 反例（不参与统计）",
+  "note": "pesdb 不显示头部 3 项，故对照只覆盖前 11 项；Ronaldinho（182/80，SW 2、LL 11、TS 7）说明同身高同体重可有完全不同的体型，不能只按身高体重套用。"
+ },
+ "params": {
+  "NeckLength": {
+   "zh": "颈长",
+   "candidate": 5,
+   "range": [
+    4,
+    7
+   ],
+   "confidence": "低",
+   "photo_evidence": "02 §4.2：颈'粗而显短'（C1 胸像、P9/P11 斜方肌上部隆起、C2 肩峰偏高）；显短主要来自粗颈 + 高斜方肌，不一定是颈椎段真的短。",
+   "reasoning": "主锚点中位 4.5（Benzema 4、Suárez 4、Shevchenko 5、Vieri 6），02 §6.4 区间 4–6；模型 B/A/G 均为 −0.4 档（颈关节段长几乎与中性相同，模型没有专门缩短颈长）。照片的'显短'更多由 NeckSize/ShoulderHeight 承担，所以取区间中值 5，而不是锚点下沿 4。",
+   "calibration": {
+    "view": "球员详情 3D 视图侧面（无动作站姿）+ 比赛回放侧面定格；与 C2/P9 同角度对照",
+    "measure": "颏下点到肩线（肩峰连线）的竖直距离 ÷ 头高",
+    "target": "视觉上颈部只露出短段；R9 照片中此比值明显小于 Shevchenko（NL 5）类中性颈",
+    "direction": "颈看起来偏长 → 降到 4；下颌/后脑与球衣领口穿插或脖子'消失' → 升到 6–7。PES 2021 负向每档 −2.86%，比正向陡一倍，下调一次只动 1 档。"
+   },
+   "model_estimate_T4": {
+    "pes2021_bone": "sk_neck x",
+    "primary_B": {
+     "per_measure": [
+      {
+       "measure": "neck_length",
+       "r9": 10.577,
+       "ref": 10.702,
+       "rel_pct": -1.17,
+       "pct_per_step": -2.86,
+       "steps": -0.41
+      }
+     ],
+     "steps": -0.41,
+     "stored": 7
+    },
+    "variant_A": {
+     "per_measure": [
+      {
+       "measure": "neck_length",
+       "r9": 10.577,
+       "ref": 10.702,
+       "rel_pct": -1.17,
+       "pct_per_step": -2.86,
+       "steps": -0.41
+      }
+     ],
+     "steps": -0.41,
+     "stored": 7
+    },
+    "variant_G": {
+     "per_measure": [
+      {
+       "measure": "neck_length",
+       "r9": 10.577,
+       "ref": 10.702,
+       "rel_pct": -1.17,
+       "pct_per_step": -2.86,
+       "steps": -0.41
+      }
+     ],
+     "steps": -0.41,
+     "stored": 7
+    },
+    "steps_span": [
+     -0.41,
+     -0.41
+    ],
+    "stored_span": [
+     7,
+     7
+    ]
+   },
+   "comparators": {
+    "stats": {
+     "similar_n": 12,
+     "similar_median": 6.0,
+     "similar_min": 4,
+     "similar_max": 11,
+     "anchors_median": 4.5,
+     "anchors": {
+      "Christian Vieri": 6,
+      "Karim Benzema": 4,
+      "Luis Suárez": 4,
+      "Andriy Shevchenko": 5
+     },
+     "counterexamples": {
+      "Rivaldo (Brazil 2002 Epic, 06 §5.2)": 7
+     }
+    }
+   }
+  },
+  "NeckSize": {
+   "zh": "颈围",
+   "candidate": 11,
+   "range": [
+    9,
+    13
+   ],
+   "confidence": "中",
+   "photo_evidence": "02 §4.2：粗颈，C1 中颈宽约为颧宽的 0.85–0.9；R9 模型颈围 41.6 cm（目标 40±1，面部组按照片加粗了上颈）。",
+   "reasoning": "模型三个方案都顶到 14（颈前后深 +6%、左右宽 +8%；PES 2021 正向前后每档只有 +0.36%，任何正差都会被放大），说明'明显粗于中性'，但不能定量。对照：相似球员中位 8.5、主锚点中位 7.5（Vieri 7、Shevchenko 7 拉低；Benzema 10、Diego Costa 12，Hulk 13、Adriano 14 被 02 §6.2 认为过头）——对照中位**低于**本候选。02 §6.4 按照片给出 9–11。取 11：照片（粗颈）与模型（远超中性）两条独立证据都指向偏粗，所以取照片区间上沿，但不进入 Hulk/Adriano 区；若实机看起来过粗，先退到 10、9。",
+   "calibration": {
+    "view": "正面特写（球员详情）+ 比赛中正面镜头",
+    "measure": "颈中段宽 ÷ 颧骨宽（面宽）",
+    "target": "0.85–0.90（02 §4.2，C1）",
+    "direction": "< 0.85 → +1；颈宽接近或超过下颌宽、领口被撑开/穿模 → −1。注意 eFootball 中真人脸资产可能自带颈部，需同时检查脸—颈接缝。"
+   },
+   "model_estimate_T4": {
+    "pes2021_bone": "sk_neck y / z",
+    "primary_B": {
+     "per_measure": [
+      {
+       "measure": "neck_depth",
+       "r9": 11.43,
+       "ref": 10.755,
+       "rel_pct": 6.28,
+       "pct_per_step": 0.36,
+       "steps": 17.43
+      },
+      {
+       "measure": "neck_breadth",
+       "r9": 13.68,
+       "ref": 12.68,
+       "rel_pct": 7.89,
+       "pct_per_step": 1.43,
+       "steps": 5.52
+      }
+     ],
+     "steps": 11.47,
+     "stored": 14
+    },
+    "variant_A": {
+     "per_measure": [
+      {
+       "measure": "neck_depth",
+       "r9": 11.43,
+       "ref": 10.696,
+       "rel_pct": 6.86,
+       "pct_per_step": 0.36,
+       "steps": 19.06
+      },
+      {
+       "measure": "neck_breadth",
+       "r9": 13.68,
+       "ref": 12.679,
+       "rel_pct": 7.89,
+       "pct_per_step": 1.43,
+       "steps": 5.52
+      }
+     ],
+     "steps": 12.29,
+     "stored": 14
+    },
+    "variant_G": {
+     "per_measure": [
+      {
+       "measure": "neck_depth",
+       "r9": 11.43,
+       "ref": 10.381,
+       "rel_pct": 10.11,
+       "pct_per_step": 0.36,
+       "steps": 28.09
+      },
+      {
+       "measure": "neck_breadth",
+       "r9": 13.68,
+       "ref": 12.209,
+       "rel_pct": 12.05,
+       "pct_per_step": 1.43,
+       "steps": 8.43
+      }
+     ],
+     "steps": 18.26,
+     "stored": 14
+    },
+    "steps_span": [
+     11.47,
+     18.26
+    ],
+    "stored_span": [
+     14,
+     14
+    ]
+   },
+   "comparators": {
+    "stats": {
+     "similar_n": 12,
+     "similar_median": 8.5,
+     "similar_min": 7,
+     "similar_max": 14,
+     "anchors_median": 7.5,
+     "anchors": {
+      "Christian Vieri": 7,
+      "Karim Benzema": 10,
+      "Luis Suárez": 8,
+      "Andriy Shevchenko": 7
+     },
+     "counterexamples": {
+      "Rivaldo (Brazil 2002 Epic, 06 §5.2)": 7
+     }
+    }
+   }
+  },
+  "ShoulderHeight": {
+   "zh": "肩高",
+   "candidate": 8,
+   "range": [
+    7,
+    9
+   ],
+   "confidence": "低",
+   "photo_evidence": "02 §4.2：斜方肌高、肩峰位置相对偏高（C2）；静立时肩略前收。",
+   "reasoning": "模型三个方案均 +1.85 档（锁骨抬高角比中性高 2.1°，按 PES 2021 每档 8/7° 换算；这只是转角分量）。锚点中位 9（Benzema 10、Vieri 9、Shevchenko 9、Suárez 4），全体相似球员中位 6。06 §4.2/§5.3 警告：PES 2021 正向每档 sk_shoulder +7.86%，是各项中最陡的，最容易调过头，建议从 7、8 试起。取 8。",
+   "calibration": {
+    "view": "正面与背面站姿（球员详情 3D 视图），比赛中背面镜头",
+    "measure": "肩峰相对颈根的抬高、斜方肌斜率",
+    "target": "斜方肌明显但不'耸肩'",
+    "direction": "先在隔离客户端试 7 与 8（06 §5.3）。像耸肩 → 7；肩线塌、颈显长 → 9。"
+   },
+   "model_estimate_T4": {
+    "pes2021_bone": "sk_shoulder z + clavicle rotation 8*v deg",
+    "primary_B": {
+     "per_measure": [
+      {
+       "measure": "clavicle_elevation_deg",
+       "r9": -8.031,
+       "ref": -10.147,
+       "diff_deg": 2.115,
+       "steps": 1.85
+      }
+     ],
+     "steps": 1.85,
+     "stored": 9
+    },
+    "variant_A": {
+     "per_measure": [
+      {
+       "measure": "clavicle_elevation_deg",
+       "r9": -8.031,
+       "ref": -10.147,
+       "diff_deg": 2.115,
+       "steps": 1.85
+      }
+     ],
+     "steps": 1.85,
+     "stored": 9
+    },
+    "variant_G": {
+     "per_measure": [
+      {
+       "measure": "clavicle_elevation_deg",
+       "r9": -8.031,
+       "ref": -10.147,
+       "diff_deg": 2.115,
+       "steps": 1.85
+      }
+     ],
+     "steps": 1.85,
+     "stored": 9
+    },
+    "steps_span": [
+     1.85,
+     1.85
+    ],
+    "stored_span": [
+     9,
+     9
+    ],
+    "note": "只用锁骨转角（每档 8/7°）；sk_shoulder z 缩放（+7.86%/−2.86% 每档）与三角肌/斜方肌辅助骨的效果无法在 MakeHuman 上对应"
+   },
+   "comparators": {
+    "stats": {
+     "similar_n": 12,
+     "similar_median": 6.0,
+     "similar_min": 0,
+     "similar_max": 10,
+     "anchors_median": 9.0,
+     "anchors": {
+      "Christian Vieri": 9,
+      "Karim Benzema": 10,
+      "Luis Suárez": 4,
+      "Andriy Shevchenko": 9
+     },
+     "counterexamples": {
+      "Rivaldo (Brazil 2002 Epic, 06 §5.2)": 6
+     }
+    }
+   }
+  },
+  "ShoulderWidth": {
+   "zh": "肩宽",
+   "candidate": 10,
+   "range": [
+    9,
+    11
+   ],
+   "confidence": "中",
+   "photo_evidence": "02 §4.2：肩宽明显（P1 中连球衣约 3 个头宽），但轮廓圆，不是衣架肩、不是夸张倒三角；肩峰间宽 41–43 cm（拟合目标 42.0，已达到）。",
+   "reasoning": "模型三个方案一致 +2.9 档（锁骨段比中性长 8.4%，PES 2021 正向每档 +2.86%）；锚点中位 10、相似球员中位 9；02 §6.4 区间 9–11。三条证据一致，取 10。",
+   "calibration": {
+    "view": "正面与背面站姿",
+    "measure": "三角肌外缘宽 ÷ 身高；肩宽 ÷ 头宽（含耳）",
+    "target": "0.27–0.28（49–52 cm / 183 cm）；约 3 个头宽（含球衣）",
+    "direction": "出现明显倒三角或衣架肩 → −1；与同身高中性球员比几乎一样宽 → +1（不超过 11，Suárez 12、Drogba 13 已偏宽）。"
+   },
+   "model_estimate_T4": {
+    "pes2021_bone": "sk_shoulder x",
+    "primary_B": {
+     "per_measure": [
+      {
+       "measure": "clavicle_length",
+       "r9": 18.819,
+       "ref": 17.367,
+       "rel_pct": 8.36,
+       "pct_per_step": 2.86,
+       "steps": 2.92
+      }
+     ],
+     "steps": 2.92,
+     "stored": 10
+    },
+    "variant_A": {
+     "per_measure": [
+      {
+       "measure": "clavicle_length",
+       "r9": 18.819,
+       "ref": 17.367,
+       "rel_pct": 8.36,
+       "pct_per_step": 2.86,
+       "steps": 2.92
+      }
+     ],
+     "steps": 2.92,
+     "stored": 10
+    },
+    "variant_G": {
+     "per_measure": [
+      {
+       "measure": "clavicle_length",
+       "r9": 18.819,
+       "ref": 17.367,
+       "rel_pct": 8.36,
+       "pct_per_step": 2.86,
+       "steps": 2.92
+      }
+     ],
+     "steps": 2.92,
+     "stored": 10
+    },
+    "steps_span": [
+     2.92,
+     2.92
+    ],
+    "stored_span": [
+     10,
+     10
+    ]
+   },
+   "comparators": {
+    "stats": {
+     "similar_n": 12,
+     "similar_median": 9.0,
+     "similar_min": 5,
+     "similar_max": 12,
+     "anchors_median": 10.0,
+     "anchors": {
+      "Christian Vieri": 10,
+      "Karim Benzema": 10,
+      "Luis Suárez": 12,
+      "Andriy Shevchenko": 7
+     },
+     "counterexamples": {
+      "Rivaldo (Brazil 2002 Epic, 06 §5.2)": 8
+     }
+    }
+   }
+  },
+  "ChestMeasurement": {
+   "zh": "胸围",
+   "candidate": 9,
+   "range": [
+    8,
+    10
+   ],
+   "confidence": "中",
+   "photo_evidence": "02 §4.2：胸背厚，侧面躯干呈桶状（P4、P6），背阔肌宽；胸围拟合目标 102 cm（已达到）。",
+   "reasoning": "模型 B +2.3、A +2.4、G +4.1 档（胸部前后深 +3%；G 未计入 PES 体重对胸部的加粗，偏高）；锚点中位 8、相似中位 8.5；02 §6.4 区间 8–10。取 9。",
+   "calibration": {
+    "view": "侧面站姿 + 比赛侧面镜头（与 P4/P6 对照）",
+    "measure": "乳头高度处躯干前后厚 ÷ 肩宽",
+    "target": "侧影'桶状'，不是纸片",
+    "direction": "侧面单薄 → +1；胸部前凸像健美 → −1。"
+   },
+   "model_estimate_T4": {
+    "pes2021_bone": "sk_chest y",
+    "primary_B": {
+     "per_measure": [
+      {
+       "measure": "chest_depth",
+       "r9": 24.232,
+       "ref": 23.461,
+       "rel_pct": 3.29,
+       "pct_per_step": 1.43,
+       "steps": 2.3
+      }
+     ],
+     "steps": 2.3,
+     "stored": 9
+    },
+    "variant_A": {
+     "per_measure": [
+      {
+       "measure": "chest_depth",
+       "r9": 24.232,
+       "ref": 23.43,
+       "rel_pct": 3.42,
+       "pct_per_step": 1.43,
+       "steps": 2.39
+      }
+     ],
+     "steps": 2.39,
+     "stored": 9
+    },
+    "variant_G": {
+     "per_measure": [
+      {
+       "measure": "chest_depth",
+       "r9": 24.232,
+       "ref": 22.881,
+       "rel_pct": 5.9,
+       "pct_per_step": 1.43,
+       "steps": 4.13
+      }
+     ],
+     "steps": 4.13,
+     "stored": 11
+    },
+    "steps_span": [
+     2.3,
+     4.13
+    ],
+    "stored_span": [
+     9,
+     11
+    ]
+   },
+   "comparators": {
+    "stats": {
+     "similar_n": 12,
+     "similar_median": 8.5,
+     "similar_min": 5,
+     "similar_max": 12,
+     "anchors_median": 8.0,
+     "anchors": {
+      "Christian Vieri": 9,
+      "Karim Benzema": 7,
+      "Luis Suárez": 10,
+      "Andriy Shevchenko": 6
+     },
+     "counterexamples": {
+      "Rivaldo (Brazil 2002 Epic, 06 §5.2)": 5
+     }
+    }
+   }
+  },
+  "WaistSize": {
+   "zh": "腰围",
+   "candidate": 8,
+   "range": [
+    7,
+    10
+   ],
+   "confidence": "低-中",
+   "photo_evidence": "02 §4.2：腰不细，腰线到胸廓几乎不收，但 2002 年没有腹部突出；腰围目标 82.5 cm（已达到），腰臀比约 0.83。",
+   "reasoning": "模型方案分歧最大：B −4.3 档（中性肌肉要达到 82.6 kg 只能靠脂肪，中性体腰更粗，所以低估）、A +1.5、G +3.2。这是'中性'定义问题，不是证据。对照锚点中位 7、相似中位 7.5；02 §6.4 区间 8–10，并禁止 ≤4（Henry/Rivaldo 式）。取 8：满足'腰不细'，又不让 2002 年的 R9 出现肚子。",
+   "calibration": {
+    "view": "正面 + 侧面站姿",
+    "measure": "腰宽 ÷ 肩宽（正面收腰程度）；侧面腹部轮廓",
+    "target": "正面几乎不收腰（肩腰差比 Henry 小得多）；侧面腹部平",
+    "direction": "出现明显 V 形收腰 → +1；侧面看到腹部前凸（2005–06 年形态）→ −1。PES 2021 中 WaistSize 只作用于渲染骨（B 表），短裤也随之变化，注意短裤腰部穿模。"
+   },
+   "model_estimate_T4": {
+    "pes2021_bone": "sk_belly y / z (B table)",
+    "primary_B": {
+     "per_measure": [
+      {
+       "measure": "waist_depth",
+       "r9": 19.575,
+       "ref": 21.476,
+       "rel_pct": -8.85,
+       "pct_per_step": -1.43,
+       "steps": -6.19
+      },
+      {
+       "measure": "waist_breadth",
+       "r9": 30.136,
+       "ref": 31.535,
+       "rel_pct": -4.44,
+       "pct_per_step": -1.86,
+       "steps": -2.39
+      }
+     ],
+     "steps": -4.29,
+     "stored": 3
+    },
+    "variant_A": {
+     "per_measure": [
+      {
+       "measure": "waist_depth",
+       "r9": 19.575,
+       "ref": 19.613,
+       "rel_pct": -0.2,
+       "pct_per_step": -1.43,
+       "steps": -0.14
+      },
+      {
+       "measure": "waist_breadth",
+       "r9": 30.136,
+       "ref": 28.708,
+       "rel_pct": 4.97,
+       "pct_per_step": 1.57,
+       "steps": 3.17
+      }
+     ],
+     "steps": 1.51,
+     "stored": 9
+    },
+    "variant_G": {
+     "per_measure": [
+      {
+       "measure": "waist_depth",
+       "r9": 19.575,
+       "ref": 19.14,
+       "rel_pct": 2.27,
+       "pct_per_step": 1.0,
+       "steps": 2.27
+      },
+      {
+       "measure": "waist_breadth",
+       "r9": 30.136,
+       "ref": 28.343,
+       "rel_pct": 6.32,
+       "pct_per_step": 1.57,
+       "steps": 4.03
+      }
+     ],
+     "steps": 3.15,
+     "stored": 10
+    },
+    "steps_span": [
+     -4.29,
+     3.15
+    ],
+    "stored_span": [
+     3,
+     10
+    ]
+   },
+   "comparators": {
+    "stats": {
+     "similar_n": 12,
+     "similar_median": 7.5,
+     "similar_min": 5,
+     "similar_max": 13,
+     "anchors_median": 7.0,
+     "anchors": {
+      "Christian Vieri": 9,
+      "Karim Benzema": 7,
+      "Luis Suárez": 5,
+      "Andriy Shevchenko": 7
+     },
+     "counterexamples": {
+      "Rivaldo (Brazil 2002 Epic, 06 §5.2)": 2
+     }
+    }
+   }
+  },
+  "ArmSize": {
+   "zh": "臂围",
+   "candidate": 8,
+   "range": [
+    7,
+    9
+   ],
+   "confidence": "中",
+   "photo_evidence": "02 §4.2：上臂、前臂有肌肉线条但不粗（P9、P11）；放松上臂围 30–32 cm（拟合 31.0）。",
+   "reasoning": "模型 B +1.5（8）、A +8.3、G +12.3（都顶到 14）：MakeHuman 中性是'普通男性'，上臂远细于职业运动员，A/G 方案把'运动员 vs 普通人'的差别全部算进了参数，而游戏的中性 7 本来就是球员体型（对照球员多为 7–8）。相似球员中位 8、锚点中位 7.5；02 §6.4 区间 7–8（不要加粗）。取 8。",
+   "calibration": {
+    "view": "正面站姿、比赛中跑动镜头",
+    "measure": "上臂最粗处宽 ÷ 前臂最粗处宽；与 P9/P11 对照",
+    "target": "有线条但不突出",
+    "direction": "二头肌/三角肌比照片突出 → 7；手臂像细棍 → 9。"
+   },
+   "model_estimate_T4": {
+    "pes2021_bone": "upper/lower arm y,z",
+    "primary_B": {
+     "per_measure": [
+      {
+       "measure": "upperarm_circ",
+       "r9": 31.015,
+       "ref": 30.51,
+       "rel_pct": 1.66,
+       "pct_per_step": 1.14,
+       "steps": 1.45
+      }
+     ],
+     "steps": 1.45,
+     "stored": 8
+    },
+    "variant_A": {
+     "per_measure": [
+      {
+       "measure": "upperarm_circ",
+       "r9": 31.015,
+       "ref": 28.334,
+       "rel_pct": 9.47,
+       "pct_per_step": 1.14,
+       "steps": 8.3
+      }
+     ],
+     "steps": 8.3,
+     "stored": 14
+    },
+    "variant_G": {
+     "per_measure": [
+      {
+       "measure": "upperarm_circ",
+       "r9": 31.015,
+       "ref": 27.203,
+       "rel_pct": 14.01,
+       "pct_per_step": 1.14,
+       "steps": 12.29
+      }
+     ],
+     "steps": 12.29,
+     "stored": 14
+    },
+    "steps_span": [
+     1.45,
+     12.29
+    ],
+    "stored_span": [
+     8,
+     14
+    ]
+   },
+   "comparators": {
+    "stats": {
+     "similar_n": 12,
+     "similar_median": 8.0,
+     "similar_min": 3,
+     "similar_max": 11,
+     "anchors_median": 7.5,
+     "anchors": {
+      "Christian Vieri": 9,
+      "Karim Benzema": 7,
+      "Luis Suárez": 7,
+      "Andriy Shevchenko": 8
+     },
+     "counterexamples": {
+      "Rivaldo (Brazil 2002 Epic, 06 §5.2)": 3
+     }
+    }
+   }
+  },
+  "ArmLength": {
+   "zh": "臂长",
+   "candidate": 7,
+   "range": [
+    6,
+    8
+   ],
+   "confidence": "低",
+   "photo_evidence": "02 §4.3：臂长取常模（P7 臂展约等于身高）。",
+   "reasoning": "模型 −0.75 档（MakeHuman 关节测得的上臂+前臂比中性短 0.5%；臂长不是拟合目标，只是 proportions 宏和肩宽修饰器的副产物，可信度低）。相似与锚点中位都是 6。PES 2021 每档只有 ±0.71%，6 与 7 的差别约 4 mm。照片证据（常模）优先，取 7。",
+   "calibration": {
+    "view": "正面站姿，双臂自然下垂",
+    "measure": "中指尖所在大腿高度；腕高 ÷ 身高",
+    "target": "腕高约 0.485H（88.8 cm），指尖在大腿中段",
+    "direction": "指尖低于大腿中段明显 → 6；手腕高于裆部明显 → 8。对触球/碰撞若有影响，以动作表现为准。"
+   },
+   "model_estimate_T4": {
+    "pes2021_bone": "upper/lower arm x",
+    "primary_B": {
+     "per_measure": [
+      {
+       "measure": "arm_length",
+       "r9": 55.073,
+       "ref": 55.366,
+       "rel_pct": -0.53,
+       "pct_per_step": -0.71,
+       "steps": -0.75
+      }
+     ],
+     "steps": -0.75,
+     "stored": 6
+    },
+    "variant_A": {
+     "per_measure": [
+      {
+       "measure": "arm_length",
+       "r9": 55.073,
+       "ref": 55.366,
+       "rel_pct": -0.53,
+       "pct_per_step": -0.71,
+       "steps": -0.75
+      }
+     ],
+     "steps": -0.75,
+     "stored": 6
+    },
+    "variant_G": {
+     "per_measure": [
+      {
+       "measure": "arm_length",
+       "r9": 55.073,
+       "ref": 55.366,
+       "rel_pct": -0.53,
+       "pct_per_step": -0.71,
+       "steps": -0.75
+      }
+     ],
+     "steps": -0.75,
+     "stored": 6
+    },
+    "steps_span": [
+     -0.75,
+     -0.75
+    ],
+    "stored_span": [
+     6,
+     6
+    ]
+   },
+   "comparators": {
+    "stats": {
+     "similar_n": 12,
+     "similar_median": 6.0,
+     "similar_min": 1,
+     "similar_max": 8,
+     "anchors_median": 6.0,
+     "anchors": {
+      "Christian Vieri": 7,
+      "Karim Benzema": 7,
+      "Luis Suárez": 4,
+      "Andriy Shevchenko": 5
+     },
+     "counterexamples": {
+      "Rivaldo (Brazil 2002 Epic, 06 §5.2)": 7
+     }
+    }
+   }
+  },
+  "ThighSize": {
+   "zh": "大腿围",
+   "candidate": 11,
+   "range": [
+    10,
+    12
+   ],
+   "confidence": "中",
+   "photo_evidence": "02 §4.2：全身最突出部位；短裤下缘露出的股四头肌粗厚，P5 射门腿大腿下段几乎与膝同宽；大腿中段围 58–61 cm（拟合 60.0）。",
+   "reasoning": "模型 B +3.0（10）、A +5.2（12）、G +10.1（14，偏高：未扣除'普通人 vs 运动员'差别）。B 与 A 正好夹出 02 §6.4 的 10–12；Benzema 11，Rooney 13 是上限。对照中位（相似 9、锚点 8.5）**低于**本候选：多数对照球员并不以大腿见长，而大腿是 R9 2002 年最突出的部位（照片证据），所以不按对照中位取值。取 11。",
+   "calibration": {
+    "view": "正面与侧面（穿短裤），射门/冲刺回放定格（与 P2/P3/P5 对照）",
+    "measure": "短裤下缘处大腿宽 ÷ 膝宽；小腿围 ÷ 大腿围",
+    "target": "大腿下段接近膝宽；小腿/大腿约 0.65",
+    "direction": "大腿与小腿看起来差不多粗 → +1（不超过 12）；短裤腿口被撑开穿模或像健美 → −1。PES 2021 正向还会带动 dsk_hip 与短裤骨，检查臀部和短裤。"
+   },
+   "model_estimate_T4": {
+    "pes2021_bone": "sk_thigh y / z",
+    "primary_B": {
+     "per_measure": [
+      {
+       "measure": "thigh_depth",
+       "r9": 18.855,
+       "ref": 19.126,
+       "rel_pct": -1.41,
+       "pct_per_step": -1.43,
+       "steps": -0.99
+      },
+      {
+       "measure": "thigh_breadth",
+       "r9": 18.78,
+       "ref": 17.458,
+       "rel_pct": 7.57,
+       "pct_per_step": 1.07,
+       "steps": 7.08
+      }
+     ],
+     "steps": 3.04,
+     "stored": 10
+    },
+    "variant_A": {
+     "per_measure": [
+      {
+       "measure": "thigh_depth",
+       "r9": 18.855,
+       "ref": 18.742,
+       "rel_pct": 0.6,
+       "pct_per_step": 1.43,
+       "steps": 0.42
+      },
+      {
+       "measure": "thigh_breadth",
+       "r9": 18.78,
+       "ref": 16.978,
+       "rel_pct": 10.61,
+       "pct_per_step": 1.07,
+       "steps": 9.92
+      }
+     ],
+     "steps": 5.17,
+     "stored": 12
+    },
+    "variant_G": {
+     "per_measure": [
+      {
+       "measure": "thigh_depth",
+       "r9": 18.855,
+       "ref": 18.482,
+       "rel_pct": 2.02,
+       "pct_per_step": 1.43,
+       "steps": 1.41
+      },
+      {
+       "measure": "thigh_breadth",
+       "r9": 18.78,
+       "ref": 15.635,
+       "rel_pct": 20.11,
+       "pct_per_step": 1.07,
+       "steps": 18.79
+      }
+     ],
+     "steps": 10.1,
+     "stored": 14
+    },
+    "steps_span": [
+     3.04,
+     10.1
+    ],
+    "stored_span": [
+     10,
+     14
+    ]
+   },
+   "comparators": {
+    "stats": {
+     "similar_n": 12,
+     "similar_median": 9.0,
+     "similar_min": 7,
+     "similar_max": 13,
+     "anchors_median": 8.5,
+     "anchors": {
+      "Christian Vieri": 8,
+      "Karim Benzema": 11,
+      "Luis Suárez": 9,
+      "Andriy Shevchenko": 7
+     },
+     "counterexamples": {
+      "Rivaldo (Brazil 2002 Epic, 06 §5.2)": 3
+     }
+    }
+   }
+  },
+  "CalfSize": {
+   "zh": "小腿围",
+   "candidate": 7,
+   "range": [
+    5,
+    8
+   ],
+   "confidence": "低-中",
+   "photo_evidence": "02 §4.2：小腿发达但不夸张，穿球袜护腿板时看起来中等；小腿围 38–39.5 cm（拟合 38.8）；不要做成 Rooney/Hulk 式粗小腿。",
+   "reasoning": "模型三个方案一致 −2.4 档（MakeHuman 中性的小腿比 R9 粗 3–4%）；对照相似中位 8.5、锚点中位 7.5；02 §6.4 区间 7–9。两类证据方向相反，取中性 7，范围放宽到 5–8；PES 2021 正向每档 +2.86%，是负向的两倍，宁低勿高。",
+   "calibration": {
+    "view": "侧面（穿球袜）+ 比赛跑动镜头",
+    "measure": "小腿最粗处 ÷ 大腿中段",
+    "target": "约 0.65（02 §4.3），大腿明显比小腿突出",
+    "direction": "小腿与大腿差距不明显 → −1（可到 5–6）；小腿像竹竿 → +1。"
+   },
+   "model_estimate_T4": {
+    "pes2021_bone": "sk_leg y,z",
+    "primary_B": {
+     "per_measure": [
+      {
+       "measure": "calf_circ",
+       "r9": 38.771,
+       "ref": 40.156,
+       "rel_pct": -3.45,
+       "pct_per_step": -1.43,
+       "steps": -2.41
+      }
+     ],
+     "steps": -2.41,
+     "stored": 5
+    },
+    "variant_A": {
+     "per_measure": [
+      {
+       "measure": "calf_circ",
+       "r9": 38.771,
+       "ref": 40.122,
+       "rel_pct": -3.37,
+       "pct_per_step": -1.43,
+       "steps": -2.35
+      }
+     ],
+     "steps": -2.35,
+     "stored": 5
+    },
+    "variant_G": {
+     "per_measure": [
+      {
+       "measure": "calf_circ",
+       "r9": 38.771,
+       "ref": 40.134,
+       "rel_pct": -3.4,
+       "pct_per_step": -1.43,
+       "steps": -2.37
+      }
+     ],
+     "steps": -2.37,
+     "stored": 5
+    },
+    "steps_span": [
+     -2.41,
+     -2.35
+    ],
+    "stored_span": [
+     5,
+     5
+    ]
+   },
+   "comparators": {
+    "stats": {
+     "similar_n": 12,
+     "similar_median": 8.5,
+     "similar_min": 5,
+     "similar_max": 13,
+     "anchors_median": 7.5,
+     "anchors": {
+      "Christian Vieri": 7,
+      "Karim Benzema": 9,
+      "Luis Suárez": 8,
+      "Andriy Shevchenko": 7
+     },
+     "counterexamples": {
+      "Rivaldo (Brazil 2002 Epic, 06 §5.2)": 2
+     }
+    }
+   }
+  },
+  "LegLength": {
+   "zh": "腿长",
+   "candidate": 6,
+   "range": [
+    5,
+    7
+   ],
+   "confidence": "低",
+   "photo_evidence": "02 §4.2–4.3：躯干偏长偏厚，腿长约在常模或略短（转子高 0.52–0.53H），跑姿低重心；严禁 Henry/Rivaldo 式长腿（Rivaldo LL 14）。",
+   "reasoning": "模型三个方案一致 −5.9 档（髋关节高 96.6 vs 中性 98.2 cm，−1.6%；PES 2021 每档只有约 0.27%，所以 1.6 cm 就是 6 档）；按 pesdb 的'每档 1 cm 等效身高'折算则约 −2.9 档。髋高目标本身不确定度 ±1.5 cm（≈ ±5.5 档），所以模型只说明'不是长腿型'。相似与锚点中位都是 7，02 §6.4 区间 6–8。另外 PES 2021 中 LegLength < 7 会降低整体缩放 G，使渲染身高低于 183。取 6（略短、低重心），不取更低。",
+   "calibration": {
+    "view": "侧面站姿，与一名 183 cm、LegLength 7 的参照球员并排（隔离客户端）",
+    "measure": "裆部/短裤下缘高度 ÷ 身高；渲染身高是否仍与 183 cm 参照一致",
+    "target": "髋高约 0.527H；整体身高与参照相同",
+    "direction": "渲染身高明显矮于参照 → 回到 7；腿看起来比参照长 → 5。"
+   },
+   "model_estimate_T4": {
+    "pes2021_bone": "G x leg (A table #12)",
+    "primary_B": {
+     "per_measure": [
+      {
+       "measure": "hip_joint_height",
+       "r9": 96.601,
+       "ref": 98.163,
+       "rel_pct": -1.59,
+       "pct_per_step": -0.2714285714285714,
+       "steps": -5.86
+      }
+     ],
+     "steps": -5.86,
+     "stored": 1
+    },
+    "variant_A": {
+     "per_measure": [
+      {
+       "measure": "hip_joint_height",
+       "r9": 96.601,
+       "ref": 98.163,
+       "rel_pct": -1.59,
+       "pct_per_step": -0.2714285714285714,
+       "steps": -5.86
+      }
+     ],
+     "steps": -5.86,
+     "stored": 1
+    },
+    "variant_G": {
+     "per_measure": [
+      {
+       "measure": "hip_joint_height",
+       "r9": 96.601,
+       "ref": 98.163,
+       "rel_pct": -1.59,
+       "pct_per_step": -0.2714285714285714,
+       "steps": -5.86
+      }
+     ],
+     "steps": -5.86,
+     "stored": 1
+    },
+    "steps_span": [
+     -5.86,
+     -5.86
+    ],
+    "stored_span": [
+     1,
+     1
+    ],
+    "note": "PES 2021：+7 档髋高 +1.8%（G×1.018），−7 档 −1.9%（G×0.981），每档约 0.27 cm；且 LegLength 改变整体缩放 G，游戏里的渲染身高会随之变化",
+    "pesdb_alt": {
+     "rule": "pesdb 派生指标 'Leg-length Equivalent Height = Height + (LL−7) cm'（06 §4.2，T3）；把髋高相对差折成等效身高差，每 1 cm 一档（T4 换算）",
+     "steps_B": -2.91
+    }
+   },
+   "comparators": {
+    "stats": {
+     "similar_n": 12,
+     "similar_median": 7.0,
+     "similar_min": 6,
+     "similar_max": 10,
+     "anchors_median": 7.0,
+     "anchors": {
+      "Christian Vieri": 10,
+      "Karim Benzema": 7,
+      "Luis Suárez": 6,
+      "Andriy Shevchenko": 7
+     },
+     "counterexamples": {
+      "Rivaldo (Brazil 2002 Epic, 06 §5.2)": 14
+     }
+    }
+   }
+  },
+  "HeadLength": {
+   "zh": "头长（竖直：头顶—颏下）",
+   "candidate": 7,
+   "range": [
+    5,
+    9
+   ],
+   "confidence": "低",
+   "photo_evidence": "02 §4.2：头不显小也不显大，头高约 0.13H（C2 实测 0.131H）；模型头高 22.9 cm = 0.125H（面部组取在 23.8±0.8 区间下沿）。",
+   "reasoning": "PES 骨轴约定 x = 沿骨长度，头骨竖直，所以 HeadLength 对应头高，不是人体测量学的'头长'。对常模：22.9 vs 23.0–24.4 cm → −2.4 档（区间 −4.3…−0.4，常模未核实）；对 MakeHuman 中性：−0.2 档。我们自己的头部网格决定头型（见 head_policy）：默认 wrap（--align similarity）把头缩放到供体大小，只保留形状比例，整体大小要靠三项头部参数**同步**调整；三轴几何平均：相对常模 +1.1 档，相对 MakeHuman 中性 +1.8 档（中性头围 57.3 cm，与 Bushby 1992 男性均值 57.2 cm 几乎相同，可作'平均大小'参照）——即模型头整体比平均大 1.5–2.5%，但这主要来自可疑的头长（见 HeadDepth）。02 §4.2 照片判断'不显小也不显大'。在面部组复核头长之前取 7；若复核后头长成立，三项同步取 8（最多 9）。",
+   "calibration": {
+    "view": "球员详情 3D 视图正面、侧面；全身站姿",
+    "measure": "头高 ÷ 身高",
+    "target": "0.125–0.131",
+    "direction": "头显大 → 三项同时 −1；头显小（壮汉小头）→ 三项同时 +1。只有在使用非本组网格（原版/通用头）时才逐轴调整。"
+   },
+   "model_estimate_T4": {
+    "pes2021_bone": "sk_head x (vertical)",
+    "primary_B": {
+     "per_measure": [
+      {
+       "measure": "head_height",
+       "r9": 22.886,
+       "ref": 22.966,
+       "rel_pct": -0.35,
+       "pct_per_step": -1.43,
+       "steps": -0.24
+      }
+     ],
+     "steps": -0.24,
+     "stored": 7
+    },
+    "variant_A": {
+     "per_measure": [
+      {
+       "measure": "head_height",
+       "r9": 22.886,
+       "ref": 22.966,
+       "rel_pct": -0.35,
+       "pct_per_step": -1.43,
+       "steps": -0.24
+      }
+     ],
+     "steps": -0.24,
+     "stored": 7
+    },
+    "variant_G": {
+     "per_measure": [
+      {
+       "measure": "head_height",
+       "r9": 22.886,
+       "ref": 23.019,
+       "rel_pct": -0.58,
+       "pct_per_step": -1.43,
+       "steps": -0.41
+      }
+     ],
+     "steps": -0.41,
+     "stored": 7
+    },
+    "steps_span": [
+     -0.41,
+     -0.24
+    ],
+    "stored_span": [
+     7,
+     7
+    ]
+   }
+  },
+  "HeadWidth": {
+   "zh": "头宽",
+   "candidate": 7,
+   "range": [
+    7,
+    9
+   ],
+   "confidence": "低",
+   "photo_evidence": "01 号档案 §5.1：颅穹窿圆而饱满，颞部饱满，颅宽与颧宽接近，不要做成窄长颅。模型头宽 15.7 cm。",
+   "reasoning": "对常模（15.2–15.6 cm，未核实）+1.35 档（区间 +0.4…+2.3）；对 MakeHuman 中性 +4.4 档（MakeHuman 默认头偏窄，头指数约 71）。逐轴值只用于原版/通用头；使用本组网格时三项同步（见 HeadLength）。取 7，若使用通用头则取 8。",
+   "calibration": {
+    "view": "正面",
+    "measure": "头宽（耳上）÷ 头高；颅宽 ÷ 颧宽",
+    "target": "颅宽接近颧宽（01 §5.1）",
+    "direction": "使用本组网格时与 HeadLength 同步调整；通用头：颅显窄 → +1。"
+   },
+   "model_estimate_T4": {
+    "pes2021_bone": "sk_head z",
+    "primary_B": {
+     "per_measure": [
+      {
+       "measure": "head_breadth",
+       "r9": 15.696,
+       "ref": 14.766,
+       "rel_pct": 6.3,
+       "pct_per_step": 1.43,
+       "steps": 4.41
+      }
+     ],
+     "steps": 4.41,
+     "stored": 11
+    },
+    "variant_A": {
+     "per_measure": [
+      {
+       "measure": "head_breadth",
+       "r9": 15.696,
+       "ref": 14.766,
+       "rel_pct": 6.3,
+       "pct_per_step": 1.43,
+       "steps": 4.41
+      }
+     ],
+     "steps": 4.41,
+     "stored": 11
+    },
+    "variant_G": {
+     "per_measure": [
+      {
+       "measure": "head_breadth",
+       "r9": 15.696,
+       "ref": 14.766,
+       "rel_pct": 6.3,
+       "pct_per_step": 1.43,
+       "steps": 4.41
+      }
+     ],
+     "steps": 4.41,
+     "stored": 11
+    },
+    "steps_span": [
+     4.41,
+     4.41
+    ],
+    "stored_span": [
+     11,
+     11
+    ]
+   }
+  },
+  "HeadDepth": {
+   "zh": "头深（前后：眉间—枕后）",
+   "candidate": 7,
+   "range": [
+    7,
+    10
+   ],
+   "confidence": "低",
+   "photo_evidence": "01 号档案 §5.1：枕部圆隆、向后突出中等。模型'头长'（眉间—枕后）21.05 cm。",
+   "reasoning": "对常模（19.5–20.0 cm，未核实）+4.6 档（区间 +3.7…+5.6）；对 MakeHuman 中性 +1.3 档。两者差别来自 MakeHuman 底模头本来就偏长：模型头指数 74.6（长头型边界），头围 60.8 cm 高于 Bushby 1992 男性均值 57.2 cm，与 01 档案'圆颅'的描述不太一致 → 已列为面部组复核项。在此之前不把 +4.6 档写入，取 7；通用头情形取 8（相对 MakeHuman 中性）。",
+   "calibration": {
+    "view": "侧面、后脑 3/4",
+    "measure": "眉间—枕后 ÷ 头高",
+    "target": "侧面后脑圆隆但不后凸",
+    "direction": "使用本组网格时与 HeadLength 同步；通用头：后脑扁 → +1，后脑过凸 → −1。"
+   },
+   "model_estimate_T4": {
+    "pes2021_bone": "sk_head y",
+    "primary_B": {
+     "per_measure": [
+      {
+       "measure": "head_length",
+       "r9": 21.053,
+       "ref": 20.678,
+       "rel_pct": 1.81,
+       "pct_per_step": 1.43,
+       "steps": 1.27
+      }
+     ],
+     "steps": 1.27,
+     "stored": 8
+    },
+    "variant_A": {
+     "per_measure": [
+      {
+       "measure": "head_length",
+       "r9": 21.053,
+       "ref": 20.678,
+       "rel_pct": 1.81,
+       "pct_per_step": 1.43,
+       "steps": 1.27
+      }
+     ],
+     "steps": 1.27,
+     "stored": 8
+    },
+    "variant_G": {
+     "per_measure": [
+      {
+       "measure": "head_length",
+       "r9": 21.053,
+       "ref": 20.678,
+       "rel_pct": 1.81,
+       "pct_per_step": 1.43,
+       "steps": 1.27
+      }
+     ],
+     "steps": 1.27,
+     "stored": 8
+    },
+    "steps_span": [
+     1.27,
+     1.27
+    ],
+    "stored_span": [
+     8,
+     8
+    ]
+   }
+  }
+ },
+ "calibration_protocol": [
+  "0. 前提：取得 iOS 11.1.1 的外观表并通过 06 §8 第 1–5 步（定位、解壳、整表往返逐字节相同、结构检验、三条测试向量）。任何一步不通过都不写入。",
+  "1. decode 并保存 R9 目标记录（或供体记录）的原始 14 项与整行 hex，作为回退基线。",
+  "2. 方向标定（06 §8 第 6–7 步）：在隔离测试客户端里，对一名测试球员逐项写 0、7、14，三档截图（固定机位：球员详情正面/侧面/背面），确认每项的方向和大致幅度，记录 eFootball 的每档效果，替换本文件里的 PES 2021 刻度。",
+  "3. 写入 codec_patch 的 14 项候选（patch --set-json data/body/r9_body_params.json），其余字段保持原值；检查 .patch.json 中只有身体半字节变化。",
+  "4. 按各项 calibration 的视图与目标比例逐项微调，一次只改一项、每次 ±1 档；先调 ThighSize、ShoulderWidth、NeckSize（证据最强、视觉影响最大），再调 ShoulderHeight（最陡），最后头部（与头部网格同步）。",
+  "5. 比赛中复核：跑动、射门、护球动作有无穿模、短裤/袖口拉伸、脚底悬空；与 183 cm 参照球员并排确认渲染身高。",
+  "6. 记录每次修改的截图与 .patch.json；不满意时用原表回退。"
+ ],
+ "not_done": [
+  "没有游戏文件：所有值都是候选，未写入任何原生数据，也未在实机上看过效果（任务书第十三节：已完成候选、等待实机）。",
+  "eFootball 的每档效果未知；本文件的模型换算只用 PES 2021 刻度（T4）。",
+  "头部常模数值未能核对原文（ANSUR II/Farkas 页面在本环境 403），已标注未核实。"
+ ],
+ "model_estimate_T4": {
+  "label": "T4（本组估计），PES 2021 刻度",
+  "tool": "tools/model/body_params_estimate.py",
+  "inputs": [
+   "model/source/r9_params.json",
+   "MakeHuman 1.x CC0 数据（$MH_DATA）"
+  ],
+  "method": "R9 拟合模型 vs 中性 MakeHuman 男性（性别/年龄/人种同 R9；muscle、proportions = 0.5；无修饰器）；相对差 ÷ 06 §4.2 的 PES 2021 每档百分比 = 档数；B 为主方案，A/G 为敏感性方案（见脚本文档）",
+  "warning": "PES 2021 的骨骼缩放表不能直接套用到 eFootball（UE4 引擎，实现未找到，06 §4.4）；这里只给方向和量级。",
+  "input_model": {
+   "file": "model/source/r9_params.json",
+   "sha256": "252c6a7f0eb228f80161ac4d05a9b75f5970acdfc72c816038fd804608c170c2",
+   "version": "v1 2026-10-25"
+  },
+  "variants": {
+   "B": {
+    "macro": {
+     "gender": 1.0,
+     "african": 0.5,
+     "caucasian": 0.4,
+     "asian": 0.1,
+     "muscle": 0.5,
+     "weight": 0.868,
+     "height": 0.5418,
+     "proportions": 0.5
+    },
+    "height_cm": 183.0,
+    "mass_kg": 82.62
+   },
+   "A": {
+    "macro": {
+     "gender": 1.0,
+     "african": 0.5,
+     "caucasian": 0.4,
+     "asian": 0.1,
+     "muscle": 0.5,
+     "weight": 0.4998,
+     "height": 0.5418,
+     "proportions": 0.5
+    },
+    "height_cm": 183.0,
+    "mass_kg": 77.41
+   },
+   "G": {
+    "macro": {
+     "gender": 1.0,
+     "african": 0.5,
+     "caucasian": 0.4,
+     "asian": 0.1,
+     "muscle": 0.5,
+     "weight": 0.198,
+     "height": 0.5418,
+     "proportions": 0.5
+    },
+    "height_cm": 183.0,
+    "mass_kg": 73.25,
+    "mass_kg_before_pes_weight": 73.25,
+    "pes_normalized_weight": 0.3107
+   }
+  },
+  "r9": {
+   "height_cm": 183.0,
+   "mass_kg": 82.62
+  },
+  "measures_cm": {
+   "arm_length": {
+    "R9": 55.07,
+    "B": 55.37,
+    "A": 55.37,
+    "G": 55.37
+   },
+   "biacromial": {
+    "R9": 42.02,
+    "B": 38.96,
+    "A": 38.96,
+    "G": 38.96
+   },
+   "calf_circ": {
+    "R9": 38.77,
+    "B": 40.16,
+    "A": 40.12,
+    "G": 40.13
+   },
+   "chest_breadth": {
+    "R9": 33.67,
+    "B": 33.43,
+    "A": 31.73,
+    "G": 32.16
+   },
+   "chest_circ": {
+    "R9": 102.05,
+    "B": 102.62,
+    "A": 100.32,
+    "G": 100.17
+   },
+   "chest_depth": {
+    "R9": 24.23,
+    "B": 23.46,
+    "A": 23.43,
+    "G": 22.88
+   },
+   "clavicle_elevation_deg": {
+    "R9": -8.03,
+    "B": -10.15,
+    "A": -10.15,
+    "G": -10.15
+   },
+   "clavicle_length": {
+    "R9": 18.82,
+    "B": 17.37,
+    "A": 17.37,
+    "G": 17.37
+   },
+   "head_breadth": {
+    "R9": 15.7,
+    "B": 14.77,
+    "A": 14.77,
+    "G": 14.77
+   },
+   "head_circumference": {
+    "R9": 60.76,
+    "B": 57.33,
+    "A": 57.33,
+    "G": 57.33
+   },
+   "head_height": {
+    "R9": 22.89,
+    "B": 22.97,
+    "A": 22.97,
+    "G": 23.02
+   },
+   "head_length": {
+    "R9": 21.05,
+    "B": 20.68,
+    "A": 20.68,
+    "G": 20.68
+   },
+   "hip_joint_height": {
+    "R9": 96.6,
+    "B": 98.16,
+    "A": 98.16,
+    "G": 98.16
+   },
+   "hips_circ": {
+    "R9": 99.56,
+    "B": 102.45,
+    "A": 97.87,
+    "G": 95.11
+   },
+   "knee_circ": {
+    "R9": 36.64,
+    "B": 39.2,
+    "A": 37.95,
+    "G": 36.21
+   },
+   "knee_height": {
+    "R9": 51.55,
+    "B": 54.31,
+    "A": 54.31,
+    "G": 54.31
+   },
+   "neck_breadth": {
+    "R9": 13.68,
+    "B": 12.68,
+    "A": 12.68,
+    "G": 12.21
+   },
+   "neck_circ": {
+    "R9": 41.58,
+    "B": 39.03,
+    "A": 38.96,
+    "G": 37.8
+   },
+   "neck_depth": {
+    "R9": 11.43,
+    "B": 10.76,
+    "A": 10.7,
+    "G": 10.38
+   },
+   "neck_length": {
+    "R9": 10.58,
+    "B": 10.7,
+    "A": 10.7,
+    "G": 10.7
+   },
+   "thigh_breadth": {
+    "R9": 18.78,
+    "B": 17.46,
+    "A": 16.98,
+    "G": 15.64
+   },
+   "thigh_circ": {
+    "R9": 60.03,
+    "B": 58.58,
+    "A": 56.83,
+    "G": 53.88
+   },
+   "thigh_depth": {
+    "R9": 18.85,
+    "B": 19.13,
+    "A": 18.74,
+    "G": 18.48
+   },
+   "upperarm_circ": {
+    "R9": 31.02,
+    "B": 30.51,
+    "A": 28.33,
+    "G": 27.2
+   },
+   "waist_breadth": {
+    "R9": 30.14,
+    "B": 31.54,
+    "A": 28.71,
+    "G": 28.34
+   },
+   "waist_circ": {
+    "R9": 82.54,
+    "B": 88.24,
+    "A": 80.35,
+    "G": 76.58
+   },
+   "waist_depth": {
+    "R9": 19.57,
+    "B": 21.48,
+    "A": 19.61,
+    "G": 19.14
+   }
+  },
+  "head_vs_norms": {
+   "HeadLength": {
+    "measure": "head_height",
+    "r9_cm": 22.89,
+    "norm_range_cm": [
+     23.0,
+     24.4
+    ],
+    "norm_mid_cm": 23.7,
+    "rel_pct_vs_mid": -3.44,
+    "steps_vs_mid": -2.4,
+    "steps_range": [
+     -4.34,
+     -0.35
+    ],
+    "stored_per_axis": 5,
+    "norm_verified": false
+   },
+   "HeadWidth": {
+    "measure": "head_breadth",
+    "r9_cm": 15.7,
+    "norm_range_cm": [
+     15.2,
+     15.6
+    ],
+    "norm_mid_cm": 15.399999999999999,
+    "rel_pct_vs_mid": 1.92,
+    "steps_vs_mid": 1.35,
+    "steps_range": [
+     0.43,
+     2.28
+    ],
+    "stored_per_axis": 8,
+    "norm_verified": false
+   },
+   "HeadDepth": {
+    "measure": "head_length",
+    "r9_cm": 21.05,
+    "norm_range_cm": [
+     19.5,
+     20.0
+    ],
+    "norm_mid_cm": 19.75,
+    "rel_pct_vs_mid": 6.6,
+    "steps_vs_mid": 4.61,
+    "steps_range": [
+     3.68,
+     5.57
+    ],
+    "stored_per_axis": 12,
+    "norm_verified": false
+   },
+   "uniform": {
+    "geometric_mean_ratio": 1.0161,
+    "steps": 1.13,
+    "stored": 8,
+    "meaning": "整体头部大小相对常模（三轴几何平均）；用于'网格只保留形状、大小靠参数'的情形（wrap.py 默认 --align similarity）"
+   },
+   "cephalic_index_r9": 74.6,
+   "head_circumference_r9_cm": 60.8,
+   "head_circumference_norm_cm": 57.2
+  },
+  "head_norms": {
+   "head_breadth": {
+    "measure": "最大头宽 eu–eu（软组织，测量器）",
+    "range_cm": [
+     15.2,
+     15.6
+    ],
+    "sources": [
+     "ANSUR II 美军男性（Gordon et al. 2014, NATICK/TR-15/007, 'headbreadth'）",
+     "Farkas 1994, Anthropometry of the Head and Face（北美白人青年男性 eu–eu）"
+    ],
+    "verified": false,
+    "note": "区间凭记忆整理；本环境打不开原文（tools.openlab.psu.edu 与 apps.dtic.mil 均 403），待核实。02 号档案 §4.3 也写明'本次未取得权威数值源'，其估计 15.5–16.0 cm 与此相容。"
+   },
+   "head_length": {
+    "measure": "最大头长 g–op（眉间—枕后）",
+    "range_cm": [
+     19.5,
+     20.0
+    ],
+    "sources": [
+     "ANSUR II 美军男性（Gordon et al. 2014, 'headlength'）",
+     "Farkas 1994（g–op）"
+    ],
+    "verified": false,
+    "note": "同上，待核实；02 号档案 §4.3 对 R9 的估计为 19.5–20.5 cm（T4）。"
+   },
+   "head_height": {
+    "measure": "头高 v–gn（头顶—颏下）",
+    "range_cm": [
+     23.0,
+     24.4
+    ],
+    "sources": [
+     "Drillis & Contini 1966 身高比例：颏高 0.870H → 头高 0.130H（183 cm → 23.8 cm）；该常数不在 02 号档案已核对的 PSU 页面数值列表中，未核实",
+     "02 号档案 §4.3：R9 本人侧面站立照 C2 实测约 0.131H（T4）；区间取 0.126H–0.133H"
+    ],
+    "verified": false,
+    "note": "R9 模型 23.0 cm 是面部组在 02 档案 23.8±0.8 区间的下沿取值（r9_params.json _provenance.head_scale）。"
+   },
+   "head_circumference": {
+    "measure": "头围（眉间—枕后水平围）",
+    "value_cm": 57.2,
+    "sources": [
+     "Bushby KM, Cole T, Matthews JN, Goodship JA (1992) Centiles for adult head circumference. Arch Dis Child 67(10):1286–7：男性均值 57.2 cm（经 en.wikipedia 'Human head' 转引，2026-10-25 读取）"
+    ],
+    "verified": "二手（维基百科转引）",
+    "note": "只用来检查头长/头宽的组合是否合理，不直接换算档数。"
+   }
+  },
+  "head_vs_mh_neutral_B": {
+   "HeadLength": -0.24,
+   "HeadWidth": 4.41,
+   "HeadDepth": 1.27,
+   "uniform": {
+    "geometric_mean_ratio": 1.0255,
+    "steps": 1.78,
+    "neutral_head_circumference_cm": 57.3,
+    "note": "MakeHuman 中性头围与 Bushby 1992 男性均值 57.2 cm 几乎相同，可作'平均大小'的交叉参照"
+   }
+  }
+ }
+}

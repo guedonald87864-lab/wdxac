@@ -63,12 +63,12 @@ class Target:
         self.P = MD.frame_to_blender(A[f"{part}.positions"], fd)
         F = A[f"{part}.faces"].astype(np.int64)
         self.N = MD.dir_frame_to_blender(A[f"{part}.normals"], fd)
-        if G.orientation_sign(self.P, F) < 0:
+        uv = {k.split(".uv.")[1]: v for k, v in A.items() if k.startswith(f"{part}.uv.")}
+        if G.orientation_sign(self.P, F) < 0:          # (left-handed export frames reverse the winding)
             F = F[:, ::-1].copy()
-        self.F = F
+            uv = {k: v[:, ::-1].copy() for k, v in uv.items()}
+        self.F, self.uv = F, uv
         self.region = A.get(f"{part}.region", np.zeros(len(self.P), np.int8)).astype(int)
-        self.uv = {k.split(".uv.")[1]: (v[:, ::-1] if fd["det"] < 0 else v)
-                   for k, v in A.items() if k.startswith(f"{part}.uv.")}
         self.L = MD.frame_to_blender(A["landmarks.mp478"], fd) if "landmarks.mp478" in A else None
         names = [str(x) for x in A.get("features.names", [])]
         pos = MD.frame_to_blender(A["features.positions"], fd) if names else np.zeros((0, 3))

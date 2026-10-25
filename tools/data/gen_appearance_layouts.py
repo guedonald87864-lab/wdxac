@@ -64,7 +64,7 @@ META = {
  "pesdb60": dict(record_size=60, title="PES 2016/2017-2021 PlayerAppearance.bin row (60 B, decoded table)",
    status="measured-community", confidence="high (T3: GodotFootball face report, 4cc-studio model.md, pes-db-generator template; 06 §2.5)",
    rule=S["layouts"]["pesdb60"]["rule"], pid_field="pid", pid_width=32,
-   offset_space="decoded table payload (row i at i*60). NOT CPK/file-container offsets, NOT memory.",
+   offset_space="DECODED table payload (row i at i*60; the file must first be extracted from its CPK). NOT CPK/file-container offsets, NOT memory.",
    sorted_by_pid="unknown (not claimed for PES tables) - find reports it, never assumes it"),
  "ef64": dict(record_size=64, title="eFootball PC PlayerAppearance.bin row (64 B) - CANDIDATE",
    status="candidate", confidence="MEDIUM for eFootball PC (T3+T4: Mod Studio structural test on real dt200 files + EvoTool v5.2.0 bit definitions that land exactly on the PES16-21 fields when shifted by 4; EvoTool's reader uses a 4-byte id = internal conflict, 06 §3.2-3.3). UNVERIFIED for eFootball iOS 11.1.1 (no public mobile decode, 06 §6.4)",
